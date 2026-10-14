@@ -132,6 +132,8 @@ body.swapped #score{border-right:0}
 .swapbtn{position:relative;display:inline-flex;align-items:center;padding:3px 7px;text-transform:none;letter-spacing:0}
 .swapbtn svg{width:18px;height:12px;display:block}
 .swapbtn::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 8px);width:240px;padding:9px 11px;border-radius:8px;background:#000;border:1px solid var(--line);color:var(--text);font-weight:400;font-size:12.5px;line-height:1.4;text-align:left;text-transform:none;letter-spacing:0;white-space:normal;box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px);transition:opacity .15s,transform .15s;pointer-events:none;z-index:50}
+body.swapped .swapbtn{order:3;margin-left:4px}
+body.swapped .swapbtn::after{left:auto;right:0}
 .swapbtn:hover::after{opacity:1;transform:none;transition-delay:.35s}
 .pvhead .live{margin-left:auto;display:flex;align-items:center;gap:6px}
 .dot{width:8px;height:8px;border-radius:50%;background:#555}
@@ -175,8 +177,9 @@ button.danger:hover{background:#dd4135;border-color:#dd4135}
 .pickbar .sp{flex:1}
 .pickbar button{font-size:12px;padding:3px 9px}
 .slide.fixed .num::before{content:"cued";display:block;font-size:9px;font-weight:500;color:var(--dim)}
-.slide.over{border-color:#a8452f}
-.slide.over::after{content:"too long for the screen";position:absolute;right:44px;bottom:3px;font-size:10px;color:#ef8a3c}
+.slide.over::after{content:"too long for the screen";position:absolute;right:44px;bottom:3px;font-size:10px;color:#ff6b6b}
+.slide.over{border-color:#e5484d;background:#2b1416}
+.slide.over.cur{border-color:#e5484d;box-shadow:0 0 0 2px var(--cur);background:#2b1416}
 body.flow #slides{gap:0}
 body.flow .slide{border-radius:0;margin-top:-1px}
 body.flow .slide.soft{border-bottom-style:dashed}
@@ -193,6 +196,11 @@ body.flow.edit .flowhelp{display:block}
 .slide .num{font-weight:700;font-size:15px;color:var(--dim);text-align:center;padding-top:3px;cursor:pointer;border-radius:5px}
 .slide .num:hover{background:#2a2d35;color:var(--text)}
 .slide textarea{width:100%;resize:none;background:transparent;border:0;color:#fff;font:15px/1.35 Georgia,serif;text-align:var(--talign,left);outline:none;padding:3px 0;overflow:hidden;min-height:24px}
+.slide textarea, .slide .mirror{grid-column:3;grid-row:1}
+.slide .mirror{display:none;pointer-events:none;font:15px/1.35 Georgia,serif;text-align:var(--talign,left);padding:3px 0;white-space:pre-wrap;overflow-wrap:break-word;color:#fff;min-width:0}
+.slide .mirror .ovf{opacity:.5}
+.slide.over .mirror{display:block}
+.slide.over textarea{color:transparent;caret-color:#fff;position:relative;z-index:1}
 .slide textarea::placeholder{color:#555;font-style:italic}
 .slide .tools{display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .1s}
 .slide:hover .tools,.slide:focus-within .tools{opacity:1}
@@ -557,13 +565,13 @@ function renderMarkers(){
 // then left to right for cues at the same height. Click order never matters.
 function sortMarkers(){
   const curObj = state.markers[cur], ancObj = anchor!=null ? state.markers[anchor] : null;
-  // Rows: a cue counts as higher (earlier) only if its centre is at least 1.2 × the cue radius above
+  // Rows: a cue counts as higher (earlier) only if its centre is at least 1.5 × the cue radius above
   // the top cue of the row; closer than that, it is on the same row and goes left to right.
   const byY=[...state.markers].sort((a,b)=> a.page-b.page || a.y-b.y || a.x-b.x), out=[];
   let row=[], top=null;
   const flush=()=>{ row.sort((a,b)=>a.x-b.x); out.push(...row); row=[]; };
   for(const m of byY){
-    const hw=pageHW[m.page-1]||792/612, thr=1.2*(state.settings.markerSize||4)/200/hw; // 1.2 r as a fraction of page height
+    const hw=pageHW[m.page-1]||792/612, thr=1.5*(state.settings.markerSize||4)/200/hw; // 1.5 r as a fraction of page height
     if(top && (m.page!==top.page || m.y-top.y>=thr-1e-9)) flush();
     if(!row.length) top=m; row.push(m);
   }
@@ -616,7 +624,7 @@ function renderSlides(){
   const list=$('#slides'); list.replaceChildren();
   state.slides.forEach((s,i)=>{
     const c=document.createElement('div'); c.className='slide'; c.dataset.i=i;
-    c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)" spellcheck="false"></textarea><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
+    c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)" spellcheck="false"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
     const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = mode==='show';
     list.append(c);
   });
@@ -635,7 +643,16 @@ function updateSlideClasses(){
     c.classList.toggle('fixed', state.settings.flow && i<state.markers.length); });
   placeAddBelow();
 }
-function markOverflow(){ const ctx=measureCtx(); document.querySelectorAll('.slide').forEach(c=>{ const sl=state.slides[+c.dataset.i]; c.classList.toggle('over', !!sl && !!sl.text.trim() && !fitsSlide(sl.text.replace(/\|/g,'\n'), ctx)); }); }
+// Marks a slide box whose text won't fit on the screen, and greys out (50%) the words that won't make it.
+function showOverflow(c, text, ctx=measureCtx()){
+  const cut = text.trim() ? overflowCut(text.replace(/\|/g,'\n'), ctx) : -1, mir=c.querySelector('.mirror');
+  c.classList.toggle('over', cut>=0);
+  if(!mir) return;
+  if(cut<0){ mir.replaceChildren(); return; }
+  const a=document.createElement('span'), b=document.createElement('span'); b.className='ovf';
+  a.textContent=text.slice(0,cut); b.textContent=text.slice(cut)+(text.endsWith('\n')?' ':''); mir.replaceChildren(a,b);
+}
+function markOverflow(){ const ctx=measureCtx(); document.querySelectorAll('.slide').forEach(c=>{ const sl=state.slides[+c.dataset.i]; if(sl) showOverflow(c, sl.text, ctx); else c.classList.remove('over'); }); }
 function placeAddBelow(){
   document.querySelectorAll('.addBelowRow').forEach(x=>x.remove());
   if(mode!=='edit' || state.settings.lockOrder || cur<0 || cur>=state.slides.length) return;
@@ -645,7 +662,7 @@ function placeAddBelow(){
 }
 const slidesEl=$('#slides');
 slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; grow(e.target);
-  const c=e.target.closest('.slide'); c.classList.toggle('over', !!e.target.value.trim() && !fitsSlide(e.target.value.replace(/\|/g,'\n')));
+  showOverflow(e.target.closest('.slide'), e.target.value);
   if(state.settings.flow && mode==='edit' && i>=state.markers.length){ clearTimeout(flowT); flowT=setTimeout(()=>flowRefit(i, e.target.selectionStart), 450); } if(i===cur||i===cur+1) updateOutput(); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); });
 slidesEl.addEventListener('mousedown', e=>{
   const card=e.target.closest('.slide'); if(!card || e.target.closest('button') || mode!=='edit') return;
@@ -915,9 +932,26 @@ function fit(stage, text){
   stage.style.padding=`${m.padY}px ${m.padX}px`;
   text.style.width='100%'; text.style.textAlign=state.settings.align||'left';
   text.style.lineHeight=m.lh; text.style.fontStyle=state.settings.italic?'italic':'normal'; text.style.fontWeight=state.settings.bold?'700':'400';
-  let fs=m.font, n=0; text.style.fontSize=fs+'px';
-  const availH=H-2*m.padY, availW=W-2*m.padX;
-  while(n++<40 && (text.scrollHeight > availH+2 || text.scrollWidth > availW+2) && fs>4){ fs*=0.93; text.style.fontSize=fs+'px'; } // safety net only
+  // The type size comes only from Settings. Text beyond the shape's lines (2 on 6:1, 6 otherwise)
+  // is not shown on the screens at all (the slide box in the list greys it out instead).
+  const fs=m.font, lineH=fs*m.lh, maxLines=titleLayout().lines;
+  const availH=H-2*m.padY;
+  text.style.fontSize=fs+'px'; text.style.maxHeight='none'; text.style.height='auto';
+  const full=text.textContent; text.textContent=full;
+  if(full && text.scrollHeight > maxLines*lineH+2){
+    const node=text.firstChild, top0=text.getBoundingClientRect().top, limit=top0+(maxLines-0.5)*lineH;
+    const r=text.ownerDocument.createRange(), topAt=i=>{ r.setStart(node,i); r.setEnd(node,i+1); const b=r.getClientRects(); return b.length? b[b.length-1].top : -1; };
+    let lo=0, hi=full.length; // first character that sits on line maxLines+1
+    while(lo<hi){ const mid=(lo+hi)>>1; if(/\s/.test(full[mid]) || topAt(mid)<limit) lo=mid+1; else hi=mid; }
+    let cut=lo; while(cut>0 && !/\s/.test(full[cut-1]) && topAt(cut-1)>=limit) cut--;
+    if(cut<full.length){
+      const d=text.ownerDocument, a=d.createElement('span'), b=d.createElement('span');
+      a.textContent=full.slice(0,cut); b.textContent=full.slice(cut); b.className='ovf';
+      b.style.cssText = 'visibility:hidden';
+      text.replaceChildren(a,b);
+      text.style.height=(maxLines*lineH)+'px'; // the frame keeps only the lines that fit
+    }
+  }
   stage.style.alignItems='center';
   const vp=(state.settings.vpos||0)/100, free=Math.max(0, availH-text.offsetHeight);
   text.style.transform = titleLayout().shape==='6/1' ? 'none' : `translateY(${vp*free/2}px)`;
@@ -1264,6 +1298,20 @@ function lineCount(text, ctx){
   return n;
 }
 const fitsSlide = (text, ctx=measureCtx()) => lineCount(text, ctx) <= maxLines();
+// Index of the first character that falls past the screen's last line (-1 if it all fits). Same wrapping as lineCount.
+function overflowCut(text, ctx=measureCtx()){
+  const avail=FIT_W*titleLayout().availW, max=maxLines(); let n=0, off=0;
+  for(const para of text.split('\n')){
+    n++; let line='';
+    const re=/\S+/g; let mm;
+    while((mm=re.exec(para))){ const w=mm[0], t=line?line+' '+w:w;
+      if(!line || ctx.measureText(t).width<=avail) line=t; else { n++; line=w; }
+      if(n>max) return off+mm.index; }
+    if(n>=max && para!==undefined && off+para.length<text.length && n+1>max) return off+para.length+1; // a further paragraph starts past the last line
+    off+=para.length+1;
+  }
+  return -1;
+}
 const joinToks = t => t.join(' ').replace(/ ?\n ?/g,'\n').trim();
 // one segment of text (no slide breaks inside) -> slides
 function fitSegment(seg, ctx=measureCtx()){
