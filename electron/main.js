@@ -91,7 +91,8 @@ function createWindow() {
   win.loadFile(APP_HTML);
 
   // The page opens the projector with window.open(..., 'supertitles-projector')
-  win.webContents.setWindowOpenHandler(({ frameName }) => {
+  win.webContents.setWindowOpenHandler(({ frameName, url }) => {
+    if (/^https?:/i.test(url)) { shell.openExternal(url); return { action: 'deny' }; } // web links open in the regular browser
     if (frameName !== 'supertitles-projector') return { action: 'deny' };
     const ext = otherDisplay();
     const bounds = ext ? ext.bounds : null;
