@@ -840,15 +840,18 @@ function liveText(){ if(blackout || cur<0) return ''; const s=state.slides[cur];
    6:1 strip (the formula): in a strip of height H and width W —
      top = bottom margin = 0.05·H, left = right margin = 0.02·W,
      each text line = 3H/7 tall, gap between the two lines = 3H/70  (2 lines fill H exactly).
-   16:9 and 4:3: text size 4.2% of the width at 100%, 3% top/bottom and 5% side margins, up to 6 lines.
+   16:9 and 4:3: top = bottom margin = 47H/540, sides 0.02·W, lines 137H/1080 tall, 137H/10800 apart (6 lines).
    "Text size" scales the text (100% = the formula). */
 function normShape(sh){ return sh==='576/93' ? '6/1' : (['6/1','16/9','4/3'].includes(sh) ? sh : '16/9'); }
 function titleLayout(){
   const st=state.settings, k=st.textScale||1, sh=normShape(st.shape);
   if(sh==='6/1') return {shape:sh, lines:2, availW:0.96, fsOfWidth:3/7*k/6,        // font as a share of the strip width (strip height = width/6)
     px:(W,H)=>{ const T=3/7*H*k, G=T/10; return {font:T, lh:1.1, padY:0.05*H - G/2, padX:0.02*W}; } }; // CSS adds half the gap above/below
-  return {shape:sh, lines:6, availW:0.90, fsOfWidth:0.042*k,
-    px:(W,H)=>({font:0.042*k*W, lh:1.22, padY:0.03*H, padX:0.05*W}) };
+  // 16:9 and 4:3 (H, W = the 16:9 screen or the 4:3 area): top = bottom margin = 47H/540, sides 0.02·W,
+  // each line 137H/1080 tall, gap 137H/10800 — six lines, the same text size as the 6:1 strip.
+  const hOfW = sh==='4/3' ? 3/4 : 9/16;
+  return {shape:sh, lines:6, availW:0.96, fsOfWidth:137/1080*hOfW*k,
+    px:(W,H)=>{ const T=137/1080*H*k, G=T/10; return {font:T, lh:1.1, padY:47/540*H - G/2, padX:0.02*W}; } };
 }
 function styleVars(el){
   const st=state.settings;
@@ -1298,7 +1301,7 @@ function openSettings(){
   if(![...$('#sFont').options].some(o=>o.value===s.font)) $('#sFont').selectedIndex=0;
   setVals(); $('#setDlg').showModal();
 }
-function setVals(){ $('#sFsV').textContent=$('#sFs').value+'%'; $('#sFsNote').textContent = $('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = text 4.2% of the screen width.'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%'; }
+function setVals(){ $('#sFsV').textContent=$('#sFs').value+'%'; $('#sFsNote').textContent = $('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = six lines on the screen: lines 137/1080 of its height, a tenth of that apart, 47/540 top/bottom and 2% side margins.'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%'; }
 $('#settingsBtn').onclick=openSettings;
 $('#setDlg').addEventListener('input', ()=>{
   const s=state.settings; s.textScale=(+$('#sFs').value)/100; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.va=$('#sVa').value; s.shape=$('#sShape').value;
