@@ -313,7 +313,8 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
 
 <dialog id="setDlg"><form method="dialog">
   <h2>Settings <span style="font-size:12px;color:var(--dim);font-weight:400">Supertitle Cuer v@@VERSION@@</span></h2>
-  <div class="row"><span class="lbl">Title size</span><input type="range" id="sFs" min="1.5" max="10" step="0.1"><span id="sFsV"></span></div>
+  <div class="row"><span class="lbl">Text size</span><input type="range" id="sFs" min="50" max="130" step="1"><span id="sFsV"></span></div>
+  <p class="note" id="sFsNote" style="margin:-2px 0 6px 160px;font-size:12px"></p>
   <div class="row"><span class="lbl">Font</span><select id="sFont">
     <option value='Georgia, "Times New Roman", serif'>Georgia (serif)</option>
     <option value='"Palatino Linotype", Palatino, "Book Antiqua", serif'>Palatino (serif)</option>
@@ -324,7 +325,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <div class="row"><span class="lbl">Text style</span><label><input type="checkbox" id="sItal"> Italic</label><label><input type="checkbox" id="sBold"> Bold</label></div>
   <div class="row"><span class="lbl">Colours</span><label>Text <input type="color" id="sFg"></label><label>Background <input type="color" id="sBg"></label></div>
   <div class="row"><span class="lbl">Vertical position</span><select id="sVa"><option value="flex-start">Top</option><option value="center">Middle</option><option value="flex-end">Bottom</option></select></div>
-  <div class="row"><span class="lbl">Preview shape</span><select id="sShape"><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="576/93">6:1 Strip</option></select><span class="note" style="color:var(--dim);font-size:12px">(matches the projector window automatically once it's open)</span></div>
+  <div class="row"><span class="lbl">Preview shape</span><select id="sShape"><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select><span class="note" style="color:var(--dim);font-size:12px">(matches the projector window automatically once it's open)</span></div>
   <div class="row"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="7" step="0.25"><span id="sMkV"></span></div>
   <div class="row web-only"><span class="lbl">Second screen</span><button type="button" id="sScreens">Let the projector window open on the 2nd screen automatically</button></div>
   <div class="actions"><button class="primary" value="ok">Done</button></div>
@@ -402,7 +403,8 @@ function localizeKeys(root){ if(IS_MAC) return;
   const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while((n=w.nextNode())) if(n.nodeValue.includes('⌘')) n.nodeValue=keyName(n.nodeValue);
   root.querySelectorAll('[title*="⌘"]').forEach(el=>el.title=keyName(el.title)); }
 const LS_KEY = 'supertitle-cuer-v1';
-const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', shape:'16/9', markerSize:3.5, zoom:1, lockCues:false, lockOrder:false, flow:false, fit:true });
+function migrateSettings(st){ st.shape=normShape(st.shape); if(st.textScale==null) st.textScale = st.fontSize ? Math.max(.5, Math.min(1.3, st.fontSize/4.2)) : 1; return st; }
+const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', shape:'16/9', markerSize:3.5, zoom:1, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:1 });
 
 const state = { pdfName:null, parts:null, markers:[], slides:[], settings:defaults() };
 // parts: the PDFs that make up the score, in order: [{id, name, pages}]. The merged score is pdfBytes.
@@ -419,7 +421,7 @@ function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({...state, cur
 function loadLocal(){
   try{ const s = JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(!s) return;
     state.pdfName=s.pdfName||null; state.parts=Array.isArray(s.parts)?s.parts:null; state.markers=Array.isArray(s.markers)?s.markers:[]; state.slides=Array.isArray(s.slides)?s.slides:[];
-    state.settings=Object.assign(defaults(), s.settings||{}); cur = typeof s.cur==='number'? s.cur : -1; dirty=!!s.dirty; docName=s.docName||null;
+    state.settings=migrateSettings(Object.assign(defaults(), s.settings||{})); cur = typeof s.cur==='number'? s.cur : -1; dirty=!!s.dirty; docName=s.docName||null;
   }catch(e){}
 }
 function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open('supertitle-cuer',1); r.onupgradeneeded=()=>r.result.createObjectStore('files'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
@@ -834,28 +836,55 @@ function scrollToCue(){
 
 /* ---------- output (preview + projector) ---------- */
 function liveText(){ if(blackout || cur<0) return ''; const s=state.slides[cur]; return s? s.text.replace(/\|/g,'\n') : ''; }
+/* ---------- title layout per screen shape ----------
+   6:1 strip (the formula): in a strip of height H and width W —
+     top = bottom margin = 0.05·H, left = right margin = 0.02·W,
+     each text line = 3H/7 tall, gap between the two lines = 3H/70  (2 lines fill H exactly).
+   16:9 and 4:3: text size 4.2% of the width at 100%, 3% top/bottom and 5% side margins, up to 6 lines.
+   "Text size" scales the text (100% = the formula). */
+function normShape(sh){ return sh==='576/93' ? '6/1' : (['6/1','16/9','4/3'].includes(sh) ? sh : '16/9'); }
+function titleLayout(){
+  const st=state.settings, k=st.textScale||1, sh=normShape(st.shape);
+  if(sh==='6/1') return {shape:sh, lines:2, availW:0.96, fsOfWidth:3/7*k/6,        // font as a share of the strip width (strip height = width/6)
+    px:(W,H)=>{ const T=3/7*H*k, G=T/10; return {font:T, lh:1.1, padY:0.05*H - G/2, padX:0.02*W}; } }; // CSS adds half the gap above/below
+  return {shape:sh, lines:6, availW:0.90, fsOfWidth:0.042*k,
+    px:(W,H)=>({font:0.042*k*W, lh:1.22, padY:0.03*H, padX:0.05*W}) };
+}
 function styleVars(el){
   const st=state.settings;
   el.style.setProperty('--fs', st.fontSize); el.style.setProperty('--font', st.font);
   el.style.setProperty('--sfg', st.fg); el.style.setProperty('--sbg', st.bg); el.style.setProperty('--va', st.va);
 }
 function fit(stage, text){
-  text.style.fontSize=''; text.style.fontStyle=state.settings.italic?'italic':'normal'; text.style.fontWeight=state.settings.bold?'700':'400';
-  let fs=state.settings.fontSize, n=0;
-  while(n++<40 && (text.scrollHeight > stage.clientHeight*0.94 || text.scrollWidth > stage.clientWidth*0.98) && fs>0.6){ fs*=0.93; text.style.fontSize=`calc(${fs} * 1cqw)`; }
+  const W=stage.clientWidth, H=stage.clientHeight; if(!W || !H) return;
+  const m=titleLayout().px(W,H);
+  stage.style.padding=`${m.padY}px ${m.padX}px`;
+  text.style.lineHeight=m.lh; text.style.fontStyle=state.settings.italic?'italic':'normal'; text.style.fontWeight=state.settings.bold?'700':'400';
+  let fs=m.font, n=0; text.style.fontSize=fs+'px';
+  const availH=H-2*m.padY, availW=W-2*m.padX;
+  while(n++<40 && (text.scrollHeight > availH+2 || text.scrollWidth > availW+2) && fs>4){ fs*=0.93; text.style.fontSize=fs+'px'; } // safety net only
 }
 function updateOutput(){
   const t=liveText(), pv=$('#pv'), txt=$('#pvText');
   styleVars(pv); txt.textContent=t; pv.classList.toggle('blackout', blackout);
-  const ar = projOpen() ? (projWin.innerWidth+'/'+projWin.innerHeight) : state.settings.shape; pv.style.aspectRatio = ar;
+  pv.style.aspectRatio = normShape(state.settings.shape).replace('/',' / ');
   requestAnimationFrame(()=>fit(pv.querySelector('.stage'), txt));
   const n = state.slides[cur+1];
   $('#nextLine').innerHTML = cur+1<=lastIndex() ? `Next <span class="kbd">→</span> <b>${cur+2}</b>: ${n? esc(n.text.replace(/[|\n]+/g,' / ')) || '<i>(blank)</i>' : '<i>(no slide)</i>'}` : (cur>=0? 'End of cues' : '');
-  if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; const pt=d.getElementById('t'); pt.textContent=t; fit(d.getElementById('stage'), pt); }catch(e){} }
+  if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; placeProjStage(d); const pt=d.getElementById('t'); pt.textContent=t; fit(d.getElementById('stage'), pt); }catch(e){} }
   $('#projDot').classList.toggle('on', projOpen()); $('#projLbl').textContent = projOpen()? 'Projector live' : 'Projector off';
   const pb=$('#projBtn'); pb.classList.toggle('live', projOpen());
   pb.textContent = projOpen() ? '■ Close projector' : '📽 Projector';
   pb.title = projOpen() ? 'Close the audience window (the projector goes dark)' : 'Open the audience window — the one that goes on the projector';
+}
+// On the projector, 6:1 is a full-width band of height width/6 at the top, middle or bottom of the screen;
+// 4:3 is the centred 4:3 area; 16:9 fills the screen.
+function placeProjStage(d){
+  const st=d.getElementById('stage'), w=projWin.innerWidth, h=projWin.innerHeight, sh=normShape(state.settings.shape), va=state.settings.va;
+  let bw=w, bh=h;
+  if(sh==='6/1'){ bh=Math.min(h, w/6); } else if(sh==='4/3'){ bw=Math.min(w, h*4/3); bh=Math.min(h, bw*3/4); } else { bh=Math.min(h, w*9/16); bw=Math.min(w, bh*16/9); }
+  const top = sh==='6/1' ? (va==='flex-start' ? 0 : va==='flex-end' ? h-bh : (h-bh)/2) : (h-bh)/2;
+  Object.assign(st.style,{width:bw+'px', height:bh+'px', left:(w-bw)/2+'px', top:top+'px', alignItems: sh==='6/1' ? 'center' : va});
 }
 const esc = s => s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const projOpen = () => projWin && !projWin.closed;
@@ -863,7 +892,7 @@ const projOpen = () => projWin && !projWin.closed;
 const PROJ_HTML = `<!doctype html><html><head><meta charset="utf-8"><title>Supertitles — Projector</title><style>
 html,body{margin:0;height:100%;overflow:hidden;background:#000}
 body{cursor:none}
-#stage{container-type:size;position:fixed;inset:0;display:flex;align-items:var(--va,center);justify-content:center;padding:3cqh 5cqw;box-sizing:border-box}
+#stage{container-type:size;position:fixed;left:0;top:0;width:100vw;height:100vh;display:flex;align-items:var(--va,center);justify-content:center;padding:3cqh 5cqw;box-sizing:border-box}
 #t{font-family:var(--font);color:var(--sfg,#fff);font-size:calc(var(--fs,4) * 1cqw);text-align:center;white-space:pre-wrap;line-height:1.22;max-height:100%}
 #hint{position:fixed;left:0;right:0;bottom:14px;text-align:center;font:14px -apple-system,system-ui,sans-serif;color:#9a9dab;cursor:default}
 #hint b{color:#fff}
@@ -1134,7 +1163,7 @@ async function openAny(file, handle){
   const p=proj.project, orig=proj.original||bytes;
   undoStack=[]; redoStack=[]; cur=-1; blackout=false; atStart=false; anchor=null;
   state.parts=Array.isArray(p.parts)?p.parts:null;
-  state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true}); updateLocks();
+  state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true})); updateLocks();
   await loadPdfBytes(p.pdfName||file.name, orig);
   renderSlides(); goTo(-1,false);
   fileHandle=handle||null; docName=file.name; setDirty(false); save();
@@ -1152,7 +1181,7 @@ function newProject(){
 async function openProjectFile(f){
   try{
     const p=JSON.parse(await f.text()); if(!Array.isArray(p.slides) && !Array.isArray(p.markers)) throw 0;
-    snap(); state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=Object.assign(defaults(), p.settings||{});
+    snap(); state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}));
     const hadPdf=state.pdfName; state.pdfName = hadPdf || p.pdfName; cur=-1;
     if(p.pdfName && hadPdf && p.pdfName!==hadPdf) toast(`Project was made for "${p.pdfName}" — markers placed on the open score`);
     else if(p.pdfName && !pdfDoc) toast(`Now open the score: "${p.pdfName}"`);
@@ -1168,10 +1197,10 @@ async function openProjectFile(f){
 const ELL='…', FIT_W=1000;
 let _mctx=null;
 function measureCtx(){ if(!_mctx) _mctx=document.createElement('canvas').getContext('2d'); const st=state.settings;
-  _mctx.font=`${st.italic?'italic ':''}${st.bold?700:400} ${st.fontSize*FIT_W/100}px ${st.font}`; return _mctx; }
-const maxLines = () => state.settings.shape==='576/93' ? 2 : 6;
+  _mctx.font=`${st.italic?'italic ':''}${st.bold?700:400} ${titleLayout().fsOfWidth*FIT_W}px ${st.font}`; return _mctx; }
+const maxLines = () => titleLayout().lines;
 function lineCount(text, ctx){
-  const avail=FIT_W*0.9; let n=0;
+  const avail=FIT_W*titleLayout().availW; let n=0;
   for(const para of text.split('\n')){ const words=para.split(/\s+/).filter(Boolean); n++; let line='';
     for(const w of words){ const t=line?line+' '+w:w; if(!line || ctx.measureText(t).width<=avail) line=t; else { n++; line=w; } } }
   return n;
@@ -1234,7 +1263,7 @@ function parsedImport(){ const t=$('#impText').value, segs = $('#impFmt').value=
   return $('#impFit').checked ? fitSegments(segs) : segs.map(text=>({text, b:'hard'})); }
 function updateImpInfo(){ const n=parsedImport().length; $('#impInfo').textContent = n ? `→ ${n} slide${n===1?'':'s'}, numbered ${ $('input[name=impMode]:checked').value==='append' ? (state.slides.length+1)+'–'+(state.slides.length+n) : '1–'+n }` : ''; $('#impGo').disabled=!n; }
 function openImport(){ $('#impText').value=''; $('#impFmt').value='csv'; $('#impFit').checked=state.settings.fit!==false; impFitNote(); updateImpInfo(); $('#importDlg').showModal(); }
-function impFitNote(){ const shp={'4/3':'4:3','16/9':'16:9','576/93':'6:1 strip'}[state.settings.shape]||'16:9'; $('#impFitNote').textContent=`Fits each slide to ${maxLines()} lines on the ${shp} screen at the current title size (change both in ⚙︎ Settings). Sentences are kept together where they fit.`; }
+function impFitNote(){ const shp={'4/3':'4:3','16/9':'16:9','6/1':'6:1 strip'}[normShape(state.settings.shape)]; $('#impFitNote').textContent=`Fits each slide to ${maxLines()} lines on the ${shp} screen at the current title size (change both in ⚙︎ Settings). Sentences are kept together where they fit.`; }
 ['input','change'].forEach(ev=>{ $('#impText').addEventListener(ev,updateImpInfo); $('#impFmt').addEventListener(ev,updateImpInfo); });
 $('#impFit').addEventListener('change',()=>{ state.settings.fit=$('#impFit').checked; save(); updateImpInfo(); });
 document.querySelectorAll('input[name=impMode]').forEach(r=>r.onchange=updateImpInfo);
@@ -1265,14 +1294,14 @@ $('#importDlg').addEventListener('close', ()=>{
 /* ---------- settings ---------- */
 function openSettings(){
   const s=state.settings;
-  $('#sFs').value=s.fontSize; $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVa').value=s.va; $('#sShape').value=s.shape; $('#sMk').value=s.markerSize;
+  $('#sFs').value=Math.round((s.textScale||1)*100); $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVa').value=s.va; $('#sShape').value=normShape(s.shape); $('#sMk').value=s.markerSize;
   if(![...$('#sFont').options].some(o=>o.value===s.font)) $('#sFont').selectedIndex=0;
   setVals(); $('#setDlg').showModal();
 }
-function setVals(){ $('#sFsV').textContent=(+$('#sFs').value).toFixed(1); $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%'; }
+function setVals(){ $('#sFsV').textContent=$('#sFs').value+'%'; $('#sFsNote').textContent = $('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = text 4.2% of the screen width.'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%'; }
 $('#settingsBtn').onclick=openSettings;
 $('#setDlg').addEventListener('input', ()=>{
-  const s=state.settings; s.fontSize=+$('#sFs').value; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.va=$('#sVa').value; s.shape=$('#sShape').value;
+  const s=state.settings; s.textScale=(+$('#sFs').value)/100; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.va=$('#sVa').value; s.shape=$('#sShape').value;
   const mk=+$('#sMk').value; if(mk!==s.markerSize){ s.markerSize=mk; layoutPages(); }
   setVals(); updateOutput(); setDirty(true); save();
   clearTimeout(flowT); flowT=setTimeout(()=>{ if(state.settings.flow) flowRefitAll(); markOverflow(); }, 300);
