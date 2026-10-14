@@ -954,9 +954,8 @@ function fit(stage, text){
   if(full && text.scrollHeight > maxLines*lineH+2){
     const node=text.firstChild, top0=text.getBoundingClientRect().top, limit=top0+(maxLines-0.5)*lineH;
     const r=text.ownerDocument.createRange(), topAt=i=>{ r.setStart(node,i); r.setEnd(node,i+1); const b=r.getClientRects(); return b.length? b[b.length-1].top : -1; };
-    let lo=0, hi=full.length; // first character that sits on line maxLines+1
-    while(lo<hi){ const mid=(lo+hi)>>1; if(/\s/.test(full[mid]) || topAt(mid)<limit) lo=mid+1; else hi=mid; }
-    let cut=lo; while(cut>0 && !/\s/.test(full[cut-1]) && topAt(cut-1)>=limit) cut--;
+    let cut=full.length; const re=/\S+/g; let mm; // first word that starts on line maxLines+1
+    while((mm=re.exec(full))){ if(topAt(mm.index)>=limit){ cut=mm.index; break; } }
     if(cut<full.length){
       const d=text.ownerDocument, a=d.createElement('span'), b=d.createElement('span');
       a.textContent=full.slice(0,cut); b.textContent=full.slice(cut); b.className='ovf';
@@ -973,7 +972,8 @@ function updateOutput(){
   const t=liveText(), pv=$('#pv'), txt=$('#pvText');
   styleVars(pv); txt.textContent=t; pv.classList.toggle('blackout', blackout);
   placePreview(pv);
-  requestAnimationFrame(()=>fit(pv.querySelector('.stage'), txt));
+  fit(pv.querySelector('.stage'), txt);                               // right away, so overflowing text is never painted, not even for one frame
+  requestAnimationFrame(()=>fit(pv.querySelector('.stage'), txt));   // and again once the layout has settled
   const n = state.slides[cur+1];
   $('#nextLine').innerHTML = cur+1<=lastIndex() ? `Next <span class="kbd">→</span> <b>${cur+2}</b>: ${n? esc(n.text.replace(/[|\n]+/g,' / ')) || '<i>(blank)</i>' : '<i>(no slide)</i>'}` : (cur>=0? 'End of cues' : '');
   if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; placeProjStage(d); const pt=d.getElementById('t'); pt.textContent=t; fit(d.getElementById('stage'), pt); }catch(e){} }
