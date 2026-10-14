@@ -51,6 +51,24 @@ header .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
 #connectDlg form{max-height:86vh;overflow:auto}
 body.native .web-only{display:none}
 body:not(.native) .native-only{display:none}
+.partsGrid{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch;margin:6px 0 4px}
+.pcard{width:168px;background:#111215;border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;position:relative}
+.pcard[draggable=true]{cursor:grab}
+.pcard.dragging{opacity:.4}
+.pcard.dropL{box-shadow:-4px 0 0 var(--accent)}
+.pcard.dropR{box-shadow:4px 0 0 var(--accent)}
+.pcard .pthumb{width:100%;aspect-ratio:612/792;background:#fff;border-radius:4px;overflow:hidden;display:flex}
+.pcard .pthumb canvas{width:100%;height:100%;object-fit:contain}
+.pcard .pnum{position:absolute;top:4px;left:4px;background:var(--accent);color:#1a1a1a;font-weight:700;font-size:12px;border-radius:10px;padding:1px 8px}
+.pcard .pname{font-size:12.5px;font-weight:600;word-break:break-word;line-height:1.25}
+.pcard .pmeta{font-size:11.5px;color:var(--dim)}
+.pcard .prow{display:flex;gap:4px;flex-wrap:wrap}
+.pcard .prow button{flex:1;font-size:11.5px;padding:3px 4px}
+.pcard .prow button.trashP{flex:0 0 auto}
+.pcard .prow button.trashP:hover{color:#ff7a70;border-color:#6b2a26}
+#partsDlg{width:min(980px,96vw)}
+#partsDlg.locked .prow{display:none}
+#partsDlg.busy .partsGrid{opacity:.5;pointer-events:none}
 .sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
 .docname{font-size:13px;color:var(--dim);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .docname.dirty::after{content:" • not saved";color:var(--warn)}
@@ -204,6 +222,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <section id="score">
     <div class="zoom" id="zoomCtl" hidden>
       <button class="lockbtn" id="lockCues" data-lock="lockCues"></button>
+      <button class="lockbtn" id="partsBtn" title="Add PDFs to the score, or change their order">📑 PDFs</button>
       <button data-z="-">−</button><button data-z="fit">Fit</button><button data-z="+">+</button>
     </div>
     <div id="pages"></div>
@@ -301,6 +320,13 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   </div>
   <div class="actions"><button class="primary" value="ok">Done</button></div>
 </form></dialog>
+<dialog id="partsDlg"><form method="dialog">
+  <h2>PDFs in this score</h2>
+  <p class="note" id="partsNote"></p>
+  <div class="partsGrid" id="partsGrid"></div>
+  <div class="actions"><span class="info" id="partsInfo"></span><button class="primary" value="ok">Done</button></div>
+</form></dialog>
+<input type="file" id="fPart" accept="application/pdf,.pdf,.supertitles" hidden>
 <dialog id="delDlg"><form method="dialog">
   <h2>Permanently delete this slide?</h2>
   <div class="delpv" id="delPreview"></div>
@@ -325,7 +351,8 @@ function localizeKeys(root){ if(IS_MAC) return;
 const LS_KEY = 'supertitle-cuer-v1';
 const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', shape:'16/9', markerSize:3.5, zoom:1, lockCues:false, lockOrder:false });
 
-const state = { pdfName:null, markers:[], slides:[], settings:defaults() };
+const state = { pdfName:null, parts:null, markers:[], slides:[], settings:defaults() };
+// parts: the PDFs that make up the score, in order: [{id, name, pages}]. The merged score is pdfBytes.
 let cur = -1, blackout = false, mode = 'edit';
 let fileHandle = null, docName = null, dirty = false;
 let atStart = false; // after deleting cue 1, the next click refills position 1
@@ -338,7 +365,7 @@ let undoStack = [], redoStack = [];
 function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({...state, cur, dirty, docName})); }catch(e){} }
 function loadLocal(){
   try{ const s = JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(!s) return;
-    state.pdfName=s.pdfName||null; state.markers=Array.isArray(s.markers)?s.markers:[]; state.slides=Array.isArray(s.slides)?s.slides:[];
+    state.pdfName=s.pdfName||null; state.parts=Array.isArray(s.parts)?s.parts:null; state.markers=Array.isArray(s.markers)?s.markers:[]; state.slides=Array.isArray(s.slides)?s.slides:[];
     state.settings=Object.assign(defaults(), s.settings||{}); cur = typeof s.cur==='number'? s.cur : -1; dirty=!!s.dirty; docName=s.docName||null;
   }catch(e){}
 }
@@ -372,6 +399,7 @@ async function openPdfFile(file, buf){
   if(state.pdfName && state.pdfName!==file.name && state.markers.length){
     if(!confirm(`You have ${state.markers.length} cue markers placed on "${state.pdfName}".\n\nKeep them on "${file.name}"?\n\nOK = keep them   ·   Cancel = start with no markers`)){ snap(); state.markers=[]; cur=-1; }
   }
+  state.parts=null;
   await loadPdfBytes(file.name, buf);
   idbPut('score', {name:file.name, bytes:buf});
 }
@@ -381,6 +409,9 @@ async function loadPdfBytes(name, bytes){
   catch(e){ toast('Could not open that PDF'); console.error(e); return; }
   document.title = 'Supertitle Cuer — ' + name;
   $('#scoreEmpty').hidden = true; $('#zoomCtl').hidden = false;
+  if(!Array.isArray(state.parts) || !state.parts.length || state.parts.reduce((a,x)=>a+x.pages,0)!==pdfDoc.numPages)
+    state.parts=[{id:partId(), name, pages:pdfDoc.numPages}];
+  updatePartsBtn();
   await buildPages(); sortMarkers(); changed(false);
 }
 const io = new IntersectionObserver(es=>es.forEach(e=>{ const p=pageEls[e.target.dataset.page-1]; if(!p) return; p.visible=e.isIntersecting; if(p.visible) renderPage(p); }), {root:$('#score'), rootMargin:'1500px 0px'});
@@ -746,7 +777,7 @@ function setDirty(d){
   document.title = (d&&has?'• ':'') + (docName || 'Supertitle Cuer');
   if(NATIVE) window.stc.docState({path: (fileHandle && fileHandle.nativePath) || '', dirty: !!(d&&has)});
 }
-const projectData = () => ({app:'supertitle-cuer', version:2, savedAt:new Date().toISOString(), pdfName:state.pdfName, markers:state.markers, slides:state.slides, settings:state.settings});
+const projectData = () => ({app:'supertitle-cuer', version:3, savedAt:new Date().toISOString(), pdfName:state.pdfName, parts:state.parts, markers:state.markers, slides:state.slides, settings:state.settings});
 function drawCues(doc, font){
   const {rgb, degrees} = PDFLib; const red=rgb(0.86,0.1,0.1);
   state.markers.forEach((m,i)=>{
@@ -880,6 +911,7 @@ async function openAny(file, handle){
   if(dirty && (state.markers.length||state.slides.length) && !confirm('Your current work has unsaved changes. Open the other project anyway?')) return;
   const p=proj.project, orig=proj.original||bytes;
   undoStack=[]; redoStack=[]; cur=-1; blackout=false; atStart=false; anchor=null;
+  state.parts=Array.isArray(p.parts)?p.parts:null;
   state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true}); updateLocks();
   await loadPdfBytes(p.pdfName||file.name, orig);
   renderSlides(); goTo(-1,false);
@@ -890,7 +922,7 @@ async function openAny(file, handle){
 function newProject(){
   if(dirty && (state.markers.length||state.slides.length) && !confirm('Start a new project? Unsaved changes to the current one will be lost.')) return;
   state.settings.lockCues=false; state.settings.lockOrder=false;
-  state.markers=[]; state.slides=[]; state.pdfName=null; pdfBytes=null; pdfDoc=null; cur=-1; undoStack=[]; redoStack=[];
+  state.markers=[]; state.slides=[]; state.pdfName=null; state.parts=null; pdfBytes=null; pdfDoc=null; cur=-1; undoStack=[]; redoStack=[];
   pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[]; $('#pages').replaceChildren(); $('#scoreEmpty').hidden=false; $('#zoomCtl').hidden=true;
   fileHandle=null; docName=null; idbPut('score',null); idbPut('doc',null);
   updateLocks(); changed(true); setDirty(false); save();
@@ -1000,6 +1032,98 @@ function showOS(os){ document.querySelectorAll('#connectDlg .steps').forEach(o=>
 document.querySelectorAll('#connectDlg [data-os]').forEach(b=>b.onclick=()=>showOS(b.dataset.os));
 $('#connectBtn').onclick=()=>{ showOS(IS_MAC?'mac':'win'); $('#connectDlg').showModal(); };
 addEventListener('beforeunload', e=>{ save(); if(!NATIVE && dirty && (state.markers.length||state.slides.length)){ e.preventDefault(); e.returnValue=''; } });
+
+/* ---------- score made of several PDFs ---------- */
+const partId = () => Math.random().toString(36).slice(2,9);
+function partStarts(parts){ const st={}; let n=1; for(const p of parts){ st[p.id]=n; n+=p.pages; } return st; }
+function partOfPage(parts, page){ let n=1; for(const p of parts){ if(page>=n && page<n+p.pages) return p; n+=p.pages; } return null; }
+function updatePartsBtn(){ const n=(state.parts||[]).length; $('#partsBtn').textContent = n>1 ? `📑 PDFs (${n})` : '📑 PDFs'; }
+// Rebuild the merged score from segments: [{src:Uint8Array, from:0-based page, count, part}]
+async function mergeSegments(segs){
+  const {PDFDocument}=PDFLib; const out=await PDFDocument.create(); const cache=new Map();
+  for(const g of segs){
+    if(!cache.has(g.src)) cache.set(g.src, await PDFDocument.load(g.src,{ignoreEncryption:true}));
+    const src=cache.get(g.src); const idx=[...Array(g.count).keys()].map(i=>g.from+i);
+    (await out.copyPages(src, idx)).forEach(pg=>out.addPage(pg));
+  }
+  return await out.save();
+}
+// newParts: the parts in their new order (may include one new part carrying .src bytes)
+async function applyParts(newParts, removedId){
+  const old=state.parts, oldStart=partStarts(old);
+  const segs=newParts.map(p=> p.src ? {src:p.src, from:0, count:p.pages} : {src:pdfBytes, from:oldStart[p.id]-1, count:p.pages});
+  $('#partsDlg').classList.add('busy'); $('#partsInfo').textContent='Merging…';
+  try{
+    const merged=new Uint8Array(await mergeSegments(segs));
+    const clean=newParts.map(({src,...p})=>p), newStart=partStarts(clean);
+    state.markers = state.markers.filter(m=>{ const op=partOfPage(old,m.page); return op && op.id!==removedId; })
+      .map(m=>{ const op=partOfPage(old,m.page); return {...m, page: newStart[op.id] + (m.page-oldStart[op.id])}; });
+    state.parts=clean; undoStack=[]; redoStack=[]; cur=-1; anchor=null;
+    const sc=$('#score').scrollTop;
+    await loadPdfBytes(state.pdfName || clean[0].name, merged);
+    $('#score').scrollTop=sc;
+    idbPut('score',{name:state.pdfName, bytes:merged}); setDirty(true); save(); renderParts();
+  }catch(e){ console.error(e); toast('Could not merge: '+e.message); }
+  $('#partsDlg').classList.remove('busy'); $('#partsInfo').textContent='';
+}
+let partInsertAt=0;
+function addPartAt(i){ if(state.settings.lockCues) return lockedNote('cues'); partInsertAt=i; $('#fPart').click(); }
+$('#fPart').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  let bytes=new Uint8Array(await f.arrayBuffer());
+  if(!(bytes[0]===0x25&&bytes[1]===0x50&&bytes[2]===0x44&&bytes[3]===0x46)) return toast('That isn’t a PDF');
+  try{ const pr=await readProjectFromPdf(bytes); if(pr && pr.original){ bytes=pr.original; toast('Added the score from that project (its cues and slides stay in their own file)'); } }catch(_){}
+  let pages; try{ const d=await pdfjsLib.getDocument({data:bytes.slice()}).promise; pages=d.numPages; d.destroy(); }catch(err){ return toast('Could not read that PDF'); }
+  const np=[...state.parts]; np.splice(partInsertAt,0,{id:partId(), name:f.name, pages, src:bytes});
+  await applyParts(np);
+  toast(`Added “${f.name}” (${pages} page${pages===1?'':'s'}) — cue numbers updated`);
+};
+function movePart(i,j){ if(j<0||j>=state.parts.length||i===j) return; const np=[...state.parts]; const [x]=np.splice(i,1); np.splice(j,0,x); applyParts(np); }
+function removePart(i){
+  const p=state.parts[i], st=partStarts(state.parts)[p.id];
+  const n=state.markers.filter(m=>m.page>=st && m.page<st+p.pages).length;
+  if(!confirm(`Remove “${p.name}” from the score?`+(n?`\n\nThe ${n} cue${n===1?'':'s'} placed on it will be removed too.`:''))) return;
+  applyParts(state.parts.filter((_,k)=>k!==i), p.id);
+}
+async function renderParts(){
+  const grid=$('#partsGrid'), locked=!!state.settings.lockCues, parts=state.parts||[], st=partStarts(parts);
+  $('#partsDlg').classList.toggle('locked', locked);
+  $('#partsNote').innerHTML = locked
+    ? '🔒 Cues are locked, so the PDFs can’t be changed. Unlock cues (the button above the score) to add, reorder or remove PDFs.'
+    : 'Add a PDF before or after any of these, drag the cards (or use ◀ ▶) to change the order, and 🗑 to remove one. Cues travel with their pages and are renumbered to follow the new order.';
+  grid.replaceChildren();
+  parts.forEach((p,i)=>{
+    const c=document.createElement('div'); c.className='pcard'; c.dataset.i=i; c.draggable=!locked && parts.length>1;
+    const cues=state.markers.filter(m=>m.page>=st[p.id] && m.page<st[p.id]+p.pages).length;
+    c.innerHTML=`<div class="pthumb"><canvas></canvas></div><span class="pnum">${i+1}</span>
+      <div class="pname"></div><div class="pmeta">pages ${st[p.id]}–${st[p.id]+p.pages-1} · ${cues} cue${cues===1?'':'s'}</div>
+      <div class="prow"><button type="button" data-pa="before">+ Before</button><button type="button" data-pa="after">+ After</button></div>
+      <div class="prow"><button type="button" data-pa="left" ${i===0?'disabled':''} title="Move earlier">◀</button><button type="button" data-pa="right" ${i===parts.length-1?'disabled':''} title="Move later">▶</button><button type="button" class="trashP" data-pa="del" ${parts.length<2?'disabled':''} title="Remove this PDF">🗑</button></div>`;
+    c.querySelector('.pname').textContent=p.name;
+    grid.append(c);
+  });
+  // first-page thumbnails
+  for(const c of grid.children){
+    const p=parts[+c.dataset.i]; if(!pdfDoc) break;
+    try{ const pg=await pdfDoc.getPage(st[p.id]); const vp=pg.getViewport({scale:300/pg.getViewport({scale:1}).width});
+      const cv=c.querySelector('canvas'); cv.width=vp.width; cv.height=vp.height; await pg.render({canvasContext:cv.getContext('2d'), viewport:vp}).promise; }catch(_){}
+  }
+}
+$('#partsGrid').addEventListener('click', e=>{
+  const b=e.target.closest('[data-pa]'); if(!b) return; const i=+b.closest('.pcard').dataset.i;
+  if(state.settings.lockCues) return lockedNote('cues');
+  ({before:()=>addPartAt(i), after:()=>addPartAt(i+1), left:()=>movePart(i,i-1), right:()=>movePart(i,i+1), del:()=>removePart(i)})[b.dataset.pa]();
+});
+let dragPart=-1;
+$('#partsGrid').addEventListener('dragstart', e=>{ const c=e.target.closest('.pcard'); if(!c) return; dragPart=+c.dataset.i; c.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+$('#partsGrid').addEventListener('dragend', ()=>{ dragPart=-1; document.querySelectorAll('.pcard').forEach(c=>c.classList.remove('dragging','dropL','dropR')); });
+$('#partsGrid').addEventListener('dragover', e=>{ const c=e.target.closest('.pcard'); if(dragPart<0||!c) return; e.preventDefault(); e.stopPropagation();
+  const r=c.getBoundingClientRect(), right=e.clientX>r.left+r.width/2;
+  document.querySelectorAll('.pcard').forEach(x=>x.classList.remove('dropL','dropR')); c.classList.add(right?'dropR':'dropL'); });
+$('#partsGrid').addEventListener('drop', e=>{ const c=e.target.closest('.pcard'); if(dragPart<0||!c) return; e.preventDefault(); e.stopPropagation();
+  const r=c.getBoundingClientRect(); let to=+c.dataset.i + (e.clientX>r.left+r.width/2 ? 1 : 0); if(to>dragPart) to--;
+  const from=dragPart; dragPart=-1; movePart(from,to); });
+$('#partsBtn').onclick=()=>{ if(!pdfBytes) return toast('Open a score PDF first'); renderParts(); $('#partsDlg').showModal(); };
 
 /* ---------- desktop app hooks ---------- */
 window.__stcIsDirty = () => !!(dirty && (state.markers.length || state.slides.length));

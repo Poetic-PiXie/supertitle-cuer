@@ -3,6 +3,7 @@
 Cue opera supertitles from the score: number the cues on your PDF score, pair them with slides, and run them to a projector with one key.
 
 - **Mark cues on the score.** Open the score PDF and click where each title should appear. Cues are numbered automatically by their place in the score — page first, then top to bottom, then left to right.
+- **Combine several PDFs.** **📑 PDFs** (above the score) adds another PDF before or after any part — say, Act 2 after Act 1 — and shows each part as a card you can drag to reorder. Cues travel with their pages and are renumbered to follow the new order; saving and printing keep the parts merged.
 - **Pair them with slides.** Type titles in the slide list or import them from a CSV (each comma-separated value becomes one numbered slide). Slide 1 goes with cue 1, and so on.
 - **Run the show.** In Show mode, press → / Space (or a presentation clicker) to advance. The current cue glows on the score, the next one pulses, and the title goes to the projector window. **B** blanks the screen.
 - **One file per production.** Projects are saved as `.supertitles` files that hold the score, the cues, the slides and the display settings. **File → Export Printable Score** writes a normal PDF with the numbered cues and a cue sheet, for the booth binder.
