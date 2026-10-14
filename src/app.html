@@ -425,8 +425,24 @@ async function idbPut(k,v){ try{ const db=await idb(); await new Promise((res,re
 async function idbGet(k){ try{ const db=await idb(); return await new Promise((res,rej)=>{ const r=db.transaction('files').objectStore('files').get(k); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }catch(e){ return null; } }
 
 /* ---------- undo ---------- */
-function snap(){ undoStack.push(JSON.stringify({m:state.markers,s:state.slides})); if(undoStack.length>300) undoStack.shift(); redoStack=[]; }
-function restore(from,to,label){ if(!from.length) return; to.push(JSON.stringify({m:state.markers,s:state.slides})); const x=JSON.parse(from.pop()); state.markers=x.m; state.slides=x.s; atStart=false; anchor=null; cur=Math.min(cur,lastIndex()); changed(true); toast(label); }
+// An undo step remembers cues, slides, the list of PDFs and the merged score itself,
+// so adding, moving or removing PDFs can be undone too. (The score bytes are shared, not copied.)
+const snapState = (slides=state.slides) => ({d:JSON.stringify({m:state.markers, s:slides}), parts:JSON.stringify(state.parts), bytes:pdfBytes, name:state.pdfName});
+function snap(){ undoStack.push(snapState()); if(undoStack.length>300) undoStack.shift(); redoStack=[]; }
+let restoring=false;
+async function restore(from,to,label){
+  if(!from.length || restoring) return; restoring=true;
+  try{
+    to.push(snapState()); const x=from.pop(), d=JSON.parse(x.d);
+    if(x.bytes && x.bytes!==pdfBytes){                      // the PDFs changed: bring the old score back
+      state.parts=JSON.parse(x.parts); state.markers=d.m;
+      const sc=$('#score').scrollTop; await loadPdfBytes(x.name||state.pdfName, x.bytes); $('#score').scrollTop=sc;
+      idbPut('score',{name:state.pdfName, bytes:x.bytes});
+      if($('#partsDlg').open) renderParts();
+    }
+    state.markers=d.m; state.slides=d.s; atStart=false; anchor=null; cur=Math.min(cur,lastIndex()); changed(true); toast(label);
+  } finally { restoring=false; }
+}
 const undo=()=>restore(undoStack,redoStack,'Undone'), redo=()=>restore(redoStack,undoStack,'Redone');
 
 /* ---------- utilities ---------- */
@@ -610,7 +626,7 @@ slidesEl.addEventListener('mousedown', e=>{
   pickA=Math.min(a,i); pickB=Math.max(a,i); updatePicks();
 });
 slidesEl.addEventListener('focusin', e=>{ if(e.target.tagName==='TEXTAREA' && mode==='edit'){ e.target._before=e.target.value; const i=+e.target.closest('.slide').dataset.i; if(i!==cur) goTo(i,false); } });
-slidesEl.addEventListener('focusout', e=>{ const t=e.target; if(t.tagName==='TEXTAREA' && t._before!==undefined && t._before!==t.value){ const i=+t.closest('.slide').dataset.i; undoStack.push(JSON.stringify({m:state.markers,s:state.slides.map((s,j)=>j===i?{text:t._before}:s)})); redoStack=[]; } });
+slidesEl.addEventListener('focusout', e=>{ const t=e.target; if(t.tagName==='TEXTAREA' && t._before!==undefined && t._before!==t.value){ const i=+t.closest('.slide').dataset.i; undoStack.push(snapState(state.slides.map((s,j)=>j===i?{...s, text:t._before}:s))); redoStack=[]; } });
 slidesEl.addEventListener('click', e=>{
   if(e.shiftKey) return; // handled in mousedown (range selection)
   const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
@@ -1284,7 +1300,8 @@ async function mergeSegments(segs){
   return await out.save();
 }
 // newParts: the parts in their new order (may include one new part carrying .src bytes)
-async function applyParts(newParts, removedId){
+async function applyParts(newParts, removedId, noSnap){
+  if(!noSnap) snap();
   const old=state.parts, oldStart=partStarts(old);
   const segs=newParts.map(p=> p.src ? {src:p.src, from:0, count:p.pages} : {src:pdfBytes, from:oldStart[p.id]-1, count:p.pages});
   $('#partsDlg').classList.add('busy'); $('#partsInfo').textContent='Merging…';
@@ -1293,12 +1310,12 @@ async function applyParts(newParts, removedId){
     const clean=newParts.map(({src,...p})=>p), newStart=partStarts(clean);
     state.markers = state.markers.filter(m=>{ const op=partOfPage(old,m.page); return op && op.id!==removedId; })
       .map(m=>{ const op=partOfPage(old,m.page); return {...m, page: newStart[op.id] + (m.page-oldStart[op.id])}; });
-    state.parts=clean; undoStack=[]; redoStack=[]; cur=-1; anchor=null;
+    state.parts=clean; cur=-1; anchor=null;
     const sc=$('#score').scrollTop;
     await loadPdfBytes(state.pdfName || clean[0].name, merged);
     $('#score').scrollTop=sc;
     idbPut('score',{name:state.pdfName, bytes:merged}); setDirty(true); save(); renderParts();
-  }catch(e){ console.error(e); toast('Could not merge: '+e.message); }
+  }catch(e){ console.error(e); if(!noSnap) undoStack.pop(); toast('Could not merge: '+e.message); }
   $('#partsDlg').classList.remove('busy'); $('#partsInfo').textContent='';
 }
 let partInsertAt=0;
@@ -1325,10 +1342,11 @@ async function removePart(i){
     note: hasSlides ? 'Leave the box unchecked to keep those supertitles; they will then pair with the cues that follow.' : '', okText:'Remove' });
   renderParts(); $('#partsDlg').showModal();
   if(!r.ok) return;
+  snap();                                                  // one undo step brings back the PDF, its cues and its supertitles
   if(r.checked && hasSlides) state.slides.splice(a, sb-a+1);
-  await applyParts(state.parts.filter((_,k)=>k!==i), p.id);
+  await applyParts(state.parts.filter((_,k)=>k!==i), p.id, true);
   renderSlides();
-  if(r.checked && hasSlides) toast(`Removed “${p.name}” with cues and supertitles ${rangeTxt(a,b)}`);
+  toast(`Removed “${p.name}”${r.checked && hasSlides ? ` with cues and supertitles ${rangeTxt(a,b)}` : ''} — ${keyName('⌘Z')} brings it back`);
 }
 async function renderParts(){
   const grid=$('#partsGrid'), locked=!!state.settings.lockCues, parts=state.parts||[], st=partStarts(parts);
