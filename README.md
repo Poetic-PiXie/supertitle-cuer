@@ -56,4 +56,4 @@ npm run dist:win     # Windows installer (on Windows)
 
 The app lives in `src/app.html`. `scripts/build-html.js` inlines pdf.js and pdf-lib into it to make the single-file version, and the desktop shell in `electron/` loads that same file.
 
-**Releasing:** bump `version` in `package.json`, then push a tag such as `v1.0.1`. GitHub Actions builds the Mac and Windows apps and publishes them with the HTML file on the Releases page. Afterwards, update `version` and the two `sha256` values in `Casks/supertitle-cuer.rb` in [poetic-pixie/homebrew-tap](https://github.com/poetic-pixie/homebrew-tap) — the release's `SHA256SUMS.txt` lists them.
+**Releasing:** bump `version` in `package.json`, then on GitHub go to **Actions → Build & release → Run workflow**, tick **Publish a release**, and run it (pushing a tag such as `v1.0.1` works too). GitHub Actions builds the Mac and Windows apps and publishes them with the HTML file on the Releases page. Afterwards, update `version` and the two `sha256` values in `Casks/supertitle-cuer.rb` in [poetic-pixie/homebrew-tap](https://github.com/poetic-pixie/homebrew-tap) — the release's `SHA256SUMS.txt` lists them.
