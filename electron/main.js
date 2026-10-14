@@ -259,6 +259,7 @@ function buildMenu() {
         { type: 'separator' },
         item('Save', 'save', 'CmdOrCtrl+S'),
         item('Save As…', 'saveAs', 'Shift+CmdOrCtrl+S'),
+        item('Save As PDF…', 'saveAsPdf', 'Alt+Shift+CmdOrCtrl+S'),
         item('Export Printable Score (PDF)…', 'exportPrintable', 'CmdOrCtrl+E'),
         { type: 'separator' },
         item('Import Slides…', 'importSlides'),

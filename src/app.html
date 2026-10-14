@@ -195,6 +195,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
       <button data-act="open">Open…<span class="sc">⌘O</span></button>
       <button data-act="save">Save<span class="sc">⌘S</span></button>
       <button data-act="saveAs">Save As…<span class="sc">⇧⌘S</span></button>
+      <button data-act="saveAsPdf">Save As PDF… <span class="sc" style="float:none;margin-left:6px">opens in any PDF viewer, reopens here</span></button>
       <button data-act="exportPrintable">Export printable score (PDF)…</button>
       <hr>
       <button data-act="importSlides">Import slides (CSV / text / PDF)…</button>
@@ -706,7 +707,7 @@ document.addEventListener('keydown', e=>{
   if(NATIVE && (e.metaKey||e.ctrlKey) && 'szyoen'.includes(e.key.toLowerCase())) return; // handled by the app menu
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='z' && !typing){ e.preventDefault(); e.shiftKey? redo(): undo(); return; }
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='y' && !typing){ e.preventDefault(); redo(); return; }
-  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveDoc(e.shiftKey); return; }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveDoc(e.shiftKey, e.shiftKey?'supertitles':undefined); return; }
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='o'){ e.preventDefault(); openDialog(); return; }
   if(e.key==='Escape'){ if(typing){ t.blur(); return; } closeMenus(); if(mode==='edit' && !document.querySelector('dialog[open]')) goTo(-1,false); return; }
   if(typing || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('dialog[open]')) return;
@@ -760,9 +761,10 @@ document.addEventListener('click', e=>{
 const actions = {
   open: ()=>openDialog(),
   save: ()=>saveDoc(false),
-  saveAs: ()=>saveDoc(true),
+  saveAs: ()=>saveDoc(true,'supertitles'),
   newProject: ()=>newProject(),
   importSlides: ()=>openImport(),
+  saveAsPdf: ()=>saveDoc(true,'pdf'),
   exportPrintable: ()=>exportPrintable(),
   exportCsv: ()=>{ if(!state.slides.length) return toast('No slides to export'); download(baseName()+' - slides.csv', '﻿'+state.slides.map(s=>'"'+s.text.replace(/"/g,'""')+'"').join('\r\n')+'\r\n','text/csv'); },
   clearMarkers: ()=>{ if(state.markers.length && confirm(`Remove all ${state.markers.length} cue markers from the score?`)){ snap(); state.markers=[]; cur=-1; changed(false); } },
@@ -831,13 +833,16 @@ async function readProjectFromPdf(bytes){
   } finally { d.destroy(); }
 }
 const PROJ_EXT='.supertitles';
-function projectFileName(){ let n = docName ? docName.replace(/\.(pdf|supertitles)$/i,'') : baseName(); n=n.replace(/ - supertitles$/i,''); return n+PROJ_EXT; }
-async function saveDoc(as){
+function projectFileName(ext){ let n = docName ? docName.replace(/\.(pdf|supertitles)$/i,'') : baseName(); n=n.replace(/ - supertitles$/i,''); return ext==='.pdf' ? n+' - supertitles.pdf' : n+(ext||PROJ_EXT); } // never suggest the score's own file name
+// kind: 'supertitles' or 'pdf'. Both hold the same thing — the merged score with the cues drawn on,
+// plus the project data inside — a .pdf one also opens in any PDF viewer.
+async function saveDoc(as, kind){
   if(!pdfBytes){ toast('Open the score PDF first — the saved file is built around it'); return false; }
-  if(docName && /\.pdf$/i.test(docName)) as = true; // projects saved by older versions as .pdf are re-saved as .supertitles
-  const suggested = projectFileName();
+  const curKind = docName && /\.pdf$/i.test(docName) ? 'pdf' : 'supertitles';
+  kind = kind || curKind; if(kind!==curKind) as = true;
+  const ext = kind==='pdf' ? '.pdf' : PROJ_EXT, suggested = projectFileName(ext);
   if(NATIVE){
-    const p = (!as && fileHandle && fileHandle.nativePath) || await window.stc.saveDialog({suggestedName:suggested, kind:'project'});
+    const p = (!as && fileHandle && fileHandle.nativePath) || await window.stc.saveDialog({suggestedName:suggested, kind: kind==='pdf' ? 'pdf' : 'project'});
     if(!p) return false;
     toast('Saving…');
     try{ const bytes=await buildProjectPdf(); await window.stc.writeFile(p, bytes); }
@@ -849,12 +854,14 @@ async function saveDoc(as){
     try{
       h = as ? null : fileHandle;
       if(h && h.queryPermission && (await h.queryPermission({mode:'readwrite'}))!=='granted' && (await h.requestPermission({mode:'readwrite'}))!=='granted') h=null;
-      if(!h) h = await window.showSaveFilePicker({suggestedName:suggested, types:[{description:'Supertitles project', accept:{'application/x-supertitles':[PROJ_EXT]}}]});
+      if(!h) h = await window.showSaveFilePicker({suggestedName:suggested, types:[ kind==='pdf'
+        ? {description:'PDF with the project inside', accept:{'application/pdf':['.pdf']}}
+        : {description:'Supertitles project', accept:{'application/x-supertitles':[PROJ_EXT]}} ]});
     }catch(e){ if(e.name==='AbortError') return false; console.warn(e); usePicker=false; h=null; }
   }
   toast('Saving…');
   let bytes; try{ bytes=await buildProjectPdf(); }catch(e){ console.error(e); toast('Could not save: '+e.message); return false; }
-  const blob=new Blob([bytes],{type:'application/octet-stream'});
+  const blob=new Blob([bytes],{type: kind==='pdf' ? 'application/pdf' : 'application/octet-stream'});
   if(h){
     try{ const w=await h.createWritable(); await w.write(blob); await w.close();
       fileHandle=h; docName=h.name; setDirty(false); save(); idbPut('doc',{name:docName, handle:h}); toast(`Saved “${docName}”`); return true;
@@ -1130,7 +1137,7 @@ window.__stcIsDirty = () => !!(dirty && (state.markers.length || state.slides.le
 window.__stcMenu = (cmd) => {
   const ed = document.activeElement && document.activeElement.matches && document.activeElement.matches('textarea:not([readonly]), input[type=text]');
   const map = {
-    new: newProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true), exportPrintable,
+    new: newProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true,'supertitles'), saveAsPdf: ()=>saveDoc(true,'pdf'), exportPrintable,
     importSlides: openImport, exportCsv: actions.exportCsv,
     undo: ()=> ed ? document.execCommand('undo') : undo(), redo: ()=> ed ? document.execCommand('redo') : redo(),
     edit: ()=>setMode('edit'), show: ()=>setMode('show'), projector: openProjector, connect: ()=>$('#connectBtn').click(), settings: openSettings,
