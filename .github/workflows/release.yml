@@ -1,0 +1,89 @@
+name: Build & release
+
+# Push a tag like v1.0.1 to build the Mac and Windows apps and publish a release.
+# "Run workflow" on the Actions tab builds everything without publishing (a test build).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            script: dist:mac
+            files: release/*.dmg
+          - os: windows-latest
+            script: dist:win
+            files: release/*.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run ${{ matrix.script }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.os }}
+          path: ${{ matrix.files }}
+          if-no-files-found: error
+
+  html:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-html
+          path: dist/Supertitle_Cuer.html
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, html]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          pattern: app-*
+          merge-multiple: true
+      - name: Checksums
+        run: cd out && sha256sum * | tee SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          body: |
+            ### Install
+
+            **Mac (Homebrew)**
+            ```
+            brew install --cask poetic-pixie/tap/supertitle-cuer
+            ```
+            Or download the `.dmg` for your Mac (`arm64` = Apple Silicon M1/M2/M3/M4, `x64` = Intel), drag the app to Applications, then run once in Terminal:
+            ```
+            xattr -dr com.apple.quarantine "/Applications/Supertitle Cuer.app"
+            ```
+
+            **Windows**
+            Download `Supertitle_Cuer-Setup-….exe` and run it. If Windows shows “Windows protected your PC”, click **More info → Run anyway**.
+
+            **No install (any computer with Chrome)**
+            Download `Supertitle_Cuer.html` and double-click it.

@@ -1,0 +1,1019 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supertitle Cuer</title>
+<style>
+:root{
+  --bg:#16171b; --panel:#1e2026; --panel2:#262930; --line:#33363f; --text:#e8e9ee; --dim:#9a9dab;
+  --accent:#f2b134; --cue:#e0352b; --cur:#f2b134; --ok:#4fbf7f; --warn:#ef8a3c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+button:hover{border-color:#555a66;background:#2e323a}
+button.primary{background:var(--accent);color:#1a1a1a;border-color:var(--accent);font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+.app{display:grid;grid-template-rows:auto 1fr;height:100vh}
+header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+header .brand{font-weight:700;letter-spacing:.02em;margin-right:6px}
+header .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;padding:5px 12px}
+.seg button.on{background:var(--accent);color:#1a1a1a;font-weight:600}
+.menu{position:relative}
+.menu .items{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px;z-index:50;min-width:230px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.menu.open .items{display:block}
+.menu .items button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:7px 10px}
+.menu .items button:hover{background:#363a44}
+.menu .items hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.osTabs{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;margin-bottom:10px}
+.osTabs button{border:0;border-radius:0;background:transparent;padding:5px 14px}
+.osTabs button.on{background:var(--accent);color:#1a1a1a;font-weight:600}
+.steps{margin:0;padding-left:22px;line-height:1.5}
+.steps li{margin:0 0 9px}
+.steps li b{color:#fff}
+.steps .sub{display:block;color:var(--dim);font-size:13px}
+.trouble{margin-top:12px;padding:10px 12px;background:#15161a;border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--dim)}
+.trouble b{color:var(--text)}
+#connectDlg{width:min(680px,94vw)}
+#connectDlg form{max-height:86vh;overflow:auto}
+body.native .web-only{display:none}
+body:not(.native) .native-only{display:none}
+.sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
+.docname{font-size:13px;color:var(--dim);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.docname.dirty::after{content:" • not saved";color:var(--warn)}
+.hint{color:var(--dim);margin-left:auto;font-size:13px}
+.hint b{color:var(--text)}
+.counts{font-size:13px;color:var(--dim);padding:3px 8px;border-radius:5px;background:var(--panel2)}
+.counts.mismatch{color:var(--warn)}
+main{display:grid;grid-template-columns:2fr 1fr;min-height:0}
+/* score */
+#score{overflow:auto;position:relative;background:#2a2c32;border-right:1px solid var(--line)}
+#pages{display:flex;flex-direction:column;align-items:center;gap:18px;padding:20px 24px 60vh}
+.page{position:relative;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.45)}
+.page canvas{position:absolute;inset:0;width:100%;height:100%}
+.page .overlay{position:absolute;inset:0}
+.page .pno{position:absolute;right:-2px;top:-17px;font-size:11px;color:var(--dim)}
+body.edit .page .overlay{cursor:crosshair}
+.mk{position:absolute;width:var(--mk);height:var(--mk);margin:calc(var(--mk)/-2) 0 0 calc(var(--mk)/-2);border-radius:50%;
+  border:calc(var(--mk)*.09) solid var(--cue);background:rgba(255,255,255,.82);color:var(--cue);display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:calc(var(--mk)*.5);font-family:Helvetica,Arial,sans-serif;user-select:none;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.mk.d3{font-size:calc(var(--mk)*.38)}
+body.edit .mk{cursor:grab}
+.mk.anchor{box-shadow:0 0 0 3px #2d7ff9,0 0 0 7px rgba(45,127,249,.35);z-index:3}
+.mk.fresh{animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+.mk.noslide{border-style:dashed;opacity:.7}
+.mk.cur{background:var(--cur);border-color:#8a5a00;color:#1a1a1a;transform:scale(1.35);box-shadow:0 0 0 4px rgba(242,177,52,.45),0 0 22px 6px rgba(242,177,52,.55);z-index:2}
+.mk.next{animation:pulse 1.2s ease-in-out infinite;z-index:1}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(224,53,43,.55)}50%{box-shadow:0 0 0 calc(var(--mk)*.35) rgba(224,53,43,0)}}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;height:100%;color:var(--dim);text-align:center;padding:30px}
+.empty .big{font-size:18px;color:var(--text)}
+.zoom{position:sticky;top:10px;height:0;z-index:5;display:flex;justify-content:flex-end;gap:4px;padding-right:14px}
+.zoom button{height:28px}
+.zoom button{padding:3px 9px;background:rgba(30,32,38,.9)}
+/* side */
+aside{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+.pvwrap{padding:12px;border-bottom:1px solid var(--line)}
+.pvhead{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.pvhead .live{margin-left:auto;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#555}
+.dot.on{background:var(--ok);box-shadow:0 0 6px var(--ok)}
+.screen{container-type:size;position:relative;width:100%;aspect-ratio:16/9;background:var(--sbg,#000);border-radius:4px;overflow:hidden;outline:1px solid var(--line)}
+.stage{position:absolute;inset:0;display:flex;align-items:var(--va,center);justify-content:center;padding:3cqh 4cqw}
+.stext{font-family:var(--font);color:var(--sfg,#fff);font-size:calc(var(--fs,4) * 1cqw);text-align:center;white-space:pre-wrap;line-height:1.22;max-height:100%}
+.bo{position:absolute;top:6px;left:8px;font:600 10px system-ui;color:#ff6b6b;letter-spacing:.08em;display:none}
+.screen.blackout .bo{display:block}
+.nextline{margin-top:8px;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nextline b{color:var(--text);font-weight:500}
+.slidehead{display:flex;align-items:center;gap:8px;padding:10px 12px 6px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.slidehead .sp{flex:1}
+.slidehead button{text-transform:none;letter-spacing:0;font-size:12px;padding:3px 8px}
+#slides{flex:1;overflow:auto;padding:4px 12px 40px;display:flex;flex-direction:column;gap:6px}
+.slide{display:grid;grid-template-columns:14px 34px 1fr auto auto;gap:8px;align-items:start;background:#111215;border:1px solid var(--line);border-radius:7px;padding:7px 8px;position:relative}
+.lockbtn{font-size:12px;padding:3px 9px}
+.lockbtn.unlocked{border-color:var(--accent);color:var(--accent);background:rgba(242,177,52,.1)}
+#slides{position:relative}
+.slide .grip{cursor:grab;color:#5b5f6b;font-size:13px;line-height:1;padding-top:5px;user-select:none;text-align:center;touch-action:none}
+.slide .grip:hover{color:var(--text)}
+body.order-locked .slide .grip, body.show .slide .grip{visibility:hidden}
+body.order-locked .slide .tools [data-a=up], body.order-locked .slide .tools [data-a=down], body.order-locked .slide .tools [data-a=add], body.order-locked .slide .tools [data-a=del]{display:none}
+.slide.dragging{z-index:10;box-shadow:0 10px 30px rgba(0,0,0,.6);opacity:.95;border-color:var(--accent)}
+.dropline{position:absolute;left:12px;right:12px;height:3px;border-radius:2px;background:var(--accent);pointer-events:none;z-index:11}
+body.cues-locked .page .overlay{cursor:default}
+body.cues-locked .mk{cursor:pointer}
+.slide .trash{background:transparent;border:1px solid transparent;color:var(--dim);padding:1px 6px;font-size:15px;line-height:22px;border-radius:6px;align-self:start}
+.slide .trash:hover{color:#ff7a70;border-color:#6b2a26;background:rgba(224,53,43,.14)}
+body.order-locked .slide .trash, body.show .slide .trash{display:none}
+button.danger{background:#c8372d;border-color:#c8372d;color:#fff;font-weight:600}
+button.danger:hover{background:#dd4135;border-color:#dd4135}
+.delpv{background:#000;color:#fff;border-radius:8px;padding:14px 16px;text-align:center;font:16px/1.35 Georgia,serif;white-space:pre-wrap;max-height:160px;overflow:auto}
+.delpv .n{display:block;font:600 11px system-ui;color:var(--dim);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
+.slide .num{font-weight:700;font-size:15px;color:var(--dim);text-align:center;padding-top:3px;cursor:pointer;border-radius:5px}
+.slide .num:hover{background:#2a2d35;color:var(--text)}
+.slide textarea{width:100%;resize:none;background:transparent;border:0;color:#fff;font:15px/1.35 Georgia,serif;text-align:center;outline:none;padding:3px 0;overflow:hidden;min-height:24px}
+.slide textarea::placeholder{color:#555;font-style:italic}
+.slide .tools{display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .1s}
+.slide:hover .tools,.slide:focus-within .tools{opacity:1}
+.slide .tools button{padding:0 6px;font-size:11px;line-height:18px;background:transparent;border-color:transparent;color:var(--dim)}
+.slide .tools button:hover{color:var(--text);border-color:var(--line)}
+.slide.cur{border-color:var(--cur);box-shadow:0 0 0 2px var(--cur);background:#2a2210}
+.slide.cur .num{color:var(--cur)}
+.slide.next{border-color:#6b2a26}
+.slide.nocue .num::after{content:"no cue";display:block;font-size:9px;font-weight:500;color:var(--warn)}
+.slide.nocue{background:repeating-linear-gradient(135deg,#1b1c20 0 8px,#202126 8px 16px);border-style:dashed;border-color:#4a4d57}
+.slide.nocue textarea{color:#8e9099;font-style:italic}
+.slide.nocue .num{color:#6a6d78}
+.slide.nocue.cur{border-style:solid}
+body.show .slide .tools{display:none}
+body.show .slide, body.order-locked .slide{grid-template-columns:14px 34px 1fr auto}
+.addrow{display:flex;gap:6px;margin-top:4px}
+.addrow button{flex:1;border-style:dashed;background:transparent;color:var(--dim)}
+/* dialogs */
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:0;width:min(640px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+dialog form{padding:18px 20px}
+dialog h2{margin:0 0 12px;font-size:17px}
+dialog p.note{color:var(--dim);font-size:13px;margin:6px 0 10px}
+dialog code{background:#111;padding:1px 5px;border-radius:4px;font-size:12px}
+dialog textarea{width:100%;height:220px;background:#111215;border:1px solid var(--line);border-radius:7px;color:var(--text);font:13px/1.4 ui-monospace,Menlo,monospace;padding:8px}
+.row{display:flex;align-items:center;gap:10px;margin:8px 0;flex-wrap:wrap}
+.row label{display:flex;align-items:center;gap:6px}
+.row .lbl{width:150px;color:var(--dim)}
+.row input[type=range]{flex:1}
+.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;align-items:center}
+.actions .info{margin-right:auto;color:var(--dim);font-size:13px}
+select,input[type=text]{background:#111215;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#000;border:1px solid var(--line);padding:9px 16px;border-radius:8px;opacity:0;transition:.2s;pointer-events:none;z-index:100}
+#toast.on{opacity:1;transform:translateX(-50%)}
+#drop{position:fixed;inset:0;background:rgba(242,177,52,.12);border:3px dashed var(--accent);display:none;align-items:center;justify-content:center;font-size:22px;z-index:90;pointer-events:none}
+#drop.on{display:flex}
+.kbd{display:inline-block;border:1px solid #555;border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:11px;line-height:16px;color:var(--text)}
+</style>
+<script>/*@@PDFJS@@*/</script>
+<script>/*@@PDFJSWORKER@@*/</script>
+<script>/*@@PDFLIB@@*/</script>
+</head>
+<body class="edit">
+<div class="app">
+<header>
+  <span class="brand">🎭 Supertitle Cuer</span>
+  <div class="menu" id="fileMenu">
+    <button data-menu>File ▾</button>
+    <div class="items">
+      <button data-act="newProject">New project…</button>
+      <button data-act="open">Open…<span class="sc">⌘O</span></button>
+      <button data-act="save">Save<span class="sc">⌘S</span></button>
+      <button data-act="saveAs">Save As…<span class="sc">⇧⌘S</span></button>
+      <button data-act="exportPrintable">Export printable score (PDF)…</button>
+      <hr>
+      <button data-act="importSlides">Import slides (CSV / text / PDF)…</button>
+      <button data-act="exportCsv">Export slides (CSV)</button>
+      <hr>
+      <button data-act="clearMarkers">Remove all cue markers…</button>
+      <button data-act="clearSlides">Remove all slides…</button>
+    </div>
+  </div>
+  <button id="saveBtn" data-act="save" title="Save everything — score, cue numbers and slides — into one file (⌘S)">💾 Save</button>
+  <span class="docname" id="docName"></span>
+  <span class="sep"></span>
+  <div class="seg" id="modeSeg">
+    <button data-mode="edit" class="on" title="Click the score to place cues; edit slide text">Edit</button>
+    <button data-mode="show" title="Run the show: arrow keys advance">Show</button>
+  </div>
+  <button id="projBtn" title="Open the audience output window (drag to projector, press F)">📽 Projector</button>
+  <button id="connectBtn" title="Step-by-step: hooking this computer up to a projector">❔ How to connect</button>
+  <button id="settingsBtn">⚙︎ Settings</button>
+  <span class="sep"></span>
+  <span class="counts" id="counts"></span>
+  <span class="hint" id="hint"></span>
+</header>
+<main>
+  <section id="score">
+    <div class="zoom" id="zoomCtl" hidden>
+      <button class="lockbtn" id="lockCues" data-lock="lockCues"></button>
+      <button data-z="-">−</button><button data-z="fit">Fit</button><button data-z="+">+</button>
+    </div>
+    <div id="pages"></div>
+    <div class="empty" id="scoreEmpty">
+      <div class="big">Open a score PDF — or a project you saved</div>
+      <div>…or drop it anywhere on this window.</div>
+      <button class="primary" data-act="open">Open a score PDF or a saved project…</button>
+    </div>
+  </section>
+  <aside>
+    <div class="pvwrap">
+      <div class="pvhead">Audience sees<span class="live"><span class="dot" id="projDot"></span><span id="projLbl">Projector off</span></span></div>
+      <div class="screen" id="pv"><div class="stage"><div class="stext" id="pvText"></div></div><div class="bo">BLACKOUT</div></div>
+      <div class="nextline" id="nextLine"></div>
+    </div>
+    <div class="slidehead">Slides<span class="sp"></span><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button data-act="importSlides">Import…</button></div>
+    <div id="slides"></div>
+  </aside>
+</main>
+</div>
+
+<dialog id="importDlg"><form method="dialog">
+  <h2>Import slides</h2>
+  <div class="row"><button type="button" id="impFileBtn">Choose a file…</button><span class="note" style="color:var(--dim)">.csv, .txt, or a PDF of existing slides</span></div>
+  <p class="note">…or paste below. <b>CSV:</b> every comma-separated value becomes one slide, numbered in order. Wrap a value in <code>"double quotes"</code> if it contains a comma. Use <code>|</code> for a line break inside a slide.</p>
+  <textarea id="impText" placeholder='"Libiamo, ne'' lieti calici",Let us drink from the joyful cups,That beauty adorns|with its blossoms'></textarea>
+  <div class="row">
+    <span class="lbl">Format</span>
+    <select id="impFmt"><option value="csv">CSV — each comma-separated value is a slide</option><option value="text">Text — slides separated by a blank line</option></select>
+  </div>
+  <div class="row">
+    <span class="lbl">Existing slides</span>
+    <label><input type="radio" name="impMode" value="replace" checked> Replace</label>
+    <label><input type="radio" name="impMode" value="append"> Add to the end</label>
+  </div>
+  <div class="actions"><span class="info" id="impInfo"></span><button value="cancel">Cancel</button><button class="primary" id="impGo" value="ok">Import</button></div>
+</form></dialog>
+
+<dialog id="setDlg"><form method="dialog">
+  <h2>Settings <span style="font-size:12px;color:var(--dim);font-weight:400">Supertitle Cuer v@@VERSION@@</span></h2>
+  <div class="row"><span class="lbl">Title size</span><input type="range" id="sFs" min="1.5" max="10" step="0.1"><span id="sFsV"></span></div>
+  <div class="row"><span class="lbl">Font</span><select id="sFont">
+    <option value='Georgia, "Times New Roman", serif'>Georgia (serif)</option>
+    <option value='"Palatino Linotype", Palatino, "Book Antiqua", serif'>Palatino (serif)</option>
+    <option value='Garamond, "EB Garamond", "Times New Roman", serif'>Garamond (serif)</option>
+    <option value='"Helvetica Neue", Helvetica, Arial, sans-serif'>Helvetica (sans)</option>
+    <option value='Verdana, Geneva, sans-serif'>Verdana (sans)</option>
+  </select></div>
+  <div class="row"><span class="lbl">Text style</span><label><input type="checkbox" id="sItal"> Italic</label><label><input type="checkbox" id="sBold"> Bold</label></div>
+  <div class="row"><span class="lbl">Colours</span><label>Text <input type="color" id="sFg"></label><label>Background <input type="color" id="sBg"></label></div>
+  <div class="row"><span class="lbl">Vertical position</span><select id="sVa"><option value="flex-start">Top</option><option value="center">Middle</option><option value="flex-end">Bottom</option></select></div>
+  <div class="row"><span class="lbl">Preview shape</span><select id="sShape"><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="576/93">6:1 Strip</option></select><span class="note" style="color:var(--dim);font-size:12px">(matches the projector window automatically once it's open)</span></div>
+  <div class="row"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="7" step="0.25"><span id="sMkV"></span></div>
+  <div class="row web-only"><span class="lbl">Second screen</span><button type="button" id="sScreens">Let the projector window open on the 2nd screen automatically</button></div>
+  <div class="actions"><button class="primary" value="ok">Done</button></div>
+</form></dialog>
+
+<dialog id="connectDlg"><form method="dialog">
+  <h2>Connecting to a projector</h2>
+  <div class="osTabs"><button type="button" data-os="mac">Mac</button><button type="button" data-os="win">Windows</button></div>
+  <ol class="steps" data-for="mac">
+    <li><b>Plug in the projector</b> (HDMI, or USB-C with an adapter) and turn it on.</li>
+    <li><b>Open System Settings → Displays.</b> The projector should appear next to your built-in screen.
+      <span class="sub">Not there? Unplug the cable, wait a few seconds, and plug it back in.</span></li>
+    <li><b>Make it a separate screen, not a mirror.</b> Click the projector, then set <b>Use as</b> to <b>Extended display</b>.
+      <span class="sub">If it says "Mirror", the audience would see your whole screen — score and all.</span></li>
+    <li><b>Check System Settings → Desktop &amp; Dock → "Displays have separate Spaces"</b> is on (it is by default).
+      <span class="sub">Otherwise full screen on the projector can black out your laptop screen.</span></li>
+    <li class="web-only"><b>Keep the Mac awake:</b> plug in the power adapter, then in <b>System Settings → Lock Screen</b> set the "turn display off" options to <b>Never</b> and the screen saver to <b>Never</b>.</li>
+    <li class="native-only"><b>Plug in the power adapter.</b> Supertitle Cuer keeps the Mac and both screens awake by itself while you're in <b>Show</b> mode — no sleep settings to change.</li>
+    <li><b>Silence pop-ups:</b> turn on <b>Do Not Disturb</b> from Control Center (the switches icon in the menu bar).</li>
+    <li class="web-only"><b>In Supertitle Cuer, click 📽 Projector.</b> Drag the new window onto the projector screen, then press <b>F</b> (or double-click it) for full screen.</li>
+    <li class="native-only"><b>In Supertitle Cuer, click 📽 Projector.</b> It opens full screen on the projector by itself. If it lands on your own screen instead, choose <b>View → Move Projector to Second Screen</b>.</li>
+    <li><b>Test:</b> click back in this window, switch to <b>Show</b>, and press <b>→</b> — the title should appear on the projector.</li>
+  </ol>
+  <ol class="steps" data-for="win">
+    <li><b>Plug in the projector</b> (HDMI, or an adapter) and turn it on.</li>
+    <li><b>Press the Windows key + P</b> and choose <b>Extend</b>.
+      <span class="sub">"Duplicate" would show the audience your whole screen — score and all.</span></li>
+    <li><b>Not showing up?</b> Open <b>Settings → System → Display → Multiple displays</b> and click <b>Detect</b>.</li>
+    <li class="web-only"><b>Keep the PC awake:</b> plug in the charger, then in <b>Settings → System → Power</b> (or <b>Power &amp; battery</b>) set the screen and sleep times for "plugged in" to <b>Never</b>.</li>
+    <li class="native-only"><b>Plug in the charger.</b> Supertitle Cuer keeps the PC and both screens awake by itself while you're in <b>Show</b> mode — no sleep settings to change.</li>
+    <li><b>Silence pop-ups:</b> turn on <b>Do not disturb</b> (click the clock/notification area at the bottom right).</li>
+    <li class="web-only"><b>In Supertitle Cuer, click 📽 Projector.</b> Drag the new window onto the projector screen, then press <b>F</b> (or double-click it) for full screen.</li>
+    <li class="native-only"><b>In Supertitle Cuer, click 📽 Projector.</b> It opens full screen on the projector by itself. If it lands on your own screen instead, choose <b>View → Move Projector to Second Screen</b>.</li>
+    <li><b>Test:</b> click back in this window, switch to <b>Show</b>, and press <b>→</b> — the title should appear on the projector.</li>
+  </ol>
+  <div class="trouble">
+    <b>If something looks wrong</b><br>
+    • The projector shows your whole screen → it's mirroring/duplicating: go back to step 3 (Mac) or 2 (Windows).<br>
+    • Titles are too big or small → ⚙︎ Settings → Title size, and set Preview shape to match the projector.<br>
+    • The projector window got closed → click 📽 Projector again; it reopens showing the current title.<br>
+    <span class="native-only">• The projector opened on your own screen → View → Move Projector to Second Screen (it also moves there by itself when a projector is plugged in).<br></span>
+    • Arrow keys don't advance → click once anywhere in this main window to give it the keyboard.
+  </div>
+  <div class="actions"><button class="primary" value="ok">Done</button></div>
+</form></dialog>
+<dialog id="delDlg"><form method="dialog">
+  <h2>Permanently delete this slide?</h2>
+  <div class="delpv" id="delPreview"></div>
+  <p class="note" id="delNote"></p>
+  <div class="actions"><button value="keep" id="delKeep">Keep</button><button value="delete" class="danger" id="delGo">Delete</button></div>
+</form></dialog>
+<input type="file" id="fPdf" hidden>
+<input type="file" id="fImp" accept=".csv,.txt,.tsv,.pdf,text/csv,text/plain,application/pdf" hidden>
+<div id="toast"></div>
+<div id="drop">Drop a score PDF, a slides CSV, or a project file</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const NATIVE = !!window.stc; // true inside the desktop app (see electron/preload.js)
+const IS_MAC = NATIVE ? window.stc.platform==='darwin' : /Mac|iPhone|iPad/i.test((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent);
+if(NATIVE) document.body.classList.add('native');
+const keyName = k => IS_MAC ? k : k.replace(/⇧⌘/g,'Ctrl+Shift+').replace(/⌘/g,'Ctrl+');
+function localizeKeys(root){ if(IS_MAC) return;
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while((n=w.nextNode())) if(n.nodeValue.includes('⌘')) n.nodeValue=keyName(n.nodeValue);
+  root.querySelectorAll('[title*="⌘"]').forEach(el=>el.title=keyName(el.title)); }
+const LS_KEY = 'supertitle-cuer-v1';
+const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', shape:'16/9', markerSize:3.5, zoom:1, lockCues:false, lockOrder:false });
+
+const state = { pdfName:null, markers:[], slides:[], settings:defaults() };
+let cur = -1, blackout = false, mode = 'edit';
+let fileHandle = null, docName = null, dirty = false;
+let atStart = false; // after deleting cue 1, the next click refills position 1
+let anchor = null;    // the cue you just added (blue ring); new cues go after it. null = go after the gold (selected) cue
+let fresh = -1;
+let pdfDoc = null, pdfBytes = null, pageEls = [], projWin = null;
+let undoStack = [], redoStack = [];
+
+/* ---------- persistence ---------- */
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({...state, cur, dirty, docName})); }catch(e){} }
+function loadLocal(){
+  try{ const s = JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(!s) return;
+    state.pdfName=s.pdfName||null; state.markers=Array.isArray(s.markers)?s.markers:[]; state.slides=Array.isArray(s.slides)?s.slides:[];
+    state.settings=Object.assign(defaults(), s.settings||{}); cur = typeof s.cur==='number'? s.cur : -1; dirty=!!s.dirty; docName=s.docName||null;
+  }catch(e){}
+}
+function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open('supertitle-cuer',1); r.onupgradeneeded=()=>r.result.createObjectStore('files'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbPut(k,v){ try{ const db=await idb(); await new Promise((res,rej)=>{ const t=db.transaction('files','readwrite'); t.objectStore('files').put(v,k); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }catch(e){} }
+async function idbGet(k){ try{ const db=await idb(); return await new Promise((res,rej)=>{ const r=db.transaction('files').objectStore('files').get(k); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }catch(e){ return null; } }
+
+/* ---------- undo ---------- */
+function snap(){ undoStack.push(JSON.stringify({m:state.markers,s:state.slides})); if(undoStack.length>300) undoStack.shift(); redoStack=[]; }
+function restore(from,to,label){ if(!from.length) return; to.push(JSON.stringify({m:state.markers,s:state.slides})); const x=JSON.parse(from.pop()); state.markers=x.m; state.slides=x.s; atStart=false; anchor=null; cur=Math.min(cur,lastIndex()); changed(true); toast(label); }
+const undo=()=>restore(undoStack,redoStack,'Undone'), redo=()=>restore(redoStack,undoStack,'Redone');
+
+/* ---------- utilities ---------- */
+let toastT; function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2200); }
+function download(name, data, type){ const b = data instanceof Blob ? data : new Blob([data],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.append(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000); }
+const baseName = () => (state.pdfName||'supertitles').replace(/\.pdf$/i,'');
+const clamp01 = v => Math.min(1, Math.max(0, v));
+const typingIn = el => el && el.matches && el.matches('textarea:not([readonly]), input[type=text], select') ;
+
+/* ---------- central refresh ---------- */
+let saveT;
+function changed(rebuildSlides){
+  renderMarkers(); if(rebuildSlides) renderSlides(); else updateSlideClasses();
+  updateCounts(); updateHint(); updateOutput(); setDirty(true);
+  clearTimeout(saveT); saveT=setTimeout(save,150);
+}
+
+/* ---------- PDF score ---------- */
+async function openPdfFile(file, buf){
+  buf = buf || new Uint8Array(await file.arrayBuffer());
+  if(state.pdfName && state.pdfName!==file.name && state.markers.length){
+    if(!confirm(`You have ${state.markers.length} cue markers placed on "${state.pdfName}".\n\nKeep them on "${file.name}"?\n\nOK = keep them   ·   Cancel = start with no markers`)){ snap(); state.markers=[]; cur=-1; }
+  }
+  await loadPdfBytes(file.name, buf);
+  idbPut('score', {name:file.name, bytes:buf});
+}
+async function loadPdfBytes(name, bytes){
+  pdfBytes = bytes; state.pdfName = name;
+  try{ pdfDoc = await pdfjsLib.getDocument({data: bytes.slice()}).promise; }
+  catch(e){ toast('Could not open that PDF'); console.error(e); return; }
+  document.title = 'Supertitle Cuer — ' + name;
+  $('#scoreEmpty').hidden = true; $('#zoomCtl').hidden = false;
+  await buildPages(); sortMarkers(); changed(false);
+}
+const io = new IntersectionObserver(es=>es.forEach(e=>{ const p=pageEls[e.target.dataset.page-1]; if(!p) return; p.visible=e.isIntersecting; if(p.visible) renderPage(p); }), {root:$('#score'), rootMargin:'1500px 0px'});
+async function buildPages(){
+  const host=$('#pages'); host.innerHTML=''; pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[];
+  for(let i=1;i<=pdfDoc.numPages;i++){
+    const page = await pdfDoc.getPage(i); const vp = page.getViewport({scale:1});
+    const wrap=document.createElement('div'); wrap.className='page'; wrap.dataset.page=i; wrap.style.aspectRatio = vp.width+' / '+vp.height;
+    const canvas=document.createElement('canvas'), overlay=document.createElement('div'); overlay.className='overlay';
+    const pno=document.createElement('div'); pno.className='pno'; pno.textContent='p. '+i;
+    wrap.append(canvas, overlay, pno); host.append(wrap);
+    const p={page, wrap, canvas, overlay, vw:vp.width, renderedW:0, visible:false}; pageEls.push(p); io.observe(wrap);
+  }
+  layoutPages();
+}
+function layoutPages(keep){
+  if(!pageEls.length) return;
+  const sc=$('#score'); const ratio = keep ? sc.scrollTop/(sc.scrollHeight||1) : null;
+  const w = Math.max(240, (sc.clientWidth-48) * state.settings.zoom);
+  pageEls.forEach(p=>{ p.wrap.style.width=w+'px'; p.wrap.style.setProperty('--mk', (w*state.settings.markerSize/100)+'px'); });
+  if(ratio!=null) sc.scrollTop = ratio*sc.scrollHeight;
+  pageEls.forEach(p=>{ if(p.visible) renderPage(p); });
+}
+async function renderPage(p){
+  const target = Math.round(p.wrap.clientWidth * (window.devicePixelRatio||1) * 1.25);
+  if(!target || p.renderedW===target || p.rendering) return;
+  p.rendering = true;
+  try{
+    const vp = p.page.getViewport({scale: target/p.vw});
+    const tmp=document.createElement('canvas'); tmp.width=Math.floor(vp.width); tmp.height=Math.floor(vp.height);
+    await p.page.render({canvasContext:tmp.getContext('2d'), viewport:vp}).promise;
+    p.canvas.width=tmp.width; p.canvas.height=tmp.height; p.canvas.getContext('2d').drawImage(tmp,0,0); p.renderedW=target;
+  }catch(e){ console.error(e); }
+  p.rendering=false;
+  if(p.visible && Math.round(p.wrap.clientWidth*(window.devicePixelRatio||1)*1.25)!==p.renderedW) renderPage(p);
+}
+
+/* ---------- cue markers ---------- */
+function renderMarkers(){
+  pageEls.forEach(p=>p.overlay.replaceChildren());
+  state.markers.forEach((m,i)=>{
+    const p=pageEls[m.page-1]; if(!p) return;
+    const d=document.createElement('div'); d.className='mk'; d.dataset.i=i; d.textContent=i+1;
+    if(i+1>=100) d.classList.add('d3');
+    if(i===cur) d.classList.add('cur');
+    if(i===anchor && mode==='edit' && !state.settings.lockCues) d.classList.add('anchor');
+    if(i===fresh) d.classList.add('fresh'); else if(mode==='show' && i===cur+1) d.classList.add('next');
+    if(i>=state.slides.length) d.classList.add('noslide');
+    d.style.left=(m.x*100)+'%'; d.style.top=(m.y*100)+'%';
+    d.title = `Cue ${i+1}` + (state.slides[i]? ` — ${state.slides[i].text.split('\n')[0].slice(0,60)}` : ' — no slide yet') + (mode==='edit'?'\nDrag to move · right-click or Delete to remove':'');
+    p.overlay.append(d);
+  });
+}
+// New cues always go right after the highlighted (gold) cue; with nothing highlighted, at the end.
+// A cue's number comes from where it sits: page first, then height on the page (top to bottom),
+// then left to right for cues at the same height. Click order never matters.
+function sortMarkers(){
+  const curObj = state.markers[cur], ancObj = anchor!=null ? state.markers[anchor] : null;
+  state.markers.sort((a,b)=> a.page-b.page || (Math.abs(a.y-b.y)>0.006 ? a.y-b.y : a.x-b.x));
+  if(curObj){ cur = state.markers.indexOf(curObj); }
+  if(ancObj){ anchor = state.markers.indexOf(ancObj); }
+}
+function insertIndex(){ if(atStart) return 0; const a = anchor!=null ? anchor : cur; return (a>=0 && a<state.markers.length) ? a+1 : state.markers.length; }
+function deleteMarker(i){
+  snap(); state.markers.splice(i,1);
+  anchor = null; atStart = false;
+  if(cur>i) cur--; else if(cur===i) cur=i-1;
+  changed(false); toast(`Cue ${i+1} removed — the ones after it were renumbered`);
+}
+const pagesEl=$('#pages');
+pagesEl.addEventListener('pointerdown', e=>{
+  if(e.button!==0) return;
+  const wrap=e.target.closest('.page'); if(!wrap) return;
+  const mk=e.target.closest('.mk');
+  if(mk){
+    const i=+mk.dataset.i;
+    if(mode==='show'){ goTo(i); return; }
+    goTo(i,false); if(!state.settings.lockCues) startDrag(e,i,wrap,mk); return;
+  }
+  if(mode!=='edit') return;
+  if(state.settings.lockCues){ lockedNote('cues'); return; }
+  const r=wrap.getBoundingClientRect();
+  snap();
+  const m={page:+wrap.dataset.page, x:clamp01((e.clientX-r.left)/r.width), y:clamp01((e.clientY-r.top)/r.height)};
+  state.markers.push(m); sortMarkers();
+  const at=state.markers.indexOf(m); anchor=at; fresh=at; atStart=false; changed(false); fresh=-1;
+  if(at<state.markers.length-1) toast(`New cue is ${at+1} — cues after it moved up by one`);
+});
+function startDrag(e,i,wrap,el){
+  e.preventDefault();
+  const r=wrap.getBoundingClientRect(), sx=e.clientX, sy=e.clientY, m=state.markers[i]; let moved=false;
+  const mv=ev=>{
+    if(!moved && Math.hypot(ev.clientX-sx, ev.clientY-sy)<4) return;
+    if(!moved){ snap(); moved=true; el.style.cursor='grabbing'; }
+    m.x=clamp01((ev.clientX-r.left)/r.width); m.y=clamp01((ev.clientY-r.top)/r.height);
+    el.style.left=(m.x*100)+'%'; el.style.top=(m.y*100)+'%';
+  };
+  const up=()=>{ window.removeEventListener('pointermove',mv); window.removeEventListener('pointerup',up); if(moved){ const before=state.markers.indexOf(m); sortMarkers(); const after=state.markers.indexOf(m); changed(false); if(before!==after) toast(`Cue ${before+1} is now cue ${after+1} — numbers follow the position on the page`); } };
+  window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up);
+}
+pagesEl.addEventListener('contextmenu', e=>{ const mk=e.target.closest('.mk'); if(!mk||mode!=='edit') return; e.preventDefault(); if(state.settings.lockCues) return lockedNote('cues'); deleteMarker(+mk.dataset.i); });
+
+/* ---------- slides ---------- */
+function renderSlides(){
+  const list=$('#slides'); list.replaceChildren();
+  state.slides.forEach((s,i)=>{
+    const c=document.createElement('div'); c.className='slide'; c.dataset.i=i;
+    c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)" spellcheck="false"></textarea><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
+    const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = mode==='show';
+    list.append(c);
+  });
+  const add=document.createElement('div'); add.className='addrow';
+  add.innerHTML = state.slides.length ? `<button data-a="append">＋ Add slide</button>` : `<div class="empty" style="height:auto;padding:24px 8px"><div>No slides yet.</div><div style="font-size:13px">Import a CSV (each comma-separated value becomes a numbered slide), or add them one at a time.</div><div style="display:flex;gap:8px"><button class="primary" data-act="importSlides">Import slides…</button><button data-a="append">＋ Add slide</button></div></div>`;
+  if(mode==='edit' || !state.slides.length) list.append(add);
+  list.querySelectorAll('textarea').forEach(grow);
+  updateSlideClasses();
+}
+function grow(ta){ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; }
+function updateSlideClasses(){
+  document.querySelectorAll('.slide').forEach(c=>{ const i=+c.dataset.i;
+    c.classList.toggle('cur', i===cur); c.classList.toggle('next', i===cur+1); c.classList.toggle('nocue', i>=state.markers.length && !!state.pdfName); });
+}
+const slidesEl=$('#slides');
+slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; grow(e.target); if(i===cur||i===cur+1) updateOutput(); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); });
+slidesEl.addEventListener('focusin', e=>{ if(e.target.tagName==='TEXTAREA' && mode==='edit'){ e.target._before=e.target.value; const i=+e.target.closest('.slide').dataset.i; if(i!==cur) goTo(i,false); } });
+slidesEl.addEventListener('focusout', e=>{ const t=e.target; if(t.tagName==='TEXTAREA' && t._before!==undefined && t._before!==t.value){ const i=+t.closest('.slide').dataset.i; undoStack.push(JSON.stringify({m:state.markers,s:state.slides.map((s,j)=>j===i?{text:t._before}:s)})); redoStack=[]; } });
+slidesEl.addEventListener('click', e=>{
+  const num=e.target.closest('.num'); if(num){ goTo(+num.closest('.slide').dataset.i); return; }
+  const b=e.target.closest('button[data-a]'); if(!b) return;
+  const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : -1;
+  if(state.settings.lockOrder && a!=='append') return lockedNote('order');
+  if(a==='trash') return askDeleteSlide(i);
+  if(a==='up' && i>0) return moveSlide(i,i-1);
+  if(a==='down' && i<state.slides.length-1) return moveSlide(i,i+1);
+  snap();
+  if(a==='append'){ state.slides.push({text:''}); changed(true); focusSlide(state.slides.length-1); return; }
+  if(a==='add'){ state.slides.splice(i+1,0,{text:''}); if(cur>i) cur++; changed(true); focusSlide(i+1); return; }
+  if(a==='del'){ state.slides.splice(i,1); if(cur>i) cur--; else if(cur===i) cur=Math.min(cur,state.slides.length-1); changed(true); toast(`Slide ${i+1} deleted — the ones after it were renumbered`); return; }
+  undoStack.pop();
+});
+let pendingDel=-1;
+function askDeleteSlide(i){
+  pendingDel=i; const t=state.slides[i].text.replace(/\|/g,'\n').trim();
+  $('#delPreview').innerHTML = `<span class="n">Slide ${i+1}</span>` + (t ? esc(t) : '<i style="color:#777">(blank slide)</i>');
+  const after = state.slides.length-1-i;
+  $('#delNote').textContent = after>0 ? `The ${after} slide${after===1?'':'s'} after it will move up one number (slide ${i+2} becomes ${i+1}${after>1?', and so on':''}). You can still undo with ${keyName('⌘Z')} until you close the app.` : `You can still undo with ${keyName('⌘Z')} until you close the app.`;
+  $('#delDlg').returnValue=''; $('#delDlg').showModal(); $('#delKeep').focus();
+}
+$('#delDlg').addEventListener('close', ()=>{
+  const i=pendingDel; pendingDel=-1;
+  if($('#delDlg').returnValue!=='delete' || i<0 || i>=state.slides.length) return;
+  snap(); state.slides.splice(i,1);
+  if(cur>i) cur--; else if(cur===i) cur=Math.min(cur,state.slides.length-1);
+  changed(true); toast(`Slide ${i+1} deleted — the ones after it were renumbered`);
+});
+function moveSlide(from,to){
+  if(from===to) return;
+  snap(); const [x]=state.slides.splice(from,1); state.slides.splice(to,0,x);
+  if(cur===from) cur=to; else if(from<cur && to>=cur) cur--; else if(from>cur && to<=cur) cur++;
+  changed(true); toast(`Slide moved from ${from+1} to ${to+1} — the others were renumbered`);
+}
+slidesEl.addEventListener('pointerdown', e=>{
+  const g=e.target.closest('.grip'); if(!g || e.button!==0 || mode!=='edit') return;
+  if(state.settings.lockOrder) return lockedNote('order');
+  e.preventDefault();
+  const card=g.closest('.slide'), from=+card.dataset.i, cards=[...slidesEl.querySelectorAll('.slide')];
+  const sy=e.clientY, st0=slidesEl.scrollTop; let slot=from, lastY=e.clientY, raf=0;
+  const line=document.createElement('div'); line.className='dropline'; slidesEl.append(line);
+  card.classList.add('dragging');
+  const place=()=>{
+    const y=lastY; slot=cards.length;
+    for(let j=0;j<cards.length;j++){ if(cards[j]===card) continue; const q=cards[j].getBoundingClientRect(); if(y<q.top+q.height/2){ slot=j; break; } }
+    const ref = slot<cards.length ? cards[slot].offsetTop-5 : cards[cards.length-1].offsetTop+cards[cards.length-1].offsetHeight+2;
+    line.style.top=ref+'px'; line.style.display = (slot===from || slot===from+1) ? 'none' : '';
+    card.style.transform=`translateY(${y-sy+slidesEl.scrollTop-st0}px)`;
+  };
+  const tick=()=>{ const r=slidesEl.getBoundingClientRect();
+    if(lastY<r.top+50) slidesEl.scrollTop-=10; else if(lastY>r.bottom-50) slidesEl.scrollTop+=10;
+    place(); raf=requestAnimationFrame(tick); };
+  const mv=ev=>{ lastY=ev.clientY; };
+  const up=()=>{ cancelAnimationFrame(raf); window.removeEventListener('pointermove',mv); window.removeEventListener('pointerup',up);
+    line.remove(); card.classList.remove('dragging'); card.style.transform='';
+    const to = slot>from ? slot-1 : slot; if(to!==from) moveSlide(from,to); };
+  window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up); raf=requestAnimationFrame(tick);
+});
+function focusSlide(i){ const ta=document.querySelector(`.slide[data-i="${i}"] textarea`); if(ta){ ta.focus(); ta.scrollIntoView({block:'nearest'}); } }
+
+/* ---------- locks ---------- */
+function lockedNote(what){ toast(what==='cues' ? 'Cues are locked — click “🔒 Cues locked” above the score to change them' : 'Slide order is locked — click “🔒 Order locked” to move, insert or delete slides'); }
+function updateLocks(){
+  const st=state.settings;
+  document.body.classList.toggle('cues-locked', !!st.lockCues); document.body.classList.toggle('order-locked', !!st.lockOrder);
+  const a=$('#lockCues'), b=$('#lockOrder');
+  a.textContent = st.lockCues ? '🔒 Cues locked' : '🔓 Cues unlocked'; a.classList.toggle('unlocked', !st.lockCues);
+  a.title = st.lockCues ? 'Click to allow adding, moving and deleting cue numbers' : 'Click to lock the cue numbers so stray clicks can’t change them';
+  b.textContent = st.lockOrder ? '🔒 Order locked' : '🔓 Order unlocked'; b.classList.toggle('unlocked', !st.lockOrder);
+  b.title = st.lockOrder ? 'Click to allow dragging, inserting and deleting slides' : 'Click to lock the slide order';
+  updateHint();
+}
+document.addEventListener('click', e=>{ const b=e.target.closest('[data-lock]'); if(!b) return; const k=b.dataset.lock; state.settings[k]=!state.settings[k]; updateLocks(); save(); });
+
+/* ---------- cueing ---------- */
+function lastIndex(){ return Math.max(state.slides.length, state.markers.length) - 1; }
+function goTo(i, scroll=true){
+  atStart=false; anchor=null;
+  cur = Math.max(-1, Math.min(i, lastIndex())); blackout=false;
+  renderMarkers(); updateSlideClasses(); updateOutput(); updateHint(); save();
+  if(scroll) scrollToCue();
+}
+const next=()=>{ if(cur<lastIndex()) goTo(cur+1); else toast('That was the last cue'); };
+const prev=()=>goTo(cur-1);
+function toggleBlackout(){ blackout=!blackout; updateOutput(); toast(blackout?'Blackout — screen is empty (B to restore)':'Restored'); }
+function scrollToCue(){
+  const sc=$('#score'); const watch = document.querySelector(`.mk[data-i="${cur+1}"]`) || document.querySelector(`.mk[data-i="${cur}"]`);
+  if(watch){
+    const r=watch.getBoundingClientRect(), s=sc.getBoundingClientRect();
+    const curEl=document.querySelector(`.mk[data-i="${cur}"]`);
+    const inView = el => { const q=el.getBoundingClientRect(); return q.top>s.top+s.height*0.12 && q.bottom<s.bottom-s.height*0.12; };
+    if(!inView(watch) || (curEl && !inView(curEl) && mode==='show'))
+      sc.scrollTo({top: sc.scrollTop + (r.top - s.top) - s.height*0.42, behavior:'smooth'});
+  }
+  const card=document.querySelector(`.slide[data-i="${cur}"]`); if(card) card.scrollIntoView({block:'center', behavior:'smooth'});
+  else if(cur<0) $('#slides').scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- output (preview + projector) ---------- */
+function liveText(){ if(blackout || cur<0) return ''; const s=state.slides[cur]; return s? s.text.replace(/\|/g,'\n') : ''; }
+function styleVars(el){
+  const st=state.settings;
+  el.style.setProperty('--fs', st.fontSize); el.style.setProperty('--font', st.font);
+  el.style.setProperty('--sfg', st.fg); el.style.setProperty('--sbg', st.bg); el.style.setProperty('--va', st.va);
+}
+function fit(stage, text){
+  text.style.fontSize=''; text.style.fontStyle=state.settings.italic?'italic':'normal'; text.style.fontWeight=state.settings.bold?'700':'400';
+  let fs=state.settings.fontSize, n=0;
+  while(n++<40 && (text.scrollHeight > stage.clientHeight*0.94 || text.scrollWidth > stage.clientWidth*0.98) && fs>0.6){ fs*=0.93; text.style.fontSize=`calc(${fs} * 1cqw)`; }
+}
+function updateOutput(){
+  const t=liveText(), pv=$('#pv'), txt=$('#pvText');
+  styleVars(pv); txt.textContent=t; pv.classList.toggle('blackout', blackout);
+  const ar = projOpen() ? (projWin.innerWidth+'/'+projWin.innerHeight) : state.settings.shape; pv.style.aspectRatio = ar;
+  requestAnimationFrame(()=>fit(pv.querySelector('.stage'), txt));
+  const n = state.slides[cur+1];
+  $('#nextLine').innerHTML = cur+1<=lastIndex() ? `Next <span class="kbd">→</span> <b>${cur+2}</b>: ${n? esc(n.text.replace(/[|\n]+/g,' / ')) || '<i>(blank)</i>' : '<i>(no slide)</i>'}` : (cur>=0? 'End of cues' : '');
+  if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; const pt=d.getElementById('t'); pt.textContent=t; fit(d.getElementById('stage'), pt); }catch(e){} }
+  $('#projDot').classList.toggle('on', projOpen()); $('#projLbl').textContent = projOpen()? 'Projector live' : 'Projector off';
+}
+const esc = s => s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const projOpen = () => projWin && !projWin.closed;
+
+const PROJ_HTML = `<!doctype html><html><head><meta charset="utf-8"><title>Supertitles — Projector</title><style>
+html,body{margin:0;height:100%;overflow:hidden;background:#000}
+body{cursor:none}
+#stage{container-type:size;position:fixed;inset:0;display:flex;align-items:var(--va,center);justify-content:center;padding:3cqh 4cqw;box-sizing:border-box}
+#t{font-family:var(--font);color:var(--sfg,#fff);font-size:calc(var(--fs,4) * 1cqw);text-align:center;white-space:pre-wrap;line-height:1.22;max-height:100%}
+#hint{position:fixed;left:0;right:0;bottom:14px;text-align:center;font:14px -apple-system,system-ui,sans-serif;color:#9a9dab;cursor:default}
+#hint b{color:#fff}
+<\/style></head><body><div id="stage"><div id="t"></div></div>
+<div id="hint">Drag this window onto the projector screen, then press <b>F</b> or double-click for full screen. (Arrow keys work here too.)</div>
+<script>
+function fs(){ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(()=>{}); }
+document.addEventListener('dblclick', fs);
+document.addEventListener('fullscreenchange', ()=>{ document.getElementById('hint').style.display = document.fullscreenElement?'none':''; });
+document.addEventListener('keydown', e=>{ if(e.key==='f'||e.key==='F'){ fs(); return; } if(e.key===' '||e.key.startsWith('Arrow')||e.key.startsWith('Page')) e.preventDefault(); try{ opener && opener.cueKey(e.key); }catch(_){} });
+addEventListener('resize', ()=>{ try{ opener && opener.updateOutput(); }catch(_){} });
+<\/script></body></html>`;
+
+async function openProjector(){
+  if(projOpen()){ projWin.focus(); toast('Projector window is already open'); return; }
+  let feat='popup,width=1024,height=576';
+  try{
+    if(!NATIVE && 'getScreenDetails' in window){
+      const perm = await navigator.permissions.query({name:'window-management'}).catch(()=>null);
+      if(perm && perm.state==='granted'){ const sd=await window.getScreenDetails(); const other=sd.screens.find(s=>s!==sd.currentScreen);
+        if(other) feat=`popup,left=${other.availLeft},top=${other.availTop},width=${other.availWidth},height=${other.availHeight}`; }
+    }
+  }catch(e){}
+  projWin = window.open('', 'supertitles-projector', feat);
+  if(!projWin){ toast('The browser blocked the window — allow pop-ups for this page and try again'); return; }
+  projWin.document.open(); projWin.document.write(PROJ_HTML); projWin.document.close();
+  if(NATIVE){ try{ const hn=projWin.document.getElementById('hint'); hn.textContent='Press F to switch full screen on or off. Arrow keys work here too.'; setTimeout(()=>{ try{ hn.style.display='none'; }catch(_){} }, 5000); }catch(_){} }
+  const watch=setInterval(()=>{ if(!projOpen()){ clearInterval(watch); updateOutput(); } }, 1000);
+  setTimeout(updateOutput, 50); updateOutput();
+  window.focus();
+}
+window.cueKey = k => handleKey(k, null);
+window.updateOutput = updateOutput;
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', e=>{
+  const t=e.target, typing=typingIn(t);
+  if(NATIVE && (e.metaKey||e.ctrlKey) && 'szyoen'.includes(e.key.toLowerCase())) return; // handled by the app menu
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='z' && !typing){ e.preventDefault(); e.shiftKey? redo(): undo(); return; }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='y' && !typing){ e.preventDefault(); redo(); return; }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveDoc(e.shiftKey); return; }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='o'){ e.preventDefault(); openDialog(); return; }
+  if(e.key==='Escape'){ if(typing){ t.blur(); return; } closeMenus(); if(mode==='edit' && !document.querySelector('dialog[open]')) goTo(-1,false); return; }
+  if(typing || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('dialog[open]')) return;
+  handleKey(e.key, e);
+});
+function handleKey(k, e){
+  const stop=()=>e && e.preventDefault();
+  switch(k){
+    case 'ArrowRight': case 'PageDown': case ' ': stop(); next(); break;
+    case 'ArrowLeft': case 'PageUp': stop(); prev(); break;
+    case 'b': case 'B': case '.': stop(); toggleBlackout(); break;
+    case 'Home': stop(); goTo(-1); break;
+    case 'Delete': case 'Backspace': const tgt = anchor!=null ? anchor : cur; if(mode==='edit' && tgt>=0 && tgt<state.markers.length){ stop(); if(state.settings.lockCues) lockedNote('cues'); else deleteMarker(tgt); } break;
+  }
+}
+document.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b && !b.closest('dialog')) setTimeout(()=>b.blur(),0); });
+
+/* ---------- mode / hint / counts ---------- */
+function setMode(m){
+  mode=m; if(NATIVE) window.stc.keepAwake(m==='show');
+  document.body.classList.toggle('edit', m==='edit'); document.body.classList.toggle('show', m==='show');
+  document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.mode===m));
+  if(m==='show'){ document.activeElement && document.activeElement.blur && document.activeElement.blur(); }
+  renderSlides(); renderMarkers(); updateHint();
+}
+document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+function updateHint(){
+  const h=$('#hint');
+  if(mode==='show'){ h.innerHTML=`<span class="kbd">→</span>/<span class="kbd">Space</span> next · <span class="kbd">←</span> back · <span class="kbd">B</span> blackout · Cue <b>${cur+1}</b> of ${lastIndex()+1}`; return; }
+  if(!state.pdfName){ h.textContent='Open a score PDF to start placing cues'; return; }
+  if(state.settings.lockCues){ h.innerHTML='🔒 Cues are locked — clicking the score just highlights a cue · unlock above the score to add, move or delete'; return; }
+  const n=state.markers.length, tgt = anchor!=null ? anchor : cur, hasT = tgt>=0 && tgt<n;
+  const del = hasT ? ` · <span class="kbd">Del</span> removes cue ${tgt+1}` : '';
+  h.innerHTML = `Click the score to add a cue — it's numbered by page, then by height on the page${del}`;
+}
+function updateCounts(){
+  const m=state.markers.length, s=state.slides.length, el=$('#counts');
+  el.textContent = `${m} cue${m===1?'':'s'} on score · ${s} slide${s===1?'':'s'}`;
+  el.classList.toggle('mismatch', !!state.pdfName && m!==s && (m+s)>0);
+  el.title = m===s ? 'Every cue has a slide' : (m>s ? `${m-s} cue(s) have no slide yet (dashed circles)` : `${s-m} slide(s) have no cue on the score yet`);
+}
+
+/* ---------- menus & file actions ---------- */
+function closeMenus(){ document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open')); }
+document.addEventListener('click', e=>{
+  const mb=e.target.closest('[data-menu]');
+  if(mb){ const m=mb.closest('.menu'); const was=m.classList.contains('open'); closeMenus(); if(!was) m.classList.add('open'); return; }
+  if(!e.target.closest('.menu .items')) closeMenus();
+  const a=e.target.closest('[data-act]'); if(a){ closeMenus(); actions[a.dataset.act](); }
+});
+const actions = {
+  open: ()=>openDialog(),
+  save: ()=>saveDoc(false),
+  saveAs: ()=>saveDoc(true),
+  newProject: ()=>newProject(),
+  importSlides: ()=>openImport(),
+  exportPrintable: ()=>exportPrintable(),
+  exportCsv: ()=>{ if(!state.slides.length) return toast('No slides to export'); download(baseName()+' - slides.csv', '﻿'+state.slides.map(s=>'"'+s.text.replace(/"/g,'""')+'"').join('\r\n')+'\r\n','text/csv'); },
+  clearMarkers: ()=>{ if(state.markers.length && confirm(`Remove all ${state.markers.length} cue markers from the score?`)){ snap(); state.markers=[]; cur=-1; changed(false); } },
+  clearSlides: ()=>{ if(state.slides.length && confirm(`Remove all ${state.slides.length} slides?`)){ snap(); state.slides=[]; changed(true); } },
+};
+$('#fPdf').onchange=e=>{ const f=e.target.files[0]; if(f) openAny(f, null); e.target.value=''; };
+/* ---------- ONE-FILE SAVE: a PDF of the numbered score + cue sheet, with the original score and project data embedded ---------- */
+const PROJ_ATTACH='supertitle-cuer-project.json', ORIG_ATTACH='original-score.pdf';
+function setDirty(d){
+  dirty=d; const el=$('#docName'); const has = !!(state.pdfName || state.slides.length || state.markers.length);
+  el.textContent = docName || (has ? 'Untitled project' : ''); el.classList.toggle('dirty', d && has);
+  document.title = (d&&has?'• ':'') + (docName || 'Supertitle Cuer');
+  if(NATIVE) window.stc.docState({path: (fileHandle && fileHandle.nativePath) || '', dirty: !!(d&&has)});
+}
+const projectData = () => ({app:'supertitle-cuer', version:2, savedAt:new Date().toISOString(), pdfName:state.pdfName, markers:state.markers, slides:state.slides, settings:state.settings});
+function drawCues(doc, font){
+  const {rgb, degrees} = PDFLib; const red=rgb(0.86,0.1,0.1);
+  state.markers.forEach((m,i)=>{
+    if(m.page-1 >= doc.getPageCount()) return; const page=doc.getPage(m.page-1);
+    const cb=page.getCropBox(); const rot=(((page.getRotation().angle||0)%360)+360)%360;
+    const W=cb.width, H=cb.height, x0=cb.x, y0=cb.y, dispW = rot%180 ? H : W;
+    const toUser=(fx,fy)=> rot===90 ? {x:x0+fy*W, y:y0+fx*H} : rot===180 ? {x:x0+W-fx*W, y:y0+fy*H} : rot===270 ? {x:x0+W-fy*W, y:y0+H-fx*H} : {x:x0+fx*W, y:y0+(1-fy)*H};
+    const off=(dx,dy)=> rot===90 ? {x:dy, y:dx} : rot===180 ? {x:-dx, y:dy} : rot===270 ? {x:-dy, y:-dx} : {x:dx, y:-dy};
+    const r=dispW*state.settings.markerSize/200, c=toUser(m.x,m.y);
+    page.drawCircle({x:c.x, y:c.y, size:r, color:rgb(1,1,1), opacity:0.85, borderColor:red, borderWidth:Math.max(0.8,r*0.16)});
+    const label=String(i+1), fs=r*(label.length>2?0.75:label.length>1?0.95:1.05), tw=font.widthOfTextAtSize(label,fs);
+    const o=off(-tw/2, fs*0.36);
+    page.drawText(label, {x:c.x+o.x, y:c.y+o.y, size:fs, font, color:red, rotate:degrees(rot)});
+  });
+}
+async function addCueSheet(doc, fb){
+  if(!state.slides.length) return;
+  const {rgb, StandardFonts}=PDFLib; const f=await doc.embedFont(StandardFonts.Helvetica);
+  const safe=(t,font)=>{ let o=''; for(const ch of t){ try{ font.encodeText(ch); o+=ch; }catch(e){ o+='?'; } } return o; };
+  const W=612, H=792, M=54, size=10.5, lh=14, textW=W-2*M-40; let page, y;
+  const wrap=line=>{ const out=[]; let curL=''; for(const w of line.split(/\s+/).filter(Boolean)){ const t=curL?curL+' '+w:w; if(f.widthOfTextAtSize(t,size)>textW && curL){ out.push(curL); curL=w; } else curL=t; } out.push(curL); return out; };
+  const newPage=()=>{ page=doc.addPage([W,H]); y=H-M; page.drawText(safe('Supertitles - cue sheet' + (state.pdfName ? '   (' + state.pdfName + ')' : ''), fb), {x:M, y, size:13, font:fb}); y-=28; };
+  newPage();
+  state.slides.forEach((s,i)=>{
+    const txt=s.text.replace(/\|/g,'\n').trim();
+    const lines = txt ? txt.split('\n').flatMap(l=>wrap(safe(l,f))) : ['(blank)'];
+    const block=lines.length*lh+7; if(y-block<M) newPage();
+    page.drawText(String(i+1), {x:M, y, size, font:fb, color: i<state.markers.length ? rgb(.86,.1,.1) : rgb(.55,.55,.55)});
+    lines.forEach((ln,k)=>page.drawText(ln, {x:M+40, y:y-k*lh, size, font:f, color: txt ? rgb(0,0,0) : rgb(.55,.55,.55)}));
+    y-=block;
+  });
+}
+async function buildProjectPdf(){
+  const {PDFDocument, StandardFonts} = PDFLib;
+  const doc=await PDFDocument.load(pdfBytes, {ignoreEncryption:true});
+  const fb=await doc.embedFont(StandardFonts.HelveticaBold);
+  drawCues(doc, fb); await addCueSheet(doc, fb);
+  await doc.attach(pdfBytes, ORIG_ATTACH, {mimeType:'application/pdf', description:'Original score without cue numbers (used by Supertitle Cuer)'});
+  await doc.attach(new TextEncoder().encode(JSON.stringify(projectData())), PROJ_ATTACH, {mimeType:'application/json', description:'Supertitle Cuer project: cues, slides, settings'});
+  doc.setSubject('Supertitle Cuer project'); doc.setProducer('Supertitle Cuer');
+  return await doc.save();
+}
+async function readProjectFromPdf(bytes){
+  const d=await pdfjsLib.getDocument({data:bytes.slice()}).promise;
+  try{
+    const att=await d.getAttachments(); if(!att) return null;
+    const find=n=>Object.values(att).find(a=>a && (a.filename===n || (a.filename||'').endsWith(n)));
+    const pj=find(PROJ_ATTACH); if(!pj) return null;
+    const org=find(ORIG_ATTACH);
+    return {project: JSON.parse(new TextDecoder().decode(pj.content)), original: org ? new Uint8Array(org.content) : null};
+  } finally { d.destroy(); }
+}
+const PROJ_EXT='.supertitles';
+function projectFileName(){ let n = docName ? docName.replace(/\.(pdf|supertitles)$/i,'') : baseName(); n=n.replace(/ - supertitles$/i,''); return n+PROJ_EXT; }
+async function saveDoc(as){
+  if(!pdfBytes){ toast('Open the score PDF first — the saved file is built around it'); return false; }
+  if(docName && /\.pdf$/i.test(docName)) as = true; // projects saved by older versions as .pdf are re-saved as .supertitles
+  const suggested = projectFileName();
+  if(NATIVE){
+    const p = (!as && fileHandle && fileHandle.nativePath) || await window.stc.saveDialog({suggestedName:suggested, kind:'project'});
+    if(!p) return false;
+    toast('Saving…');
+    try{ const bytes=await buildProjectPdf(); await window.stc.writeFile(p, bytes); }
+    catch(e){ console.error(e); toast('Could not save: '+e.message); return false; }
+    fileHandle={nativePath:p}; docName=p.split(/[\\/]/).pop(); setDirty(false); save(); idbPut('doc',{name:docName, handle:fileHandle}); toast(`Saved “${docName}”`); return true;
+  }
+  let h=null, usePicker='showSaveFilePicker' in window;
+  if(usePicker){
+    try{
+      h = as ? null : fileHandle;
+      if(h && h.queryPermission && (await h.queryPermission({mode:'readwrite'}))!=='granted' && (await h.requestPermission({mode:'readwrite'}))!=='granted') h=null;
+      if(!h) h = await window.showSaveFilePicker({suggestedName:suggested, types:[{description:'Supertitles project', accept:{'application/x-supertitles':[PROJ_EXT]}}]});
+    }catch(e){ if(e.name==='AbortError') return false; console.warn(e); usePicker=false; h=null; }
+  }
+  toast('Saving…');
+  let bytes; try{ bytes=await buildProjectPdf(); }catch(e){ console.error(e); toast('Could not save: '+e.message); return false; }
+  const blob=new Blob([bytes],{type:'application/octet-stream'});
+  if(h){
+    try{ const w=await h.createWritable(); await w.write(blob); await w.close();
+      fileHandle=h; docName=h.name; setDirty(false); save(); idbPut('doc',{name:docName, handle:h}); toast(`Saved “${docName}”`); return true;
+    }catch(e){ console.warn(e); }
+  }
+  download(suggested, blob); docName=suggested; fileHandle=null; setDirty(false); save(); toast(`Saved “${suggested}” to your Downloads folder`); return true;
+}
+async function buildPrintablePdf(){
+  const {PDFDocument, StandardFonts} = PDFLib;
+  const doc=await PDFDocument.load(pdfBytes, {ignoreEncryption:true});
+  const fb=await doc.embedFont(StandardFonts.HelveticaBold);
+  drawCues(doc, fb); await addCueSheet(doc, fb); doc.setSubject('Score with supertitle cues'); doc.setProducer('Supertitle Cuer');
+  return await doc.save();
+}
+async function exportPrintable(){
+  if(!pdfBytes) return toast('Open a score PDF first');
+  const name = projectFileName().replace(/\.supertitles$/i,'') + ' - printable.pdf';
+  if(NATIVE){
+    const p=await window.stc.saveDialog({suggestedName:name, kind:'pdf'}); if(!p) return;
+    try{ await window.stc.writeFile(p, await buildPrintablePdf()); toast(`Saved “${p.split(/[\\/]/).pop()}”`); }catch(e){ toast('Could not export: '+e.message); }
+    return;
+  }
+  let h=null;
+  if('showSaveFilePicker' in window){
+    try{ h=await window.showSaveFilePicker({suggestedName:name, types:[{description:'PDF', accept:{'application/pdf':['.pdf']}}]}); }
+    catch(e){ if(e.name==='AbortError') return; h=null; }
+  }
+  const blob=new Blob([await buildPrintablePdf()],{type:'application/pdf'});
+  if(h){ try{ const w=await h.createWritable(); await w.write(blob); await w.close(); toast(`Saved “${h.name}”`); return; }catch(e){ console.warn(e); } }
+  download(name, blob); toast(`Saved “${name}” to your Downloads folder`);
+}
+function openNativeFile(f){
+  const bytes=f.bytes;
+  const file={ name:f.name, arrayBuffer: async()=>bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset+bytes.byteLength), text: async()=>new TextDecoder().decode(bytes) };
+  return openAny(file, {nativePath:f.path});
+}
+async function openDialog(){
+  if(NATIVE){ const f=await window.stc.openDialog(); if(f) openNativeFile(f); return; }
+  if('showOpenFilePicker' in window){
+    try{ const [h]=await window.showOpenFilePicker(); // no type filter: macOS greys out files under Chrome's filters
+      return openAny(await h.getFile(), h);
+    }catch(e){ if(e.name==='AbortError') return; }
+  }
+  $('#fPdf').click();
+}
+async function openAny(file, handle){
+  if(/\.json$/i.test(file.name)) return openProjectFile(file);
+  const bytes=new Uint8Array(await file.arrayBuffer());
+  if(!(bytes[0]===0x25 && bytes[1]===0x50 && bytes[2]===0x44 && bytes[3]===0x46)){ if(/\.(csv|txt|tsv)$/i.test(file.name)){ openImport(); return loadImportFile(file); } return toast('That isn’t a PDF — open a score PDF or a project you saved'); }
+  let proj=null; try{ proj=await readProjectFromPdf(bytes); }catch(e){ console.warn(e); }
+  if(!proj){ // a plain score: use it in the current project
+    await openPdfFile(file, bytes); fileHandle=null; docName=null; setDirty(true); save(); return;
+  }
+  if(dirty && (state.markers.length||state.slides.length) && !confirm('Your current work has unsaved changes. Open the other project anyway?')) return;
+  const p=proj.project, orig=proj.original||bytes;
+  undoStack=[]; redoStack=[]; cur=-1; blackout=false; atStart=false; anchor=null;
+  state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true}); updateLocks();
+  await loadPdfBytes(p.pdfName||file.name, orig);
+  renderSlides(); goTo(-1,false);
+  fileHandle=handle||null; docName=file.name; setDirty(false); save();
+  idbPut('score',{name:state.pdfName, bytes:orig}); idbPut('doc',{name:docName, handle:fileHandle});
+  toast(`Opened “${file.name}” — ${state.markers.length} cues, ${state.slides.length} slides`);
+}
+function newProject(){
+  if(dirty && (state.markers.length||state.slides.length) && !confirm('Start a new project? Unsaved changes to the current one will be lost.')) return;
+  state.settings.lockCues=false; state.settings.lockOrder=false;
+  state.markers=[]; state.slides=[]; state.pdfName=null; pdfBytes=null; pdfDoc=null; cur=-1; undoStack=[]; redoStack=[];
+  pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[]; $('#pages').replaceChildren(); $('#scoreEmpty').hidden=false; $('#zoomCtl').hidden=true;
+  fileHandle=null; docName=null; idbPut('score',null); idbPut('doc',null);
+  updateLocks(); changed(true); setDirty(false); save();
+}
+async function openProjectFile(f){
+  try{
+    const p=JSON.parse(await f.text()); if(!Array.isArray(p.slides) && !Array.isArray(p.markers)) throw 0;
+    snap(); state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=Object.assign(defaults(), p.settings||{});
+    const hadPdf=state.pdfName; state.pdfName = hadPdf || p.pdfName; cur=-1;
+    if(p.pdfName && hadPdf && p.pdfName!==hadPdf) toast(`Project was made for "${p.pdfName}" — markers placed on the open score`);
+    else if(p.pdfName && !pdfDoc) toast(`Now open the score: "${p.pdfName}"`);
+    layoutPages(); changed(true);
+  }catch(e){ toast("That doesn't look like a Supertitle Cuer project file"); }
+}
+
+/* ---------- import slides ---------- */
+function parseCSV(text){
+  text=text.replace(/^﻿/,''); const rows=[]; let row=[], f='', q=false, quoted=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; continue; }
+    if(c==='"' && f.trim()===''){ q=true; quoted=true; f=''; continue; }
+    if(c===','){ row.push(f); f=''; quoted=false; continue; }
+    if(c==='\r') continue;
+    if(c==='\n'){ row.push(f); rows.push(row); row=[]; f=''; quoted=false; continue; }
+    f+=c;
+  }
+  if(f!=='' || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+function csvToSlides(text){
+  let rows=parseCSV(text).filter(r=>r.some(c=>c.trim()!==''));
+  // "number,text" style sheets: use the text column
+  const numbered = rows.length>1 && rows.filter(r=>/^\s*\d+\s*$/.test(r[0]||'')).length >= Math.max(1, rows.length-1) && rows.every(r=>r.length>=2);
+  if(numbered){ rows = rows.filter(r=>/^\s*\d+\s*$/.test(r[0])).map(r=>[r.slice(1).join(', ')]); }
+  let vals=rows.flat();
+  const nonEmpty=vals.filter(v=>v.trim()); if(nonEmpty.length>1 && nonEmpty.filter(v=>/,\s*$/.test(v)).length >= nonEmpty.length-1) vals=vals.map(v=>v.replace(/,\s*$/,''));
+  return vals.map(s=>s.replace(/\|/g,'\n').split('\n').map(l=>l.trim()).join('\n').trim()).filter(s=>s!=='');
+}
+const textToSlides = t => t.replace(/\r/g,'').split(/\n[ \t]*\n+/).map(s=>s.split('\n').map(l=>l.trim()).join('\n').trim()).filter(Boolean);
+function parsedImport(){ const t=$('#impText').value; return $('#impFmt').value==='csv' ? csvToSlides(t) : textToSlides(t); }
+function updateImpInfo(){ const n=parsedImport().length; $('#impInfo').textContent = n ? `→ ${n} slide${n===1?'':'s'}, numbered ${ $('input[name=impMode]:checked').value==='append' ? (state.slides.length+1)+'–'+(state.slides.length+n) : '1–'+n }` : ''; $('#impGo').disabled=!n; }
+function openImport(){ $('#impText').value=''; $('#impFmt').value='csv'; updateImpInfo(); $('#importDlg').showModal(); }
+['input','change'].forEach(ev=>{ $('#impText').addEventListener(ev,updateImpInfo); $('#impFmt').addEventListener(ev,updateImpInfo); });
+document.querySelectorAll('input[name=impMode]').forEach(r=>r.onchange=updateImpInfo);
+$('#impFileBtn').onclick=()=>$('#fImp').click();
+$('#fImp').onchange=async e=>{ const f=e.target.files[0]; e.target.value=''; if(f) await loadImportFile(f); };
+async function loadImportFile(f){
+  if(/\.pdf$/i.test(f.name) || f.type==='application/pdf'){
+    const doc=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise; const out=[];
+    for(let i=1;i<=doc.numPages;i++){ const tc=await (await doc.getPage(i)).getTextContent(); let s=''; tc.items.forEach(it=>{ s+=it.str; if(it.hasEOL) s+='\n'; });
+      s=s.split('\n').map(l=>l.replace(/\s+/g,' ').trim()).filter(Boolean).join('\n'); out.push(s); }
+    $('#impText').value=out.filter(Boolean).join('\n\n'); $('#impFmt').value='text';
+    toast(`Read ${doc.numPages} pages — check the text, then Import`);
+  } else {
+    const t=await f.text(); $('#impText').value=t; $('#impFmt').value = /\.txt$/i.test(f.name) ? 'text' : 'csv';
+  }
+  if(!$('#importDlg').open) $('#importDlg').showModal();
+  updateImpInfo();
+}
+$('#importDlg').addEventListener('close', ()=>{
+  if($('#importDlg').returnValue!=='ok') return;
+  const list=parsedImport(); if(!list.length) return;
+  snap(); const append=$('input[name=impMode]:checked').value==='append';
+  const items=list.map(text=>({text}));
+  state.slides = append ? state.slides.concat(items) : items; if(!append) cur=-1;
+  changed(true); toast(`Imported ${items.length} slides`);
+});
+
+/* ---------- settings ---------- */
+function openSettings(){
+  const s=state.settings;
+  $('#sFs').value=s.fontSize; $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVa').value=s.va; $('#sShape').value=s.shape; $('#sMk').value=s.markerSize;
+  if(![...$('#sFont').options].some(o=>o.value===s.font)) $('#sFont').selectedIndex=0;
+  setVals(); $('#setDlg').showModal();
+}
+function setVals(){ $('#sFsV').textContent=(+$('#sFs').value).toFixed(1); $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%'; }
+$('#settingsBtn').onclick=openSettings;
+$('#setDlg').addEventListener('input', ()=>{
+  const s=state.settings; s.fontSize=+$('#sFs').value; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.va=$('#sVa').value; s.shape=$('#sShape').value;
+  const mk=+$('#sMk').value; if(mk!==s.markerSize){ s.markerSize=mk; layoutPages(); }
+  setVals(); updateOutput(); setDirty(true); save();
+});
+$('#sScreens').onclick=async ()=>{
+  if(!('getScreenDetails' in window)) return toast('This browser can’t place windows on other screens — just drag the projector window over');
+  try{ const sd=await window.getScreenDetails(); toast(sd.screens.length>1 ? `Found ${sd.screens.length} screens — the projector window will open on the other one` : 'Only one screen found right now — connect the projector and try again'); }
+  catch(e){ toast('Permission not granted — you can still drag the window over'); }
+};
+
+/* ---------- zoom, resize, drag & drop ---------- */
+$('#zoomCtl').addEventListener('click', e=>{ const z=e.target.dataset.z; if(!z) return; const s=state.settings;
+  s.zoom = z==='fit' ? 1 : Math.min(3, Math.max(0.4, +(s.zoom*(z==='+'?1.15:1/1.15)).toFixed(3))); layoutPages(true); save(); });
+let rsT; addEventListener('resize', ()=>{ clearTimeout(rsT); rsT=setTimeout(()=>{ layoutPages(true); updateOutput(); },120); });
+let dragN=0;
+addEventListener('dragenter', e=>{ if(e.dataTransfer.types.includes('Files')){ dragN++; $('#drop').classList.add('on'); } });
+addEventListener('dragleave', ()=>{ if(--dragN<=0){ dragN=0; $('#drop').classList.remove('on'); } });
+addEventListener('dragover', e=>e.preventDefault());
+addEventListener('drop', async e=>{ e.preventDefault(); dragN=0; $('#drop').classList.remove('on');
+  const f=e.dataTransfer.files[0]; if(!f) return;
+  const it=e.dataTransfer.items && e.dataTransfer.items[0]; const hp = it && it.getAsFileSystemHandle ? it.getAsFileSystemHandle().catch(()=>null) : null;
+  if(/\.json$/i.test(f.name)) openProjectFile(f);
+  else if(/\.(csv|txt|tsv)$/i.test(f.name)) { openImport(); loadImportFile(f); }
+  else if(/\.pdf$/i.test(f.name)) openAny(f, hp ? await hp : null);
+});
+$('#projBtn').onclick=openProjector;
+function showOS(os){ document.querySelectorAll('#connectDlg .steps').forEach(o=>o.hidden = o.dataset.for!==os); document.querySelectorAll('#connectDlg [data-os]').forEach(b=>b.classList.toggle('on', b.dataset.os===os)); }
+document.querySelectorAll('#connectDlg [data-os]').forEach(b=>b.onclick=()=>showOS(b.dataset.os));
+$('#connectBtn').onclick=()=>{ showOS(IS_MAC?'mac':'win'); $('#connectDlg').showModal(); };
+addEventListener('beforeunload', e=>{ save(); if(!NATIVE && dirty && (state.markers.length||state.slides.length)){ e.preventDefault(); e.returnValue=''; } });
+
+/* ---------- desktop app hooks ---------- */
+window.__stcIsDirty = () => !!(dirty && (state.markers.length || state.slides.length));
+window.__stcMenu = (cmd) => {
+  const ed = document.activeElement && document.activeElement.matches && document.activeElement.matches('textarea:not([readonly]), input[type=text]');
+  const map = {
+    new: newProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true), exportPrintable,
+    importSlides: openImport, exportCsv: actions.exportCsv,
+    undo: ()=> ed ? document.execCommand('undo') : undo(), redo: ()=> ed ? document.execCommand('redo') : redo(),
+    edit: ()=>setMode('edit'), show: ()=>setMode('show'), projector: openProjector, connect: ()=>$('#connectBtn').click(), settings: openSettings,
+  };
+  if(map[cmd]) map[cmd]();
+};
+
+/* ---------- start ---------- */
+(async function init(){
+  localizeKeys(document.body); loadLocal(); sortMarkers(); updateLocks(); const wasDirty=dirty; renderSlides(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
+  const d = await idbGet('doc'); if(d && d.handle && d.name===docName) fileHandle=d.handle;
+  const rec = await idbGet('score');
+  if(rec && rec.bytes && (!state.pdfName || rec.name===state.pdfName)){ await loadPdfBytes(rec.name, new Uint8Array(rec.bytes)); setDirty(wasDirty); toast(`Picked up where you left off`); }
+  else if(state.pdfName){ $('#scoreEmpty .big').textContent = `Open the score: ${state.pdfName}`; }
+  if(NATIVE){ window.stc.onOpenFile(f=>openNativeFile(f)); window.stc.ready(); }
+})();
+</script>
+</body>
+</html>

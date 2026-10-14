@@ -1,0 +1,59 @@
+# Supertitle Cuer
+
+Cue opera supertitles from the score: number the cues on your PDF score, pair them with slides, and run them to a projector with one key.
+
+- **Mark cues on the score.** Open the score PDF and click where each title should appear. Cues are numbered automatically by their place in the score — page first, then top to bottom, then left to right.
+- **Pair them with slides.** Type titles in the slide list or import them from a CSV (each comma-separated value becomes one numbered slide). Slide 1 goes with cue 1, and so on.
+- **Run the show.** In Show mode, press → / Space (or a presentation clicker) to advance. The current cue glows on the score, the next one pulses, and the title goes to the projector window. **B** blanks the screen.
+- **One file per production.** Projects are saved as `.supertitles` files that hold the score, the cues, the slides and the display settings. **File → Export Printable Score** writes a normal PDF with the numbered cues and a cue sheet, for the booth binder.
+
+## Install
+
+**Mac (Homebrew)**
+
+```
+brew install --cask poetic-pixie/tap/supertitle-cuer
+```
+
+Updates: `brew upgrade --cask supertitle-cuer`
+
+Or download the `.dmg` from [Releases](https://github.com/poetic-pixie/supertitle-cuer/releases) (`arm64` for Apple Silicon, `x64` for Intel Macs), drag the app to Applications, and run once in Terminal:
+
+```
+xattr -dr com.apple.quarantine "/Applications/Supertitle Cuer.app"
+```
+
+(The app isn't signed with an Apple Developer ID, so macOS blocks it until that quarantine flag is removed. The Homebrew cask does this for you.)
+
+**Windows**
+
+Download `Supertitle_Cuer-Setup-<version>.exe` from [Releases](https://github.com/poetic-pixie/supertitle-cuer/releases) and run it. If Windows shows “Windows protected your PC”, click **More info → Run anyway**.
+
+**No install**
+
+`Supertitle_Cuer.html` (also on the Releases page) is the whole app in one file. Double-click it to run it in Google Chrome on any computer. It opens and saves the same `.supertitles` files.
+
+## Desktop app extras
+
+Compared with the single HTML file, the desktop app:
+
+- opens `.supertitles` files when you double-click them,
+- puts the projector window full screen on the second screen by itself (**View → Move Projector to Second Screen** if needed),
+- keeps the computer and screens awake while in Show mode,
+- saves straight to your file with no browser prompts, and asks before closing with unsaved changes.
+
+## Building
+
+Requires Node.js 22.
+
+```
+npm ci
+npm start            # run the desktop app
+npm run build:html   # build dist/Supertitle_Cuer.html only
+npm run dist:mac     # Mac .dmg files (on a Mac)
+npm run dist:win     # Windows installer (on Windows)
+```
+
+The app lives in `src/app.html`. `scripts/build-html.js` inlines pdf.js and pdf-lib into it to make the single-file version, and the desktop shell in `electron/` loads that same file.
+
+**Releasing:** bump `version` in `package.json`, then push a tag such as `v1.0.1`. GitHub Actions builds the Mac and Windows apps and publishes them with the HTML file on the Releases page. Afterwards, update `version` and the two `sha256` values in `Casks/supertitle-cuer.rb` in [poetic-pixie/homebrew-tap](https://github.com/poetic-pixie/homebrew-tap) — the release's `SHA256SUMS.txt` lists them.
