@@ -1473,10 +1473,22 @@ async function applyParts(newParts, removedId, noSnap){
     const merged=new Uint8Array(await mergeSegments(segs));
     const clean=newParts.map(({src,...p})=>p), newStart=partStarts(clean);
     state.markers = state.markers.filter(m=>{ const op=partOfPage(old,m.page); return op && op.id!==removedId; })
-      .map(m=>{ const op=partOfPage(old,m.page); return {...m, page: newStart[op.id] + (m.page-oldStart[op.id])}; });
+      .map(m=>{ const op=partOfPage(old,m.page); return {...m, _k: state.markers.indexOf(m), page: newStart[op.id] + (m.page-oldStart[op.id])}; });
     state.parts=clean; cur=-1; anchor=null;
     const sc=$('#score').scrollTop;
     await loadPdfBytes(state.pdfName || clean[0].name, merged);
+    // Reordering: each supertitle travels with its cue (slide k belongs to cue k). A cue that had no
+    // supertitle gets a blank one if it now comes before cued text, so the pairs stay matched.
+    // (Removing a PDF keeps its own rule — see removePart.)
+    if(!removedId){
+      const ns=[], had=state.slides.length;
+      state.markers.forEach(m=>{ ns.push(m._k<had ? state.slides[m._k] : null); });
+      while(ns.length && ns[ns.length-1]===null) ns.pop();
+      const rest=state.slides.slice(state.markers.length);
+      state.slides=[...ns.map(x=>x||{text:''}), ...rest];
+    }
+    state.markers.forEach(m=>delete m._k);
+    renderSlides(); updateCounts();
     $('#score').scrollTop=sc;
     idbPut('score',{name:state.pdfName, bytes:merged}); setDirty(true); save(); renderParts();
   }catch(e){ console.error(e); if(!noSnap) undoStack.pop(); toast('Could not merge: '+e.message); }
