@@ -22,7 +22,7 @@ const STCFollow = (() => {
         re[b] = re[a] - tr; im[b] = im[a] - ti; re[a] += tr; im[a] += ti;
       }
     }
-    for (let i = 0; i < N / 2; i++) mag[i] = Math.hypot(re[i], im[i]);
+    for (let i = 0; i < N / 2; i++) mag[i] = Math.sqrt(re[i] * re[i] + im[i] * im[i]);
   }
 
   // FFT bin -> pitch class (A0..about C8), with a gentle low-frequency fade-in
@@ -60,6 +60,22 @@ const STCFollow = (() => {
     out[12] = 10 * Math.log10(e + 1e-12);       // loudness in dB (relative)
     return out;
   }
+  // Converts audio at another sample rate to 22050 Hz (box-filter + linear interpolation;
+  // plenty for 12-note frames, which only look below 5 kHz).
+  function resampler(fromRate, onOut) {
+    if (Math.abs(fromRate - SR) < 1) return onOut;
+    const ratio = fromRate / SR, box = Math.max(1, Math.floor(ratio)); let pos = 0, hist = [], last = 0;
+    return function (x) {
+      const out = [];
+      for (let i = 0; i < x.length; i++) {
+        hist.push(x[i]); if (hist.length > box) hist.shift();
+        let avg = 0; for (const v of hist) avg += v; avg /= hist.length;
+        while (pos <= 1) { out.push(last + (avg - last) * pos); pos += ratio; }
+        pos -= 1; last = avg;
+      }
+      onOut(Float32Array.from(out));
+    };
+  }
   // A whole recording at once (Float32Array, mono, 22050 Hz) -> Float32Array(frames * 13)
   function featuresOf(samples) {
     const frames = []; const push = extractor(f => frames.push(f));
@@ -88,9 +104,10 @@ const STCFollow = (() => {
     let D = new Float32Array(n).fill(BIG), D2 = new Float32Array(n).fill(BIG);
     let pos = 0, liveFrames = 0, conf = 0, held = 0;
     const hist = [];                                    // [live frame, ref frame] for tempo
-    // loudness reference: the 20th percentile of the reference's music frames counts as "quiet"
-    const loud = []; for (let i = 0; i < n; i++) loud.push(ref[i * NB + 12]); loud.sort((a, b) => a - b);
-    const quiet = loud[Math.floor(loud.length * 0.2)] - 6;
+    // "Quiet" is judged against the live sound's own recent level (microphones and gains differ
+    // between the reference run and the show): more than 30 dB under the loud end of the last minute.
+    const liveLoud = []; let lastLoud = -120;
+    const quietLevel = () => { if (liveLoud.length < 20) return -80; const a = liveLoud.slice().sort((x, y) => x - y); return Math.max(-80, a[Math.floor(a.length * 0.9)] - 30); };
     const TONAL = opts.tonal ?? 1.8;
 
     function anchor(refFrame, spread = 1.5) {          // restart the path around a known point
@@ -143,7 +160,8 @@ const STCFollow = (() => {
       liveFrames++;
       // hold on silence, or on frames with no pitch content (flat chroma: applause, speech, noise)
       const flat = f[13] < TONAL;
-      if (f[12] < quiet || flat) { held++; conf *= 0.97; return state(); }
+      lastLoud = f[12]; if (liveFrames % 4 === 0) { liveLoud.push(f[12]); if (liveLoud.length > 60 * FPS / 4) liveLoud.shift(); }
+      if (f[12] < quietLevel() || flat) { held++; conf *= 0.97; return state(); }
       held = 0;
       recent.push(f); if (recent.length > L) recent.shift();
       const lo = Math.max(0, pos - BACK), hi = Math.min(n - 1, pos + AHEAD);
@@ -175,10 +193,10 @@ const STCFollow = (() => {
       const den = k * sxx - sx * sx; if (!den) return 1;
       return Math.max(0.5, Math.min(2, (k * sxy - sx * sy) / den));
     }
-    function state() { return { refTime: pos / FPS, confidence: conf, held: held / FPS, tempo: tempo(), jumps }; }
+    function state() { return { refTime: pos / FPS, confidence: conf, held: held / FPS, tempo: tempo(), jumps, loud: lastLoud }; }
     return { step, anchor: (sec, spread) => anchor(sec * FPS, spread), state, get length() { return n / FPS; } };
   }
 
-  return { SR, N, HOP, FPS, NB, extractor, featuresOf, pack, unpack, follower };
+  return { SR, N, HOP, FPS, NB, extractor, resampler, featuresOf, pack, unpack, follower };
 })();
 if (typeof module !== 'undefined') module.exports = STCFollow;

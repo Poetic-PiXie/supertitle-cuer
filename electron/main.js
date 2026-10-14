@@ -4,7 +4,7 @@
 // opening .supertitles files from Finder/Explorer, saving without prompts,
 // putting the projector window on the second screen, and keeping the
 // computer awake during a show.
-const { app, BrowserWindow, Menu, dialog, ipcMain, powerSaveBlocker, screen, shell } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, powerSaveBlocker, screen, shell, systemPreferences } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
@@ -266,6 +266,11 @@ ipcMain.on('renderer-ready', () => {
   flushPending();
 });
 ipcMain.on('keep-awake', (_e, on) => setKeepAwake(!!on));
+// Follow: macOS asks the user once for the microphone (Windows uses its own privacy settings)
+ipcMain.handle('ask-mic', async () => {
+  if (!isMac) return true;
+  try { return systemPreferences.getMediaAccessStatus('microphone') === 'granted' || await systemPreferences.askForMediaAccess('microphone'); } catch (_) { return true; }
+});
 ipcMain.on('spell-state', (_e, on) => {
   const mi = Menu.getApplicationMenu() && Menu.getApplicationMenu().getMenuItemById('spell');
   if (mi) mi.checked = !!on;

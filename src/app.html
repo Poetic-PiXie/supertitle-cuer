@@ -66,6 +66,10 @@ body:not(.native) .native-only{display:none}
 .pcard .prow{display:flex;gap:4px;flex-wrap:wrap}
 .pcard .prow button{flex:1;font-size:11.5px;padding:3px 4px}
 .pcard .prow button.trashP{flex:0 0 auto}
+.pcard .pmusic{border-top:1px solid var(--line);padding-top:6px;display:flex;flex-direction:column;gap:5px}
+.pcard .pmrow{display:flex;gap:4px}
+.recdot{color:#e5484d}
+.pcard .pmrow button{flex:1;font-size:11.5px;padding:3px 4px}
 .pcard .prow button.trashP:hover{color:#ff7a70;border-color:#6b2a26}
 #partsDlg{width:min(980px,96vw)}
 #partsDlg .actions{justify-content:flex-start}
@@ -89,8 +93,9 @@ body:not(.native) .native-only{display:none}
 .rlab{font-size:12px;color:var(--dim)}
 #sMid.on{border-color:var(--accent);color:var(--accent)}
 .sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
-.docname{font-size:13px;color:var(--dim);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.docname.dirty::after{content:" • not saved";color:var(--warn)}
+.docname{font-size:13px;color:var(--dim);max-width:230px;display:inline-flex;white-space:nowrap;min-width:0}
+.docname .dn{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.docname.dirty::after{content:" • not saved";color:var(--warn);flex-shrink:0;white-space:pre}
 .hint{color:var(--dim);flex-basis:100%;text-align:right;font-size:13px}
 .hint b{color:var(--text)}
 .counts{font-size:13px;color:var(--dim);padding:3px 8px;border-radius:5px;background:var(--panel2)}
@@ -222,6 +227,31 @@ body.show .slide, body.order-locked .slide{grid-template-columns:14px 34px 1fr a
 /* dialogs */
 dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:0;width:min(640px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.6)}
 dialog::backdrop{background:rgba(0,0,0,.55)}
+.beta{font-size:11px;font-weight:600;color:#1a1a1a;background:#8fd18f;border-radius:4px;padding:1px 6px;vertical-align:2px}
+.fsec{border-top:1px solid var(--line);padding:10px 0 4px;margin-top:8px}
+.fhead{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:6px}
+.frow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.frow:last-child{border-bottom:0}
+.fname{font-size:14px;min-width:0}
+.fstat{color:var(--dim);font-size:13px}
+.factions{display:flex;gap:8px;flex-wrap:wrap}
+.meter{display:inline-block;width:120px;height:8px;background:#111215;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;background:#5bbf6a;transition:width .1s}
+.followbar{margin-top:8px;font-size:13px}
+.fbtext{display:flex;justify-content:space-between;color:var(--dim);gap:8px}
+.fbtext b{color:var(--text);font-weight:600}
+.fbtrack{height:6px;background:#111215;border-radius:3px;margin-top:5px;overflow:hidden}
+.fbfill{height:100%;width:0;background:#5bbf6a;border-radius:3px;transition:width .2s linear}
+.followbar.soon .fbfill{background:var(--cur)}
+.followbar.now .fbtext b{color:var(--cur)}
+.followbar.now .fbfill{background:var(--cur);animation:pulse 1s ease-in-out infinite}
+.followbar.lost .fbfill{background:#6b6f7a}
+#followBtn.live{border-color:#5bbf6a;color:#8fd18f}
+#followBtn.rec{border-color:#e5484d;color:#ff8a8d}
+.runbar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:10px;background:#0d0e11;border:1px solid var(--line);border-radius:10px;padding:8px 12px;box-shadow:0 10px 30px rgba(0,0,0,.5);font-size:13px;max-width:94vw;flex-wrap:wrap}
+.runbar .rec{color:#ff6b6b;font-weight:600}
+.runbar .t{font-variant-numeric:tabular-nums;min-width:120px}
+.runbar input[type=range]{width:260px}
 dialog form{padding:18px 20px}
 dialog h2{margin:0 0 12px;font-size:17px}
 dialog p.note{color:var(--dim);font-size:13px;margin:6px 0 10px}
@@ -243,6 +273,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
 <script>/*@@PDFJS@@*/</script>
 <script>/*@@PDFJSWORKER@@*/</script>
 <script>/*@@PDFLIB@@*/</script>
+<script>/*@@FOLLOWJS@@*/</script>
 </head>
 <body class="edit">
 <div class="app">
@@ -273,6 +304,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
     <button data-mode="show" title="Run the show: arrow keys advance">Show</button>
   </div>
   <button id="projBtn" title="Open the audience window — the one that goes on the projector">📽 Projector</button>
+  <button id="followBtn" title="Follow the music: a countdown to the next cue (beta)">🎧 Follow</button>
   <button id="connectBtn" title="Step-by-step: hooking this computer up to a projector">❔ How to connect</button>
   <button id="settingsBtn">⚙︎ Settings</button>
   <span class="sep"></span>
@@ -299,6 +331,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
       <div class="pvhead"><button type="button" class="swapbtn" id="swapBtn" aria-label="Swap sides" data-tip=""><svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h14M5.5 2.5 2 6l3.5 3.5M12.5 2.5 16 6l-3.5 3.5"/></svg></button>Audience sees<span class="live"><span class="dot" id="projDot"></span><span id="projLbl">Projector off</span></span></div>
       <div class="screen" id="pv"><div class="stage"><div class="stext" id="pvText"></div></div><div class="pvguide" id="pvGuide" hidden></div><div class="bo">BLACKOUT</div></div>
       <div class="nextline" id="nextLine"></div>
+      <div class="followbar" id="followBar" hidden><div class="fbtext" id="fbText"></div><div class="fbtrack"><div class="fbfill" id="fbFill"></div></div></div>
     </div>
     <div class="slidehead">Slides<span class="sp"></span><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button data-act="importSlides">Import…</button></div>
     <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
@@ -353,6 +386,24 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <div class="actions"><button class="primary" value="ok">Done</button></div>
 </form></dialog>
 
+<dialog id="followDlg"><form method="dialog">
+  <h2>Follow the music <span class="beta">beta</span></h2>
+  <p class="note">While the show runs, Supertitle Cuer listens through a microphone and counts down to the next cue. It never changes a title by itself — cuing stays yours. It learns the music from a <b>reference run</b>: a recording of this production in which every cue has its moment.</p>
+  <div class="fsec"><div class="fhead">Reference runs — one per PDF</div>
+    <div id="fParts"></div>
+    <p class="note" style="margin:6px 0 0"><b>● Record</b>: run that part of the show as usual (rehearsal or performance) and cue it — each cue gets its moment as you press it. <b>🔗 Link a recording</b>: open an existing recording of that music, play it here and cue along once.</p>
+  </div>
+  <div class="fsec"><div class="fhead">Microphone</div>
+    <div class="row" style="margin:4px 0"><select id="fMic"></select><span class="meter"><span id="fMeter"></span></span></div>
+  </div>
+  <div class="fsec" id="fFollowSec"><div class="fhead">Follow</div>
+    <div class="factions"><button type="button" id="fToggle" class="primary">Start following</button></div>
+    <p class="note" style="margin:6px 0 0">Every cue you press re-syncs it. If it loses its place (a restart, a cut), it finds it again on its own within a few seconds.</p>
+  </div>
+  <div class="actions"><button value="close">Close</button></div>
+</form></dialog>
+<input type="file" id="fAudio" accept="audio/*,video/*,.mp3,.m4a,.wav,.aif,.aiff,.flac,.ogg,.webm,.mp4,.mov" hidden>
+<div class="runbar" id="runBar" hidden></div>
 <dialog id="connectDlg"><form method="dialog">
   <h2>Connecting to a projector</h2>
   <div class="osTabs"><button type="button" data-os="mac">Mac</button><button type="button" data-os="win">Windows</button></div>
@@ -906,6 +957,7 @@ function lastIndex(){ return Math.max(state.slides.length, state.markers.length)
 function goTo(i, scroll=true){
   atStart=false; anchor=null;
   cur = Math.max(-1, Math.min(i, lastIndex())); blackout=false;
+  onCue(cur);
   renderMarkers(); updateSlideClasses(); updateOutput(); updateHint(); save();
   if(scroll) scrollToCue();
 }
@@ -1145,7 +1197,7 @@ function updateHint(){
 }
 function updateCounts(){
   const m=state.markers.length, s=state.slides.length, el=$('#counts');
-  el.textContent = `${m} cue${m===1?'':'s'} on score · ${s} slide${s===1?'':'s'}`;
+  el.textContent = `${m} cue${m===1?'':'s'} · ${s} slide${s===1?'':'s'}`;
   el.classList.toggle('mismatch', !!state.pdfName && m!==s && (m+s)>0);
   el.title = m===s ? 'Every cue has a slide' : (m>s ? `${m-s} cue(s) have no slide yet (dashed circles)` : `${s-m} slide(s) have no cue on the score yet`);
 }
@@ -1175,11 +1227,11 @@ $('#fPdf').onchange=e=>{ const f=e.target.files[0]; if(f) openAny(f, null); e.ta
 const PROJ_ATTACH='supertitle-cuer-project.json', ORIG_ATTACH='original-score.pdf';
 function setDirty(d){
   dirty=d; const el=$('#docName'); const has = !!(state.pdfName || state.slides.length || state.markers.length);
-  el.textContent = docName || (has ? 'Untitled project' : ''); el.classList.toggle('dirty', d && has);
+  el.innerHTML = '<span class="dn"></span>'; el.firstChild.textContent = docName || (has ? 'Untitled project' : ''); el.title = docName || ''; el.classList.toggle('dirty', d && has);
   document.title = (d&&has?'• ':'') + (docName || 'Supertitle Cuer');
   if(NATIVE) window.stc.docState({path: (fileHandle && fileHandle.nativePath) || '', dirty: !!(d&&has)});
 }
-const projectData = () => ({app:'supertitle-cuer', version:3, savedAt:new Date().toISOString(), pdfName:state.pdfName, parts:state.parts, markers:state.markers, slides:state.slides, settings:state.settings});
+const projectData = () => ({app:'supertitle-cuer', version:4, savedAt:new Date().toISOString(), pdfName:state.pdfName, parts:state.parts, markers:state.markers, slides:state.slides, settings:state.settings, follow: {runs:Object.fromEntries(partsList().filter(p=>refRuns[p.id]).map(p=>[p.id, refMeta(refRuns[p.id])]))}});
 function drawCues(doc, font){
   const {rgb, degrees} = PDFLib; const red=rgb(0.86,0.1,0.1);
   state.markers.forEach((m,i)=>{
@@ -1219,6 +1271,10 @@ async function buildProjectPdf(){
   drawCues(doc, fb); await addCueSheet(doc, fb);
   await doc.attach(pdfBytes, ORIG_ATTACH, {mimeType:'application/pdf', description:'Original score without cue numbers (used by Supertitle Cuer)'});
   await doc.attach(new TextEncoder().encode(JSON.stringify(projectData())), PROJ_ATTACH, {mimeType:'application/json', description:'Supertitle Cuer project: cues, slides, settings'});
+  for(const p of partsList()){ const r=refRuns[p.id]; if(!r) continue;
+    await doc.attach(r.feat, FOLLOW_REF+p.id+'.bin', {mimeType:'application/octet-stream', description:`Supertitle Cuer reference run for ${p.name}: the music as 12-note frames, for Follow`});
+    if(r.audio) await doc.attach(r.audio, FOLLOW_AUDIO+p.id, {mimeType:r.audioType||'audio/webm', description:`Supertitle Cuer reference run for ${p.name}: the recording`});
+  }
   doc.setSubject('Supertitle Cuer project'); doc.setProducer('Supertitle Cuer');
   return await doc.save();
 }
@@ -1228,8 +1284,11 @@ async function readProjectFromPdf(bytes){
     const att=await d.getAttachments(); if(!att) return null;
     const find=n=>Object.values(att).find(a=>a && (a.filename===n || (a.filename||'').endsWith(n)));
     const pj=find(PROJ_ATTACH); if(!pj) return null;
-    const org=find(ORIG_ATTACH);
-    return {project: JSON.parse(new TextDecoder().decode(pj.content)), original: org ? new Uint8Array(org.content) : null};
+    const org=find(ORIG_ATTACH), follow={};
+    for(const a of Object.values(att)){ const n=(a&&a.filename)||'';
+      let m=n.match(/supertitle-cuer-reference-(.+)\.bin$/); if(m) (follow[m[1]]=follow[m[1]]||{}).feat=new Uint8Array(a.content);
+      m=n.match(/supertitle-cuer-recording-(.+)$/); if(m) (follow[m[1]]=follow[m[1]]||{}).audio=new Uint8Array(a.content); }
+    return {project: JSON.parse(new TextDecoder().decode(pj.content)), original: org ? new Uint8Array(org.content) : null, follow};
   } finally { d.destroy(); }
 }
 const PROJ_EXT='.supertitles';
@@ -1320,6 +1379,7 @@ async function openAny(file, handle){
   undoStack=[]; redoStack=[]; cur=-1; blackout=false; atStart=false; anchor=null;
   state.parts=Array.isArray(p.parts)?p.parts:null;
   state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true})); updateLocks(); applyAlign();
+  stopFollow(); refRuns={}; for(const [id,meta] of Object.entries((p.follow&&p.follow.runs)||{})) if(proj.follow[id]) refRuns[id]={...meta, feat:proj.follow[id].feat, audio:proj.follow[id].audio||null}; saveRuns();
   await loadPdfBytes(p.pdfName||file.name, orig);
   renderSlides(); goTo(-1,false);
   fileHandle=handle||null; docName=file.name; setDirty(false); save();
@@ -1332,6 +1392,7 @@ function newProject(){
   state.markers=[]; state.slides=[]; state.pdfName=null; state.parts=null; pdfBytes=null; pdfDoc=null; cur=-1; undoStack=[]; redoStack=[];
   pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[]; $('#pages').replaceChildren(); $('#scoreEmpty').hidden=false; $('#zoomCtl').hidden=true;
   fileHandle=null; docName=null; idbPut('score',null); idbPut('doc',null);
+  stopFollow(); refRuns={}; saveRuns();
   updateLocks(); changed(true); setDirty(false); save();
 }
 async function openProjectFile(f){
@@ -1609,6 +1670,10 @@ async function renderParts(){
       <div class="prow"><button type="button" data-pa="before">+ Before</button><button type="button" data-pa="after">+ After</button></div>
       <div class="prow"><button type="button" data-pa="left" ${i===0?'disabled':''} title="Move earlier">◀</button><button type="button" data-pa="right" ${i===parts.length-1?'disabled':''} title="Move later">▶</button><button type="button" class="trashP" data-pa="del" ${parts.length<2?'disabled':''} title="Remove this PDF">🗑</button></div>`;
     c.querySelector('.pname').textContent=p.name;
+    const r=refRuns[p.id], tc=timedIn(p.id), mu=document.createElement('div'); mu.className='pmusic';
+    mu.innerHTML=`<div class="pmeta">${r ? `♪ ${fmtT(r.duration||0)} recording · ${tc} of ${cues} cues timed` : '♪ no recording yet (for Follow)'}</div>
+      <div class="pmrow"><button type="button" data-pm="record" title="Record this PDF's music through the microphone while you cue it"><span class="recdot">●</span> ${r?'Re-record':'Record'}</button><button type="button" data-pm="link" title="Link an existing recording of this PDF's music and cue along with it once">🔗 Link…</button></div>`;
+    c.append(mu);
     grid.append(c);
   });
   const add=document.createElement('button'); add.type='button'; add.className='padd'; add.innerHTML='<span class="plus">＋</span>Add a PDF<br>at the end';
@@ -1621,6 +1686,9 @@ async function renderParts(){
   }
 }
 $('#partsGrid').addEventListener('click', e=>{
+  const m=e.target.closest('[data-pm]');
+  if(m){ const p=(state.parts||[])[+m.closest('.pcard').dataset.i]; if(!p) return; $('#partsDlg').close();
+    if(m.dataset.pm==='record') startRecording(p.id); else { loadFor=p.id; $('#fAudio').click(); } return; }
   const b=e.target.closest('[data-pa]'); if(!b) return; const i=+b.closest('.pcard').dataset.i;
   if(state.settings.lockCues) return lockedNote('cues');
   ({before:()=>addPartAt(i), after:()=>addPartAt(i+1), left:()=>movePart(i,i-1), right:()=>movePart(i,i+1), del:()=>removePart(i)})[b.dataset.pa]();
@@ -1640,6 +1708,237 @@ $('#partsBtn').onclick=()=>{ if(!pdfBytes) return toast('Open a score PDF first'
 
 /* ---------- desktop app hooks ---------- */
 window.__stcIsDirty = () => !!(dirty && (state.markers.length || state.slides.length));
+/* ---------- Follow: reference runs (one per PDF) and live following ---------- */
+const FOLLOW_REF='supertitle-cuer-reference-', FOLLOW_AUDIO='supertitle-cuer-recording-';
+let refRuns={};             // by PDF part id: {feat: packed frames, audio: bytes|null, audioType, name, source:'recorded'|'file', duration}
+let follow=null;            // live following: {stream, tap, part, f (follower), st (latest state)}
+let run=null;               // a recording or cue-along in progress (for one PDF)
+const FPSF = STCFollow.FPS, LAG = STCFollow.N / STCFollow.SR;
+const refMeta = r => ({name:r.name, source:r.source, duration:r.duration, audioType:r.audioType||null});
+const partsList = () => state.parts || [];
+function cuePart(i){ const m=state.markers[i]; return m ? partOfPage(partsList(), m.page) : null; }
+const cuesOf = id => state.markers.map((m,i)=>i).filter(i=>{ const p=cuePart(i); return p && p.id===id; });
+const timedIn = id => cuesOf(id).filter(i=>typeof state.markers[i].t==='number').length;
+const anyRun = () => partsList().some(p=>refRuns[p.id]);
+function saveRuns(){ idbPut('follow', {runs:refRuns}); updateFollowBtn(); }
+function setRun(id, r){ if(r) refRuns[id]=r; else delete refRuns[id]; saveRuns(); }
+const fmtT = s => { s=Math.max(0,Math.round(s)); const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return (h? h+':'+String(m).padStart(2,'0') : m)+':'+String(x).padStart(2,'0'); };
+
+// an audio graph with a tap that hands mono 22050 Hz samples to `onSamples`
+const TAP_JS = `class Tap extends AudioWorkletProcessor{ process(inp){ const ch=inp[0]; if(ch && ch[0]){ const n=ch[0].length, m=new Float32Array(n);
+  for(let c=0;c<ch.length;c++){ const x=ch[c]; for(let i=0;i<n;i++) m[i]+=x[i]/ch.length; } this.port.postMessage(m,[m.buffer]); } return true; } } registerProcessor('stc-tap', Tap);`;
+async function audioTap(makeSource, onSamples, audible=false){
+  // listening only: run at 22050 Hz; playing a recording to the speakers: full quality, resampled for the tap
+  const ctx = audible ? new AudioContext() : new AudioContext({sampleRate:STCFollow.SR});
+  onSamples = STCFollow.resampler(ctx.sampleRate, onSamples);
+  let level=0; const feed=a=>{ let s=0; for(let i=0;i<a.length;i+=4) s+=a[i]*a[i]; level=0.8*level+0.2*Math.sqrt(s/(a.length/4)); onSamples(a); };
+  const src=await makeSource(ctx), mute=ctx.createGain(); mute.gain.value=0; mute.connect(ctx.destination);
+  let node=null;
+  // an AudioWorklet where the page may load one (not from a file:// page); the older ScriptProcessor otherwise
+  for(const url of [()=>URL.createObjectURL(new Blob([TAP_JS],{type:'application/javascript'})), ()=>'data:application/javascript;charset=utf-8,'+encodeURIComponent(TAP_JS)]){
+    try{ await ctx.audioWorklet.addModule(url()); node=new AudioWorkletNode(ctx,'stc-tap',{numberOfInputs:1, numberOfOutputs:1}); node.port.onmessage=e=>feed(e.data); break; }catch(_){ node=null; }
+  }
+  if(!node){ node=ctx.createScriptProcessor(2048,1,1); node.onaudioprocess=e=>feed(Float32Array.from(e.inputBuffer.getChannelData(0))); }
+  src.connect(node); node.connect(mute); if(audible) src.connect(ctx.destination);
+  if(ctx.state==='suspended') await ctx.resume();
+  return {ctx, node, level:()=>level, close(){ try{ if(node.port) node.port.onmessage=null; else node.onaudioprocess=null; src.disconnect(); ctx.close(); }catch(_){} }};
+}
+async function getMic(){
+  if(NATIVE && window.stc.askMic && !(await window.stc.askMic())) throw Object.assign(new Error('microphone access is off'),{name:'NotAllowedError'});
+  let id=''; try{ id=localStorage.getItem('stc.mic')||''; }catch(_){}
+  const c={echoCancellation:false, noiseSuppression:false, autoGainControl:false, channelCount:1};
+  try{ return await navigator.mediaDevices.getUserMedia({audio: id ? {...c, deviceId:{exact:id}} : c}); }
+  catch(e){ if(id) return await navigator.mediaDevices.getUserMedia({audio:c}); throw e; }
+}
+async function fillMics(){
+  const sel=$('#fMic'); let id=''; try{ id=localStorage.getItem('stc.mic')||''; }catch(_){}
+  let devs=[]; try{ devs=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput'); }catch(_){}
+  sel.replaceChildren(...[{deviceId:'', label:'Default microphone'}, ...devs.filter(d=>d.deviceId && d.deviceId!=='default')].map(d=>{ const o=document.createElement('option'); o.value=d.deviceId; o.textContent=d.label||'Microphone'; return o; }));
+  sel.value=[...sel.options].some(o=>o.value===id)? id : '';
+}
+function micError(e){ toast(e && e.name==='NotAllowedError' ? 'No microphone access — allow it for Supertitle Cuer (on a Mac: System Settings → Privacy & Security → Microphone)' : 'Could not use the microphone: '+(e && e.message || e)); }
+
+// ----- the cue hook: a cue change stamps a time (during a run) or re-syncs Follow -----
+function onCue(i){
+  if(i<0 || i>=state.markers.length) return;
+  const p=cuePart(i);
+  if(run){ if(p && p.id===run.part){ state.markers[i].t=Math.round(run.time()*100)/100; run.timed.add(i); setDirty(true); paintRun(); } return; }
+  if(follow) followCue(i);
+}
+
+// ----- making a reference run for one PDF -----
+function startAtPart(id){ const c=cuesOf(id); goTo(c.length ? c[0]-1 : -1, false); if(c.length) scrollToCue(); }
+async function startRecording(id){
+  const part=partsList().find(p=>p.id===id); if(!part) return;
+  if(!cuesOf(id).length) return toast(`Place the cues for “${part.name}” first — the run records the moment of each one`);
+  if(refRuns[id] && !confirm(`Replace the reference run for “${part.name}”? Its cue times will be overwritten as you cue.`)) return;
+  stopFollow(); $('#followDlg').close();
+  let stream; try{ stream=await getMic(); }catch(e){ return micError(e); }
+  const frames=[], push=STCFollow.extractor(f=>frames.push(f));
+  let tap; try{ tap=await audioTap(ctx=>ctx.createMediaStreamSource(stream), push); }catch(e){ stream.getTracks().forEach(t=>t.stop()); return toast('Could not start recording: '+e.message); }
+  let rec=null, chunks=[], type='';
+  try{ type=['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||''; rec=new MediaRecorder(stream, type?{mimeType:type, audioBitsPerSecond:32000}:{}); rec.ondataavailable=e=>e.data.size&&chunks.push(e.data); rec.start(2000); }catch(_){ rec=null; }
+  run={kind:'record', part:id, partName:part.name, stream, tap, rec, chunks, type, frames, timed:new Set(), time:()=>frames.length/FPSF};
+  setMode('show'); startAtPart(id); updateFollowBtn(); paintRun();
+  run.timer=setInterval(paintRun, 500);
+  toast(`Recording “${part.name}” — cue it as usual with → or Space`);
+}
+async function startCueAlong(id, file){
+  const part=partsList().find(p=>p.id===id); if(!part) return;
+  if(!cuesOf(id).length) return toast(`Place the cues for “${part.name}” first — you'll cue along the recording`);
+  stopFollow(); $('#followDlg').close();
+  const url=URL.createObjectURL(file), media=new Audio(); media.src=url; media.preservesPitch=true;
+  try{ await new Promise((res,rej)=>{ media.onloadedmetadata=res; media.onerror=()=>rej(new Error('this file can’t be played here')); }); }catch(e){ URL.revokeObjectURL(url); return toast('Could not open the recording: '+e.message); }
+  const frames=[]; let push=null, last=-1; // at faster playback one frame covers more than one step of the recording: fill the gap
+  const reset=()=>{ push=STCFollow.extractor(f=>{ const k=Math.round((media.currentTime-LAG)*FPSF); if(k<0) return;
+    for(let j = last>=0 && k-last<=4 ? last+1 : k; j<=k; j++) frames[j]=f; last=k; }); };
+  reset(); media.addEventListener('seeking', ()=>{ last=-1; reset(); });
+  let tap; try{ tap=await audioTap(ctx=>ctx.createMediaElementSource(media), a=>{ if(!media.paused) push(a); }, true); }catch(e){ URL.revokeObjectURL(url); return toast('Could not play the recording: '+e.message); }
+  run={kind:'along', part:id, partName:part.name, media, url, tap, frames, name:file.name, timed:new Set(), time:()=>Math.max(0, media.currentTime-LAG)};
+  setMode('show'); startAtPart(id); updateFollowBtn(); paintRun(true);
+  run.timer=setInterval(paintRun, 250); media.onended=()=>paintRun();
+  toast('Press ▶, then cue along with → or Space');
+}
+async function stopRun(keep=true){
+  if(!run) return; const r=run; run=null; clearInterval(r.timer); $('#runBar').hidden=true;
+  if(r.kind==='record'){
+    let audio=null;
+    if(r.rec && r.rec.state!=='inactive'){ await new Promise(res=>{ r.rec.onstop=res; r.rec.stop(); }); audio=new Uint8Array(await new Blob(r.chunks,{type:r.type}).arrayBuffer()); }
+    r.tap.close(); r.stream.getTracks().forEach(t=>t.stop());
+    if(keep && r.frames.length>FPSF*5){
+      const feat=new Float32Array(r.frames.length*STCFollow.NB); r.frames.forEach((f,i)=>feat.set(f,i*STCFollow.NB));
+      setRun(r.part, {feat:STCFollow.pack(feat), audio, audioType:(r.type||'audio/webm').split(';')[0], name:'Recorded '+new Date().toLocaleString(), source:'recorded', duration:r.frames.length/FPSF});
+      toast(`Reference run for “${r.partName}” kept — ${fmtT(r.frames.length/FPSF)}, ${r.timed.size} cue${r.timed.size===1?'':'s'} timed. Save the project to keep it.`);
+    }
+  } else {
+    r.media.pause(); r.tap.close(); URL.revokeObjectURL(r.url);
+    if(keep){
+      const n=Math.ceil(r.media.duration*FPSF)||r.frames.length, feat=new Float32Array(n*STCFollow.NB); let have=0;
+      for(let k=0;k<n;k++) if(r.frames[k]){ feat.set(r.frames[k], k*STCFollow.NB); have++; }
+      setRun(r.part, {feat:STCFollow.pack(feat), audio:null, audioType:null, name:r.name, source:'file', duration:r.media.duration});
+      const pct=Math.round(have/n*100);
+      toast(`Reference run for “${r.partName}” kept from “${r.name}” — ${r.timed.size} cue${r.timed.size===1?'':'s'} timed`+(pct<95?`, ${pct}% of it listened to (Follow needs the parts you skipped too)`:'')+'. Save the project to keep it.');
+    }
+  }
+  updateFollowBtn(); setDirty(true);
+}
+function paintRun(build){
+  const b=$('#runBar'); if(!run){ b.hidden=true; return; } b.hidden=false;
+  const timed=`${run.timed.size} of ${cuesOf(run.part).length} cues timed`, who=`<b>${esc(run.partName)}</b>`;
+  if(run.kind==='record'){
+    b.innerHTML=`<span class="rec">● Recording</span> ${who}<span class="t">${fmtT(run.time())}</span><span>${timed} · cue with → or Space</span><button type="button" data-run="stop" class="primary">■ Stop &amp; keep</button><button type="button" data-run="cancel">Discard</button>`;
+    return;
+  }
+  const m=run.media;
+  if(build || !b.querySelector('input')){
+    b.innerHTML=`${who}<button type="button" data-run="back">⏪ 5 s</button><button type="button" data-run="play" class="primary" style="min-width:44px"></button><button type="button" data-run="fwd">5 s ⏩</button>
+      <input type="range" min="0" step="0.1" data-run="seek"><span class="t"></span>
+      <select data-run="rate" title="Playback speed"><option value="1">1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select>
+      <span class="timed"></span><button type="button" data-run="stop">✓ Done</button><button type="button" data-run="cancel">Discard</button>`;
+    b.querySelector('select').value=String(m.playbackRate);
+  }
+  b.querySelector('[data-run="play"]').textContent = m.paused ? '▶' : '⏸';
+  const sk=b.querySelector('input'); sk.max=m.duration||0; if(!sk.matches(':active')) sk.value=m.currentTime;
+  b.querySelector('.t').textContent=`${fmtT(m.currentTime)} / ${fmtT(m.duration||0)}`;
+  b.querySelector('.timed').textContent=timed;
+}
+$('#runBar').addEventListener('click', e=>{
+  const a=e.target.closest('[data-run]'); if(!a || !run) return; const k=a.dataset.run, m=run.media;
+  if(k==='stop') stopRun(true);
+  else if(k==='cancel'){ if(confirm(run.kind==='record' ? 'Discard this recording? (Cue times you pressed stay on the cues.)' : 'Stop without keeping a reference run? (Cue times you pressed stay on the cues.)')) stopRun(false); }
+  else if(k==='play'){ m.paused ? m.play() : m.pause(); paintRun(); }
+  else if(k==='back'){ m.currentTime=Math.max(0,m.currentTime-5); paintRun(); }
+  else if(k==='fwd'){ m.currentTime=Math.min(m.duration,m.currentTime+5); paintRun(); }
+  a.blur();
+});
+$('#runBar').addEventListener('input', e=>{ if(!run || !run.media) return; const k=e.target.dataset.run;
+  if(k==='seek') run.media.currentTime=+e.target.value; if(k==='rate'){ run.media.playbackRate=+e.target.value; e.target.blur(); } paintRun(); });
+
+// ----- following live -----
+function followerFor(id){ const r=refRuns[id]; return r ? STCFollow.follower(STCFollow.unpack(r.feat)) : null; }
+function followCue(i){            // re-sync on a cue; change recordings when the cue is in another PDF
+  const p=cuePart(i); if(!p) return; const m=state.markers[i];
+  if(p.id!==follow.part){ follow.part=p.id; follow.f=followerFor(p.id); follow.st=follow.f ? follow.f.state() : null; }
+  if(follow.f && typeof m.t==='number') follow.f.anchor(m.t);
+}
+async function startFollow(){
+  if(!anyRun()) return toast('Make a reference run first (record one, or add a recording)');
+  let stream; try{ stream=await getMic(); }catch(e){ return micError(e); }
+  follow={stream, tap:null, part:null, f:null, st:null};
+  const at = cur>=0 ? cur : 0; const p=cuePart(at) || partsList()[0];
+  follow.part=p && p.id; follow.f=followerFor(follow.part); follow.st=follow.f && follow.f.state();
+  if(cur>=0) followCue(cur);
+  const push=STCFollow.extractor(fr=>{ if(follow && follow.f) follow.st=follow.f.step(fr); });
+  try{ follow.tap=await audioTap(ctx=>ctx.createMediaStreamSource(stream), push); }catch(e){ stream.getTracks().forEach(t=>t.stop()); follow=null; return toast('Could not start following: '+e.message); }
+  follow.timer=setInterval(paintFollow, 200);
+  updateFollowBtn(); paintFollow(); toast('Following — the countdown is under the preview');
+}
+function stopFollow(){
+  if(!follow) return; clearInterval(follow.timer); if(follow.tap) follow.tap.close(); follow.stream.getTracks().forEach(t=>t.stop()); follow=null;
+  $('#followBar').hidden=true; updateFollowBtn();
+}
+function paintFollow(){
+  const bar=$('#followBar'); if(!follow){ bar.hidden=true; return; } bar.hidden=false;
+  const st=follow.st, nx=state.markers[cur+1], np=cuePart(cur+1), txt=$('#fbText'), fill=$('#fbFill');
+  const partName = id => (partsList().find(p=>p.id===id)||{}).name || 'this PDF';
+  let cls='lost', left='', right='', pct=0;
+  if(cur+1>=state.markers.length){ left='Following'; right='last cue reached'; cls=''; }
+  else if(np && np.id!==follow.part){ left=`Next cue <b>${cur+2}</b> starts “${esc(np.name)}”`; right= refRuns[np.id] ? 'Follow switches over when you cue it' : 'that PDF has no reference run'; }
+  else if(!follow.f){ left='No reference run for'; right=`“${esc(partName(follow.part))}”`; }
+  else if(!nx || typeof nx.t!=='number'){ left=`Next cue ${cur+2}`; right='has no time in the reference run'; }
+  else if(st.held>1.2){ left='Waiting for the music…'; }
+  else if(st.confidence<0.3){ left='Re-finding the place…'; }
+  else {
+    const secs=(nx.t-st.refTime)/(st.tempo||1), pm=state.markers[cur], prevT = cur>=0 && cuePart(cur)===np && typeof pm.t==='number' ? pm.t : Math.max(0,nx.t-20);
+    pct=Math.max(0,Math.min(100,(st.refTime-prevT)/Math.max(0.5,nx.t-prevT)*100));
+    if(secs<=0.4){ cls='now'; left=`<b>Cue ${cur+2} now</b>`; right = secs< -2 ? `${Math.round(-secs)} s late` : ''; pct=100; }
+    else { cls = secs<4 ? 'soon' : ''; left=`Next cue <b>${cur+2}</b> in <b>${secs<10? secs.toFixed(1) : Math.round(secs)} s</b>`; right=`following · ${Math.round(st.tempo*100)}% tempo`; }
+  }
+  bar.className='followbar '+cls; txt.innerHTML=`<span>${left}</span><span>${right}</span>`; fill.style.width=pct+'%';
+}
+function updateFollowBtn(){
+  const b=$('#followBtn'); b.classList.toggle('live', !!follow); b.classList.toggle('rec', !!run);
+  b.textContent = run ? (run.kind==='record' ? '● Recording' : '● Cueing along') : follow ? '🎧 Following' : '🎧 Follow';
+  if($('#followDlg').open) paintFollowDlg();
+}
+function paintFollowDlg(){
+  const parts=partsList(), list=$('#fParts');
+  if(!parts.length){ list.innerHTML='<p class="note">Open the score first.</p>'; }
+  else list.replaceChildren(...parts.map(p=>{
+    const r=refRuns[p.id], n=cuesOf(p.id).length, tc=timedIn(p.id), row=document.createElement('div'); row.className='frow'; row.dataset.part=p.id;
+    row.innerHTML=`<div class="fname"><b></b><span class="fstat"></span></div><div class="factions">
+      <button type="button" data-f="record" title="Record this PDF's music through the microphone while you cue it"><span class="recdot">●</span> ${r?'Record again':'Record'}</button>
+      <button type="button" data-f="load" title="Open an existing recording of this PDF's music and cue along with it once">🔗 ${r?'Link another recording':'Link a recording'}…</button>
+      ${r?'<button type="button" data-f="remove" class="danger" title="Remove this reference run">✕</button>':''}</div>`;
+    row.querySelector('b').textContent=p.name;
+    row.querySelector('.fstat').innerHTML = r ? ` · ${fmtT(r.duration||0)} ${r.source==='recorded'?'recorded here':'from “'+esc(r.name)+'”'} · ${tc} of ${n} cues timed` : ` · no reference run · ${n} cue${n===1?'':'s'}`;
+    return row; }));
+  $('#fFollowSec').hidden=!anyRun(); $('#fToggle').textContent = follow ? 'Stop following' : 'Start following';
+}
+let meterT=null, meterTap=null, loadFor=null;
+$('#followBtn').onclick=async()=>{
+  if(run){ $('#runBar').hidden=false; return toast(run.kind==='record' ? 'Recording — Stop is at the bottom of the window' : 'Cueing along — Done is at the bottom of the window'); }
+  paintFollowDlg(); fillMics(); $('#followDlg').showModal();
+};
+$('#fParts').addEventListener('click', e=>{
+  const b=e.target.closest('[data-f]'); if(!b) return; const id=b.closest('.frow').dataset.part, name=(partsList().find(p=>p.id===id)||{}).name;
+  if(b.dataset.f==='record') startRecording(id);
+  else if(b.dataset.f==='load'){ loadFor=id; $('#fAudio').click(); }
+  else if(b.dataset.f==='remove' && confirm(`Remove the reference run for “${name}”? Its cue times stay on the cues.`)){ if(follow && follow.part===id) stopFollow(); setRun(id,null); setDirty(true); paintFollowDlg(); }
+});
+$('#followDlg').addEventListener('close', ()=>{ clearInterval(meterT); if(meterTap){ meterTap.close(); meterTap.stream.getTracks().forEach(t=>t.stop()); meterTap=null; } });
+$('#fMic').onchange=async()=>{ try{ localStorage.setItem('stc.mic', $('#fMic').value); }catch(_){}
+  if(follow){ stopFollow(); await startFollow(); } toast('Microphone: '+$('#fMic').selectedOptions[0].textContent); testMic(); };
+async function testMic(){ // level meter while the window is open
+  clearInterval(meterT); if(meterTap){ meterTap.close(); meterTap.stream.getTracks().forEach(t=>t.stop()); meterTap=null; }
+  if(follow || run) return;
+  try{ const s=await getMic(); meterTap=await audioTap(ctx=>ctx.createMediaStreamSource(s), ()=>{}); meterTap.stream=s; fillMics(); }catch(e){ return; }
+  meterT=setInterval(()=>{ if(meterTap) $('#fMeter').style.width=Math.min(100, meterTap.level()*400)+'%'; },100);
+}
+$('#fMic').addEventListener('focus', ()=>{ if(!meterTap) testMic(); });
+$('#fAudio').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f && loadFor) startCueAlong(loadFor, f); };
+$('#fToggle').onclick=async()=>{ if(follow) stopFollow(); else { $('#followDlg').close(); await startFollow(); } paintFollowDlg(); };
+
 /* ---------- spelling ---------- */
 function spellOn(){ try{ return localStorage.getItem('stc.spell')!=='0'; }catch(_){ return true; } }
 function applySpell(on){
@@ -1673,6 +1972,7 @@ window.__stcMenu = (cmd) => {
 (async function init(){
   localizeKeys(document.body); loadLocal(); applyAlign(); sortMarkers(); if(state.markers.length) state.settings.flow=false; document.body.classList.toggle('flow', !!state.settings.flow); updateFlowBtn(); updateLocks(); const wasDirty=dirty; renderSlides(); applySpell(spellOn()); initSpellLang(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
   const d = await idbGet('doc'); if(d && d.handle && d.name===docName) fileHandle=d.handle;
+  const fr = await idbGet('follow'); if(fr && fr.runs) refRuns=fr.runs;
   const rec = await idbGet('score');
   if(rec && rec.bytes && (!state.pdfName || rec.name===state.pdfName)){ await loadPdfBytes(rec.name, new Uint8Array(rec.bytes)); setDirty(wasDirty); toast(`Picked up where you left off`); }
   else if(state.pdfName){ $('#scoreEmpty .big').textContent = `Open the score: ${state.pdfName}`; }

@@ -12,6 +12,7 @@ const libs = {
   PDFJS: nm('pdfjs-dist/build/pdf.min.js'),
   PDFJSWORKER: nm('pdfjs-dist/build/pdf.worker.min.js'),
   PDFLIB: nm('pdf-lib/dist/pdf-lib.min.js'),
+  FOLLOWJS: path.join(root, 'src', 'follow.js'),
 };
 for (const [key, file] of Object.entries(libs)) {
   const code = fs.readFileSync(file, 'utf8');

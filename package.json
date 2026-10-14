@@ -58,7 +58,10 @@
           ]
         }
       ],
-      "artifactName": "Supertitle_Cuer-${version}-${arch}.${ext}"
+      "artifactName": "Supertitle_Cuer-${version}-${arch}.${ext}",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Supertitle Cuer listens to the music to count down to the next cue (Follow), and records reference runs."
+      }
     },
     "dmg": {
       "title": "Supertitle Cuer ${version}"
