@@ -1355,15 +1355,21 @@ function fitSegment(seg, ctx=measureCtx()){
   if(cur.length) sentences.push(cur);
   const fits = tk => fitsSlide(joinToks(tk), ctx);
   const out=[]; let slide=[];
+  const has = sl => sl.some(t=>t!=='\n');
   for(const sen of sentences){
     if(fits(slide.concat(sen))){ slide=slide.concat(sen); continue; }
-    if(slide.some(t=>t!=='\n')){ out.push({text:joinToks(slide), b:'soft'}); }
-    slide=[];
-    if(fits(sen)){ slide=sen.slice(); continue; }
+    // The sentence doesn't fit in what's left of this slide: start it here and carry the rest
+    // over with "…" — but only if at least two of its words fit here; otherwise it starts the next slide.
+    let room=0; if(has(slide)){ let t=slide.slice(); for(const w of sen){ if(w==='\n') { t.push(w); continue; } t=t.concat(w); if(fitsSlide(joinToks(t)+ELL, ctx)) room++; else break; } }
+    if(room<2){
+      if(has(slide)) out.push({text:joinToks(slide), b:'soft'});
+      slide=[];
+      if(fits(sen)){ slide=sen.slice(); continue; }
+    }
     for(const w of sen){                                   // sentence too long: split it, with … at both ends
       if(w==='\n'){ slide.push(w); continue; }
       const c=slide.concat(w);
-      if(!slide.some(t=>t!=='\n') || fitsSlide(joinToks(c)+ELL, ctx)) slide=c;
+      if(!has(slide) || fitsSlide(joinToks(c)+ELL, ctx)) slide=c;
       else { out.push({text:joinToks(slide)+ELL, b:'split'}); slide=[ELL+w]; }
     }
   }
