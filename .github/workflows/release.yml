@@ -33,6 +33,37 @@ jobs:
       - run: npm run ${{ matrix.script }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify Mac app
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -e
+          for APP in "release/mac-arm64/Supertitle Cuer.app" "release/mac/Supertitle Cuer.app"; do
+            codesign --verify --deep --strict "$APP"
+            plutil -extract CFBundleDocumentTypes.0.CFBundleTypeExtensions.0 raw "$APP/Contents/Info.plist" | grep -qx supertitles
+            echo "::notice::$(basename "$(dirname "$APP")"): signature OK (ad-hoc), .supertitles registered, $(lipo -archs "$APP/Contents/MacOS/Supertitle Cuer")"
+          done
+          APP="release/mac-arm64/Supertitle Cuer.app"
+          "$APP/Contents/MacOS/Supertitle Cuer" &
+          sleep 20
+          pgrep -f "Supertitle Cuer.app/Contents/MacOS" >/dev/null && echo "::notice::Mac app launched and kept running"
+          pkill -f "Supertitle Cuer.app/Contents/MacOS" || true
+      - name: Verify Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem release\*.exe | Select-Object -First 1
+          Start-Process $exe.FullName -ArgumentList '/S' -Wait
+          $app = Join-Path $env:LOCALAPPDATA 'Programs\supertitle-cuer\Supertitle Cuer.exe'
+          if (!(Test-Path $app)) { Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter *.exe | Select-Object -First 5 | ForEach-Object { Write-Host $_.FullName }; throw "app not installed at $app" }
+          $assoc = (Get-ItemProperty 'HKCU:\Software\Classes\.supertitles' -ErrorAction SilentlyContinue).'(default)'
+          if (!$assoc) { throw '.supertitles not registered' }
+          Write-Host "::notice::Windows installer OK: installed, .supertitles -> $assoc"
+          $p = Start-Process $app -PassThru
+          Start-Sleep 20
+          if ($p.HasExited) { throw 'app exited early' }
+          Write-Host '::notice::Windows app launched and kept running'
+          Stop-Process -Id $p.Id -Force
       - uses: actions/upload-artifact@v4
         with:
           name: app-${{ matrix.os }}
