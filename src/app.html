@@ -281,7 +281,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
       <div class="nextline" id="nextLine"></div>
     </div>
     <div class="slidehead">Slides<span class="sp"></span><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button data-act="importSlides">Import…</button></div>
-    <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Slides that already have a cue on the score stay fixed.</div>
+    <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
     <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
     <div id="slides"></div>
   </aside>
@@ -456,7 +456,7 @@ const typingIn = el => el && el.matches && el.matches('textarea:not([readonly]),
 let saveT;
 function changed(rebuildSlides){
   renderMarkers(); if(rebuildSlides) renderSlides(); else updateSlideClasses();
-  updateCounts(); updateHint(); updateOutput(); setDirty(true);
+  updateCounts(); updateHint(); updateOutput(); setDirty(true); updateFlowBtn();
   clearTimeout(saveT); saveT=setTimeout(save,150);
 }
 
@@ -770,11 +770,20 @@ slidesEl.addEventListener('keydown', e=>{
     const prev=state.slides[i-1], at=prev.text.length; prev.b='soft'; changed(true); flowRefit(i-1, at);
   }
 });
+// Flow mode is for writing before cueing: once any cue is on the score it is switched off and locked.
+function updateFlowBtn(){
+  const fb=$('#flowBtn'), cued=state.markers.length>0;
+  if(cued && state.settings.flow){ state.settings.flow=false; save(); document.body.classList.remove('flow'); renderSlides(); toast('Flow mode turned off — cues are on the score now, so slide breaks stay put'); }
+  fb.disabled=cued; fb.classList.toggle('on', !!state.settings.flow); fb.textContent = state.settings.flow ? '¶ Flow on' : '¶ Flow';
+  fb.title = cued ? 'Flow mode is only available before cues are placed — remove all cues from the score to use it again'
+                  : 'Flow mode: write the libretto as one continuous text that fills slides by itself';
+}
 function setFlow(on){
+  if(on && state.markers.length) return toast('Flow mode is only available before any cues are placed on the score');
   if(on && state.settings.lockOrder) return lockedNote('order');
   state.settings.flow=!!on; save(); document.body.classList.toggle('flow', !!on);
   $('#flowBtn').classList.toggle('on', !!on); $('#flowBtn').textContent = on ? '¶ Flow on' : '¶ Flow';
-  if(on){ snap(); flowRefitAll(); toast(state.markers.length ? `Flow mode — slides ${state.markers.length+1} onward flow; ${state.markers.length===1?'the cued slide stays':'the '+state.markers.length+' cued slides stay'} fixed` : 'Flow mode — type freely; text flows from slide to slide'); }
+  if(on){ snap(); flowRefitAll(); toast('Flow mode — type freely; text flows from slide to slide'); }
   else toast('Flow mode off — slide breaks stay where they are');
   renderSlides();
 }
@@ -1407,7 +1416,7 @@ window.__stcMenu = (cmd) => {
 
 /* ---------- start ---------- */
 (async function init(){
-  localizeKeys(document.body); loadLocal(); sortMarkers(); document.body.classList.toggle('flow', !!state.settings.flow); $('#flowBtn').classList.toggle('on', !!state.settings.flow); if(state.settings.flow) $('#flowBtn').textContent='¶ Flow on'; updateLocks(); const wasDirty=dirty; renderSlides(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
+  localizeKeys(document.body); loadLocal(); sortMarkers(); if(state.markers.length) state.settings.flow=false; document.body.classList.toggle('flow', !!state.settings.flow); updateFlowBtn(); updateLocks(); const wasDirty=dirty; renderSlides(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
   const d = await idbGet('doc'); if(d && d.handle && d.name===docName) fileHandle=d.handle;
   const rec = await idbGet('score');
   if(rec && rec.bytes && (!state.pdfName || rec.name===state.pdfName)){ await loadPdfBytes(rec.name, new Uint8Array(rec.bytes)); setDirty(wasDirty); toast(`Picked up where you left off`); }
