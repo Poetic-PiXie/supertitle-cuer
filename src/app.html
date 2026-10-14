@@ -85,11 +85,13 @@ body:not(.native) .native-only{display:none}
 .padd .plus{font-size:34px;line-height:1}
 #partsDlg.busy .partsGrid{opacity:.5;pointer-events:none}
 #projBtn.live{border-color:var(--ok);color:var(--ok);background:rgba(79,191,127,.1)}
-#verTag{position:fixed;right:8px;bottom:6px;font-size:10.5px;color:#7d808b;letter-spacing:.02em;pointer-events:none;z-index:4;user-select:none;background:rgba(22,23,27,.88);padding:1px 7px;border-radius:5px}
+.vertag{margin-left:auto;font-size:11px;color:#7d808b;letter-spacing:.02em;user-select:none;padding:3px 2px}
+.rlab{font-size:12px;color:var(--dim)}
+#sMid.on{border-color:var(--accent);color:var(--accent)}
 .sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
 .docname{font-size:13px;color:var(--dim);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .docname.dirty::after{content:" • not saved";color:var(--warn)}
-.hint{color:var(--dim);margin-left:auto;font-size:13px}
+.hint{color:var(--dim);flex-basis:100%;text-align:right;font-size:13px}
 .hint b{color:var(--text)}
 .counts{font-size:13px;color:var(--dim);padding:3px 8px;border-radius:5px;background:var(--panel2)}
 .counts.mismatch{color:var(--warn)}
@@ -259,6 +261,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <button id="settingsBtn">⚙︎ Settings</button>
   <span class="sep"></span>
   <span class="counts" id="counts"></span>
+  <span class="vertag" id="verTag" title="S.T.Cuer version">v@@VERSION@@</span>
   <span class="hint" id="hint"></span>
 </header>
 <main>
@@ -325,9 +328,10 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <div class="row"><span class="lbl">Text style</span><label><input type="checkbox" id="sItal"> Italic</label><label><input type="checkbox" id="sBold"> Bold</label></div>
   <div class="row"><span class="lbl">Colours</span><label>Text <input type="color" id="sFg"></label><label>Background <input type="color" id="sBg"></label></div>
   <div class="row"><span class="lbl">Alignment</span><div class="seg" id="sAlign"><button type="button" data-al="left">⯇ Left</button><button type="button" data-al="center">Center</button><button type="button" data-al="right">Right ⯈</button></div></div>
-  <div class="row"><span class="lbl">Vertical position</span><select id="sVa"><option value="flex-start">Top</option><option value="center">Middle</option><option value="flex-end">Bottom</option></select></div>
+  <div class="row"><span class="lbl">Vertical position</span><span class="rlab">Top</span><input type="range" id="sVpos" min="-100" max="100" step="1"><span class="rlab">Bottom</span><button type="button" id="sMid">Middle</button></div>
+  <div class="row"><span class="lbl">Side margins</span><input type="range" id="sSide" min="2" max="6" step="0.25"><span id="sSideV"></span></div>
   <div class="row"><span class="lbl">Screen shape</span><select id="sShape"><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select></div>
-  <div class="row"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="7" step="0.25"><span id="sMkV"></span></div>
+  <div class="row"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="6" step="0.25"><span id="sMkV"></span></div>
   <div class="row web-only"><span class="lbl">Second screen</span><button type="button" id="sScreens">Let the projector window open on the 2nd screen automatically</button></div>
   <div class="actions"><button class="primary" value="ok">Done</button></div>
 </form></dialog>
@@ -390,7 +394,6 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
 <input type="file" id="fPdf" hidden>
 <input type="file" id="fImp" accept=".csv,.txt,.tsv,.pdf,text/csv,text/plain,application/pdf" hidden>
 <div id="toast"></div>
-<div id="verTag">S.T.Cuer v@@VERSION@@</div>
 <div id="drop">Drop a score PDF, a slides CSV, or a project file</div>
 
 <script>
@@ -404,8 +407,13 @@ function localizeKeys(root){ if(IS_MAC) return;
   const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while((n=w.nextNode())) if(n.nodeValue.includes('⌘')) n.nodeValue=keyName(n.nodeValue);
   root.querySelectorAll('[title*="⌘"]').forEach(el=>el.title=keyName(el.title)); }
 const LS_KEY = 'supertitle-cuer-v1';
-function migrateSettings(st){ st.shape=normShape(st.shape); if(st.textScale==null) st.textScale=1; st.textScale=Math.min(1, Math.max(0.75, st.textScale)); return st; }
-const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', shape:'16/9', markerSize:3.5, zoom:1, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:1, align:'left' });
+function migrateSettings(st){ st.shape=normShape(st.shape); if(st.textScale==null) st.textScale=1; st.textScale=Math.min(1, Math.max(0.75, st.textScale));
+  if(st.vpos==null) st.vpos = st.va==='flex-start' ? -100 : st.va==='flex-end' ? 100 : 0;
+  st.vpos=Math.max(-100, Math.min(100, +st.vpos||0));
+  st.sideMargin=Math.max(0.02, Math.min(0.06, +st.sideMargin||0.02));
+  if(st.markerSize===3.5) st.markerSize=4; st.markerSize=Math.max(2, Math.min(6, +st.markerSize||4));
+  return st; }
+const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', vpos:0, sideMargin:0.02, shape:'16/9', markerSize:4, zoom:1, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:1, align:'left' });
 
 const state = { pdfName:null, parts:null, markers:[], slides:[], settings:defaults() };
 // parts: the PDFs that make up the score, in order: [{id, name, pages}]. The merged score is pdfBytes.
@@ -850,16 +858,17 @@ function titleFrame(W, H, lines, Tmax, Gmax, Mmax, k){
   const T=Math.round(Tmax*k), G0=Math.round(Gmax);
   const extra=Math.max(0, H - lines*T - (lines-1)*G0 - 2*Mmax)/(lines+1);
   const G=G0+extra, M=Mmax+extra;
-  return {font:T, lh:(T+G)/T, padY:M - G/2, padX:0.02*W};     // CSS puts half a gap above the first and below the last line
+  return {font:T, lh:(T+G)/T, padY:M - G/2, padX:(state.settings.sideMargin||0.02)*W};     // CSS puts half a gap above the first and below the last line
 }
 function titleLayout(){
   const st=state.settings, k=Math.min(1, Math.max(0.75, st.textScale||1)), sh=normShape(st.shape);
   // 6:1 strip (H = strip height): margins 0.05H top/bottom, 0.02W sides; lines 3H/7, gap 3H/70; 2 lines.
-  if(sh==='6/1') return {shape:sh, lines:2, availW:0.96, fsOfWidth:3/7*k/6,
+  const aw=1-2*(st.sideMargin||0.02);
+  if(sh==='6/1') return {shape:sh, lines:2, availW:aw, fsOfWidth:3/7*k/6,
     px:(W,H)=>titleFrame(W, H, 2, 3*H/7, 3*H/70, 0.05*H, k) };
   // 16:9 and 4:3 (H = screen / 4:3-area height): margins 47H/540, 0.02W sides; lines 137H/1080, gap 137H/10800; 6 lines.
   const hOfW = sh==='4/3' ? 3/4 : 9/16;
-  return {shape:sh, lines:6, availW:0.96, fsOfWidth:137/1080*hOfW*k,
+  return {shape:sh, lines:6, availW:aw, fsOfWidth:137/1080*hOfW*k,
     px:(W,H)=>titleFrame(W, H, 6, 137*H/1080, 137*H/10800, 47*H/540, k) };
 }
 function applyAlign(){ const al=state.settings.align||'left'; document.body.style.setProperty('--talign', al); document.querySelectorAll('#sAlign [data-al]').forEach(b=>b.classList.toggle('on', b.dataset.al===al)); }
@@ -877,6 +886,9 @@ function fit(stage, text){
   let fs=m.font, n=0; text.style.fontSize=fs+'px';
   const availH=H-2*m.padY, availW=W-2*m.padX;
   while(n++<40 && (text.scrollHeight > availH+2 || text.scrollWidth > availW+2) && fs>4){ fs*=0.93; text.style.fontSize=fs+'px'; } // safety net only
+  stage.style.alignItems='center';
+  const vp=(state.settings.vpos||0)/100, free=Math.max(0, availH-text.offsetHeight);
+  text.style.transform = titleLayout().shape==='6/1' ? 'none' : `translateY(${vp*free/2}px)`;
 }
 function updateOutput(){
   const t=liveText(), pv=$('#pv'), txt=$('#pvText');
@@ -894,11 +906,11 @@ function updateOutput(){
 // On the projector, 6:1 is a full-width band of height width/6 at the top, middle or bottom of the screen;
 // 4:3 is the centred 4:3 area; 16:9 fills the screen.
 function placeProjStage(d){
-  const st=d.getElementById('stage'), w=projWin.innerWidth, h=projWin.innerHeight, sh=normShape(state.settings.shape), va=state.settings.va;
+  const st=d.getElementById('stage'), w=projWin.innerWidth, h=projWin.innerHeight, sh=normShape(state.settings.shape), vp=(state.settings.vpos||0)/100;
   let bw=w, bh=h;
   if(sh==='6/1'){ bh=Math.min(h, w/6); } else if(sh==='4/3'){ bw=Math.min(w, h*4/3); bh=Math.min(h, bw*3/4); } else { bh=Math.min(h, w*9/16); bw=Math.min(w, bh*16/9); }
-  const top = sh==='6/1' ? (va==='flex-start' ? 0 : va==='flex-end' ? h-bh : (h-bh)/2) : (h-bh)/2;
-  Object.assign(st.style,{width:bw+'px', height:bh+'px', left:(w-bw)/2+'px', top:top+'px', alignItems: sh==='6/1' ? 'center' : va});
+  const top = sh==='6/1' ? (h-bh)/2*(1+vp) : (h-bh)/2;     // the strip slides from the top (−100) to the bottom (+100) of the screen
+  Object.assign(st.style,{width:bw+'px', height:bh+'px', left:(w-bw)/2+'px', top:top+'px'});
 }
 const esc = s => s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const projOpen = () => projWin && !projWin.closed;
@@ -1308,15 +1320,16 @@ $('#importDlg').addEventListener('close', ()=>{
 /* ---------- settings ---------- */
 function openSettings(){
   const s=state.settings;
-  applyAlign(); $('#sFs').value=Math.round((s.textScale||1)*100); $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVa').value=s.va; $('#sShape').value=normShape(s.shape); $('#sMk').value=s.markerSize;
+  applyAlign(); $('#sFs').value=Math.round((s.textScale||1)*100); $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVpos').value=s.vpos||0; $('#sSide').value=((s.sideMargin||0.02)*100); $('#sShape').value=normShape(s.shape); $('#sMk').value=s.markerSize;
   if(![...$('#sFont').options].some(o=>o.value===s.font)) $('#sFont').selectedIndex=0;
   setVals(); $('#setDlg').showModal();
 }
-function setVals(){ $('#sFsV').textContent=$('#sFs').value+'%'; $('#sFsNote').textContent = ($('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = six lines on the screen: lines 137/1080 of its height, 137/10800 apart, 47/540 top/bottom and 2% side margins.') + ' Smaller sizes share the freed height evenly between the margins and the line gaps.'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%'; }
+function setVals(){ $('#sSideV').textContent=(+$('#sSide').value).toFixed(2)+'% each side'; $('#sMid').classList.toggle('on', +$('#sVpos').value===0); $('#sFsV').textContent=$('#sFs').value+'%'; $('#sFsNote').textContent = ($('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = six lines on the screen: lines 137/1080 of its height, 137/10800 apart, 47/540 top/bottom and 2% side margins.') + ' Smaller sizes share the freed height evenly between the margins and the line gaps.'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%'; }
 $('#settingsBtn').onclick=openSettings;
+$('#sMid').onclick=()=>{ $('#sVpos').value=0; $('#setDlg').dispatchEvent(new Event('input')); };
 $('#sAlign').addEventListener('click', e=>{ const b=e.target.closest('[data-al]'); if(!b) return; state.settings.align=b.dataset.al; applyAlign(); updateOutput(); setDirty(true); save(); });
 $('#setDlg').addEventListener('input', ()=>{
-  const s=state.settings; s.textScale=(+$('#sFs').value)/100; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.va=$('#sVa').value; s.shape=$('#sShape').value;
+  const s=state.settings; s.textScale=(+$('#sFs').value)/100; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.vpos=+$('#sVpos').value; s.sideMargin=(+$('#sSide').value)/100; s.shape=$('#sShape').value;
   const mk=+$('#sMk').value; if(mk!==s.markerSize){ s.markerSize=mk; layoutPages(); }
   setVals(); updateOutput(); setDirty(true); save();
   clearTimeout(flowT); flowT=setTimeout(()=>{ if(state.settings.flow) flowRefitAll(); markOverflow(); }, 300);
