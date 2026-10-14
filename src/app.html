@@ -301,7 +301,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
     </div>
     <div class="slidehead">Slides<span class="sp"></span><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button data-act="importSlides">Import…</button></div>
     <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
-    <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
+    <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button id="pickUp" title="Move the selected slides up one place">▲</button><button id="pickDown" title="Move the selected slides down one place">▼</button><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
     <div id="slides"></div>
   </aside>
 </main>
@@ -468,7 +468,7 @@ async function restore(from,to,label){
       idbPut('score',{name:state.pdfName, bytes:x.bytes});
       if($('#partsDlg').open) renderParts();
     }
-    state.markers=d.m; state.slides=d.s; atStart=false; anchor=null; cur=Math.min(cur,lastIndex()); changed(true); toast(label);
+    state.markers=d.m; state.slides=d.s; atStart=false; anchor=null; pickA=pickB=pickAnchor=null; cur=Math.min(cur,lastIndex()); changed(true); updatePicks(); toast(label);
   } finally { restoring=false; }
 }
 const undo=()=>restore(undoStack,redoStack,'Undone'), redo=()=>restore(redoStack,undoStack,'Redone');
@@ -681,6 +681,7 @@ slidesEl.addEventListener('click', e=>{
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : (b.dataset.i!=null ? +b.dataset.i : -1);
   if(state.settings.lockOrder && a!=='append') return lockedNote('order');
   if(a==='trash') return (pickA!=null && pickB>pickA && i>=pickA && i<=pickB) ? askDeleteRange(pickA,pickB) : askDeleteSlide(i);
+  if((a==='up'||a==='down') && inPick(i)) return nudgePick(a==='up'?-1:1);
   if(a==='up' && i>0) return moveSlide(i,i-1);
   if(a==='down' && i<state.slides.length-1) return moveSlide(i,i+1);
   snap();
@@ -750,34 +751,45 @@ async function askDeleteRange(a,b){
 }
 $('#pickDel').onclick=()=>{ if(pickA!=null) askDeleteRange(pickA,pickB); };
 $('#pickClear').onclick=clearPicks;
-function moveSlide(from,to){
-  if(from===to) return;
-  snap(); const [x]=state.slides.splice(from,1); state.slides.splice(to,0,x);
-  if(cur===from) cur=to; else if(from<cur && to>=cur) cur--; else if(from>cur && to<=cur) cur++;
-  changed(true); toast(`Slide moved from ${from+1} to ${to+1} — the others were renumbered`);
+$('#pickUp').onclick=()=>nudgePick(-1); $('#pickDown').onclick=()=>nudgePick(1);
+function moveSlide(from,to){ moveBlock(from,from,to); }
+// Moves slides a..b so the first of them lands at index `to`. A selected range moves as a block and stays selected.
+function moveBlock(a,b,to){
+  const n=b-a+1; to=Math.max(0, Math.min(to, state.slides.length-n));
+  if(to===a) return;
+  snap(); const curObj=state.slides[cur];
+  const blk=state.slides.splice(a,n); state.slides.splice(to,0,...blk);
+  if(curObj) cur=state.slides.indexOf(curObj);
+  const grouped = pickA!=null && pickA===a && pickB===b && b>a;
+  if(grouped){ pickA=to; pickB=to+n-1; pickAnchor=to; }
+  changed(true); if(grouped) updatePicks();
+  toast(n===1 ? `Slide moved from ${a+1} to ${to+1} — the others were renumbered` : `Slides ${rangeTxt(a,b)} moved to ${rangeTxt(to,to+n-1)} — the others were renumbered`);
 }
+const inPick = i => pickA!=null && pickB>pickA && i>=pickA && i<=pickB;
+function nudgePick(d){ if(pickA==null || pickB<=pickA) return; if(state.settings.lockOrder) return lockedNote('order'); moveBlock(pickA,pickB,pickA+d); }
 slidesEl.addEventListener('pointerdown', e=>{
   const g=e.target.closest('.grip'); if(!g || e.button!==0 || mode!=='edit') return;
   if(state.settings.lockOrder) return lockedNote('order');
   e.preventDefault();
-  const card=g.closest('.slide'), from=+card.dataset.i, cards=[...slidesEl.querySelectorAll('.slide')];
+  const card=g.closest('.slide'), i0=+card.dataset.i, cards=[...slidesEl.querySelectorAll('.slide')];
+  const from = inPick(i0) ? pickA : i0, last = inPick(i0) ? pickB : i0, moving=cards.slice(from,last+1);
   const sy=e.clientY, st0=slidesEl.scrollTop; let slot=from, lastY=e.clientY, raf=0;
   const line=document.createElement('div'); line.className='dropline'; slidesEl.append(line);
-  card.classList.add('dragging');
+  moving.forEach(c=>c.classList.add('dragging'));
   const place=()=>{
     const y=lastY; slot=cards.length;
-    for(let j=0;j<cards.length;j++){ if(cards[j]===card) continue; const q=cards[j].getBoundingClientRect(); if(y<q.top+q.height/2){ slot=j; break; } }
+    for(let j=0;j<cards.length;j++){ if(j>=from && j<=last) continue; const q=cards[j].getBoundingClientRect(); if(y<q.top+q.height/2){ slot=j; break; } }
     const ref = slot<cards.length ? cards[slot].offsetTop-5 : cards[cards.length-1].offsetTop+cards[cards.length-1].offsetHeight+2;
-    line.style.top=ref+'px'; line.style.display = (slot===from || slot===from+1) ? 'none' : '';
-    card.style.transform=`translateY(${y-sy+slidesEl.scrollTop-st0}px)`;
+    line.style.top=ref+'px'; line.style.display = (slot>=from && slot<=last+1) ? 'none' : '';
+    moving.forEach(c=>c.style.transform=`translateY(${y-sy+slidesEl.scrollTop-st0}px)`);
   };
   const tick=()=>{ const r=slidesEl.getBoundingClientRect();
     if(lastY<r.top+50) slidesEl.scrollTop-=10; else if(lastY>r.bottom-50) slidesEl.scrollTop+=10;
     place(); raf=requestAnimationFrame(tick); };
   const mv=ev=>{ lastY=ev.clientY; };
   const up=()=>{ cancelAnimationFrame(raf); window.removeEventListener('pointermove',mv); window.removeEventListener('pointerup',up);
-    line.remove(); card.classList.remove('dragging'); card.style.transform='';
-    const to = slot>from ? slot-1 : slot; if(to!==from) moveSlide(from,to); };
+    line.remove(); moving.forEach(c=>{ c.classList.remove('dragging'); c.style.transform=''; });
+    const to = slot>last ? slot-(last-from+1) : slot; if(to!==from) moveBlock(from,last,to); };
   window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up); raf=requestAnimationFrame(tick);
 });
 /* ---------- flow mode ---------- */
