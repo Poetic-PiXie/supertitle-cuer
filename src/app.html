@@ -68,7 +68,11 @@ body:not(.native) .native-only{display:none}
 .pcard .prow button.trashP{flex:0 0 auto}
 .pcard .prow button.trashP:hover{color:#ff7a70;border-color:#6b2a26}
 #partsDlg{width:min(980px,96vw)}
-#partsDlg.locked .prow{display:none}
+#partsDlg.locked .prow, #partsDlg.locked .padd, #partsDlg.locked #partsBrowse{display:none}
+#partsDlg:not(.locked) #partsUnlock{display:none}
+.padd{width:168px;border:2px dashed #4a4d57;border-radius:10px;background:transparent;color:var(--dim);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13px;min-height:260px;cursor:pointer}
+.padd:hover{border-color:var(--accent);color:var(--accent)}
+.padd .plus{font-size:34px;line-height:1}
 #partsDlg.busy .partsGrid{opacity:.5;pointer-events:none}
 .sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
 .docname{font-size:13px;color:var(--dim);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -326,7 +330,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <h2>PDFs in this score</h2>
   <p class="note" id="partsNote"></p>
   <div class="partsGrid" id="partsGrid"></div>
-  <div class="actions"><span class="info" id="partsInfo"></span><button class="primary" value="ok">Done</button></div>
+  <div class="actions"><button type="button" id="partsUnlock" class="primary">🔓 Unlock to make changes</button><button type="button" id="partsBrowse" class="primary">📂 Browse to add a PDF…</button><span class="info" id="partsInfo"></span><button value="ok">Close</button></div>
 </form></dialog>
 <input type="file" id="fPart" accept="application/pdf,.pdf,.supertitles" hidden>
 <dialog id="delDlg"><form method="dialog">
@@ -1097,7 +1101,7 @@ async function renderParts(){
   const grid=$('#partsGrid'), locked=!!state.settings.lockCues, parts=state.parts||[], st=partStarts(parts);
   $('#partsDlg').classList.toggle('locked', locked);
   $('#partsNote').innerHTML = locked
-    ? '🔒 Cues are locked, so the PDFs can’t be changed. Unlock cues (the button above the score) to add, reorder or remove PDFs.'
+    ? '🔒 Cues are locked, so PDFs can’t be added, moved or removed right now (that would renumber the cues). Click <b>Unlock to make changes</b> below.'
     : 'Add a PDF before or after any of these, drag the cards (or use ◀ ▶) to change the order, and 🗑 to remove one. Cues travel with their pages and are renumbered to follow the new order.';
   grid.replaceChildren();
   parts.forEach((p,i)=>{
@@ -1110,8 +1114,10 @@ async function renderParts(){
     c.querySelector('.pname').textContent=p.name;
     grid.append(c);
   });
+  const add=document.createElement('button'); add.type='button'; add.className='padd'; add.innerHTML='<span class="plus">＋</span>Add a PDF<br>at the end';
+  add.onclick=()=>addPartAt(parts.length); grid.append(add);
   // first-page thumbnails
-  for(const c of grid.children){
+  for(const c of grid.querySelectorAll('.pcard')){
     const p=parts[+c.dataset.i]; if(!pdfDoc) break;
     try{ const pg=await pdfDoc.getPage(st[p.id]); const vp=pg.getViewport({scale:300/pg.getViewport({scale:1}).width});
       const cv=c.querySelector('canvas'); cv.width=vp.width; cv.height=vp.height; await pg.render({canvasContext:cv.getContext('2d'), viewport:vp}).promise; }catch(_){}
@@ -1131,6 +1137,8 @@ $('#partsGrid').addEventListener('dragover', e=>{ const c=e.target.closest('.pca
 $('#partsGrid').addEventListener('drop', e=>{ const c=e.target.closest('.pcard'); if(dragPart<0||!c) return; e.preventDefault(); e.stopPropagation();
   const r=c.getBoundingClientRect(); let to=+c.dataset.i + (e.clientX>r.left+r.width/2 ? 1 : 0); if(to>dragPart) to--;
   const from=dragPart; dragPart=-1; movePart(from,to); });
+$('#partsBrowse').onclick=()=>addPartAt((state.parts||[]).length);
+$('#partsUnlock').onclick=()=>{ state.settings.lockCues=false; updateLocks(); save(); renderParts(); toast('Cues unlocked — lock them again with the button above the score'); };
 $('#partsBtn').onclick=()=>{ if(!pdfBytes) return toast('Open a score PDF first'); renderParts(); $('#partsDlg').showModal(); };
 
 /* ---------- desktop app hooks ---------- */
