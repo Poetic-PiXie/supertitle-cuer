@@ -68,8 +68,13 @@ body:not(.native) .native-only{display:none}
 .pcard .prow button.trashP{flex:0 0 auto}
 .pcard .prow button.trashP:hover{color:#ff7a70;border-color:#6b2a26}
 #partsDlg{width:min(980px,96vw)}
+#partsDlg .actions{justify-content:flex-start}
 #partsDlg.locked .prow, #partsDlg.locked .padd, #partsDlg.locked #partsBrowse{display:none}
 #partsDlg:not(.locked) #partsUnlock{display:none}
+#partsBtn{display:inline-flex;align-items:center;gap:6px}
+#partsBtn .ico{flex:none;margin-top:-1px}
+.xclose{position:absolute;top:12px;right:12px;width:32px;height:32px;padding:0;border-radius:50%;background:transparent;border:1px solid transparent;color:var(--dim);font-size:17px;line-height:1}
+.xclose:hover{background:#2e323a;border-color:var(--line);color:var(--text)}
 .padd{width:168px;border:2px dashed #4a4d57;border-radius:10px;background:transparent;color:var(--dim);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13px;min-height:260px;cursor:pointer}
 .padd:hover{border-color:var(--accent);color:var(--accent)}
 .padd .plus{font-size:34px;line-height:1}
@@ -228,7 +233,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <section id="score">
     <div class="zoom" id="zoomCtl" hidden>
       <button class="lockbtn" id="lockCues" data-lock="lockCues"></button>
-      <button class="lockbtn" id="partsBtn" title="Add PDFs to the score, or change their order">📑 PDFs</button>
+      <button class="lockbtn" id="partsBtn" title="Add PDFs to the score, or change their order">PDFs</button>
       <button data-z="-">−</button><button data-z="fit">Fit</button><button data-z="+">+</button>
     </div>
     <div id="pages"></div>
@@ -327,10 +332,11 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <div class="actions"><button class="primary" value="ok">Done</button></div>
 </form></dialog>
 <dialog id="partsDlg"><form method="dialog">
+  <button class="xclose" value="ok" title="Close" aria-label="Close">✕</button>
   <h2>PDFs in this score</h2>
   <p class="note" id="partsNote"></p>
   <div class="partsGrid" id="partsGrid"></div>
-  <div class="actions"><button type="button" id="partsUnlock" class="primary">🔓 Unlock to make changes</button><button type="button" id="partsBrowse" class="primary">📂 Browse to add a PDF…</button><span class="info" id="partsInfo"></span><button value="ok">Close</button></div>
+  <div class="actions"><button type="button" id="partsUnlock" class="primary">🔓 Unlock to make changes</button><button type="button" id="partsBrowse" class="primary">📂 Browse to add a PDF…</button><span class="info" id="partsInfo"></span></div>
 </form></dialog>
 <input type="file" id="fPart" accept="application/pdf,.pdf,.supertitles" hidden>
 <dialog id="delDlg"><form method="dialog">
@@ -1049,7 +1055,8 @@ addEventListener('beforeunload', e=>{ save(); if(!NATIVE && dirty && (state.mark
 const partId = () => Math.random().toString(36).slice(2,9);
 function partStarts(parts){ const st={}; let n=1; for(const p of parts){ st[p.id]=n; n+=p.pages; } return st; }
 function partOfPage(parts, page){ let n=1; for(const p of parts){ if(page>=n && page<n+p.pages) return p; n+=p.pages; } return null; }
-function updatePartsBtn(){ const n=(state.parts||[]).length; $('#partsBtn').textContent = n>1 ? `📑 PDFs (${n})` : '📑 PDFs'; }
+const PDFS_ICON='<svg class="ico" viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6.5 4.5V3.2c0-.4.3-.7.7-.7h5.6l3.7 3.7v8.6c0 .4-.3.7-.7.7h-1.3"/><path d="M12.8 2.5v3.7h3.7"/><path d="M3.5 6.2c0-.4.3-.7.7-.7h5.6l3.7 3.7v8.6c0 .4-.3.7-.7.7H4.2c-.4 0-.7-.3-.7-.7z"/><path d="M9.8 5.5v3.7h3.7"/></svg>';
+function updatePartsBtn(){ const n=(state.parts||[]).length; $('#partsBtn').innerHTML = PDFS_ICON + `<span>PDFs${n>1?` (${n})`:''}</span>`; }
 // Rebuild the merged score from segments: [{src:Uint8Array, from:0-based page, count, part}]
 async function mergeSegments(segs){
   const {PDFDocument}=PDFLib; const out=await PDFDocument.create(); const cache=new Map();
