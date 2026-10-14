@@ -10,6 +10,8 @@ Cue opera supertitles from the score: number the cues on your PDF score, pair th
 - **Deleting is deliberate.** Deleting a supertitle asks whether to delete its cue too (off by default); deleting a cue on the score never touches the supertitles. Shift-click selects a range of supertitles to delete or move together: ▲/▼ (on any selected slide or in the selection bar) or dragging one of them moves the whole block. Clicking anywhere else ends the selection.
 - **Score on either side.** The ↔ button at the top of the slides panel swaps the score and the slides left and right; each computer remembers its choice.
 - **See what the projector shows.** While the projector is on, the “Audience sees” preview mirrors the whole projector screen, with thin guide lines (on your screen only) marking the sides of the 4:3 area or the top and bottom of the 6:1 strip.
+- **Keyboard in the slide list.** After clicking in the slide list, ↑/↓ step through the slides (after clicking the score, the arrows nudge the highlighted cue instead). While typing, ↑ on a slide's first line and ↓ on its last line continue into the neighbouring slide.
+- **Spelling.** Misspelled words get a red underline while you edit (the **✓abc** button above the slides, or **Edit → Check Spelling While Typing**, switches it off and on). Right-click a word for suggested fixes, **Learn** (add to your dictionary) or **Ignore**; in the desktop app, right-clicking a selected word also offers English synonyms, and on a Mac **Look Up** opens the system dictionary and thesaurus. The Mac uses its own spelling languages; on Windows, choose one in Settings → Spelling language.
 - **Run the show.** In Show mode, press → / Space (or a presentation clicker) to advance. The current cue glows on the score, the next one pulses, and the title goes to the projector window. **B** blanks the screen.
 - **One file per production.** Projects are saved as `.supertitles` files that hold the score, the cues, the slides and the display settings. **File → Save As PDF** stores the same project as a `.pdf` instead — it opens in any PDF viewer and still reopens here with everything editable. **File → Export Printable Score** writes a plain PDF with the numbered cues and a cue sheet, for the booth binder.
 
@@ -47,6 +49,10 @@ Compared with the single HTML file, the desktop app:
 - puts the projector window full screen on the second screen by itself (**View → Move Projector to Second Screen** if needed),
 - keeps the computer and screens awake while in Show mode,
 - saves straight to your file with no browser prompts, and asks before closing with unsaved changes.
+
+## Credits
+
+The English synonyms come from [WordNet 3.1](https://wordnet.princeton.edu/) (© Princeton University), built into `electron/thesaurus-en.txt.gz` by `scripts/build-thesaurus.py`.
 
 ## Building
 

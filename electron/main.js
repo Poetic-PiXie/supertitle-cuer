@@ -19,6 +19,10 @@ let allowClose = false;
 let keepAwakeId = null;
 let lastDir = null;
 const pendingFiles = [];
+const ignoredWords = new Set(); // "Ignore Spelling" lasts until the app quits
+const prefsFile = () => path.join(app.getPath('userData'), 'prefs.json');
+const readPrefs = () => { try { return JSON.parse(fs.readFileSync(prefsFile(), 'utf8')); } catch (_) { return {}; } };
+const writePrefs = (o) => { try { fs.writeFileSync(prefsFile(), JSON.stringify({ ...readPrefs(), ...o })); } catch (_) {} };
 
 // ---------- files handed to us by the OS ----------
 const isOpenable = (p) => /\.(supertitles|pdf)$/i.test(p || '') && fs.existsSync(p);
@@ -68,6 +72,32 @@ if (!app.requestSingleInstanceLock()) {
   });
 }
 
+// ---------- synonyms (English, offline, from WordNet — see scripts/build-thesaurus.py) ----------
+let thesaurus = null;
+function loadThesaurus() {
+  if (thesaurus) return thesaurus;
+  thesaurus = new Map();
+  try {
+    const txt = require('zlib').gunzipSync(fs.readFileSync(path.join(__dirname, 'thesaurus-en.txt.gz'))).toString('utf8');
+    for (const line of txt.split('\n')) { const t = line.indexOf('\t'); if (t > 0) thesaurus.set(line.slice(0, t), line.slice(t + 1)); }
+  } catch (_) {}
+  return thesaurus;
+}
+async function synonyms(word) {
+  const th = loadThesaurus(), w = word.toLowerCase().replace(/’/g, "'");
+  const tries = [w];                                   // simple English endings: try the base form too
+  if (w.endsWith('ies')) tries.push(w.slice(0, -3) + 'y');
+  if (w.endsWith('es')) tries.push(w.slice(0, -2));
+  if (w.endsWith('s')) tries.push(w.slice(0, -1));
+  if (w.endsWith('ed')) tries.push(w.slice(0, -2), w.slice(0, -1));
+  if (w.endsWith('ing')) tries.push(w.slice(0, -3), w.slice(0, -3) + 'e');
+  if (w.endsWith('er')) tries.push(w.slice(0, -2), w.slice(0, -1));
+  if (w.endsWith('est')) tries.push(w.slice(0, -3), w.slice(0, -2));
+  for (const t of tries) if (th.has(t)) return th.get(t).split('|').slice(0, 12);
+  return [];
+}
+const matchCase = (orig, w) => (orig[0] === orig[0].toUpperCase() && orig[0] !== orig[0].toLowerCase() ? w[0].toUpperCase() + w.slice(1) : w);
+
 // ---------- main window ----------
 function createWindow() {
   rendererReady = false;
@@ -84,7 +114,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       sandbox: false,
-      spellcheck: false,
+      spellcheck: true,
     },
   });
   win.once('ready-to-show', () => win.show());
@@ -117,6 +147,37 @@ function createWindow() {
     child.on('closed', () => {
       if (projector === child) projector = null;
     });
+  });
+
+  // right-click: spelling suggestions, Learn / Ignore, and Cut / Copy / Paste in text fields
+  win.webContents.on('context-menu', async (_e, p) => {
+    const wc = win.webContents, items = [];
+    const word = (p.selectionText || '').trim();
+    const oneWord = /^[\p{L}'’-]{2,40}$/u.test(word) && !p.misspelledWord;
+    if (p.misspelledWord) {
+      const sugg = (p.dictionarySuggestions || []).slice(0, 6);
+      if (sugg.length) sugg.forEach((w) => items.push({ label: w, click: () => wc.replaceMisspelling(w) }));
+      else items.push({ label: 'No spelling suggestions', enabled: false });
+      items.push({ type: 'separator' },
+        { label: `Learn “${p.misspelledWord}”`, click: () => wc.session.addWordToSpellCheckerDictionary(p.misspelledWord) },
+        { label: 'Ignore Spelling', click: () => { wc.session.addWordToSpellCheckerDictionary(p.misspelledWord); ignoredWords.add(p.misspelledWord); } },
+        { type: 'separator' });
+    }
+    if (oneWord && p.isEditable) {
+      const syn = await synonyms(word);
+      if (syn.length) items.push({ label: `Synonyms for “${word}”`, submenu: syn.map((w) => ({ label: w, click: () => wc.insertText(matchCase(word, w)) })) });
+      else items.push({ label: `No synonyms found for “${word}”`, enabled: false });
+    }
+    if (oneWord && isMac) items.push({ label: `Look Up “${word}”`, click: () => wc.showDefinitionForSelection() });
+    if (oneWord) items.push({ type: 'separator' });
+    if (p.isEditable) {
+      items.push({ role: 'cut', enabled: p.editFlags.canCut }, { role: 'copy', enabled: p.editFlags.canCopy },
+        { role: 'paste', enabled: p.editFlags.canPaste }, { type: 'separator' }, { role: 'selectAll' });
+    } else if (p.selectionText && p.selectionText.trim()) {
+      items.push({ role: 'copy' });
+    }
+    while (items.length && items[items.length - 1].type === 'separator') items.pop();
+    if (items.length) Menu.buildFromTemplate(items).popup({ window: win });
   });
 
   // links (e.g. in Help) open in the regular browser
@@ -205,6 +266,20 @@ ipcMain.on('renderer-ready', () => {
   flushPending();
 });
 ipcMain.on('keep-awake', (_e, on) => setKeepAwake(!!on));
+ipcMain.on('spell-state', (_e, on) => {
+  const mi = Menu.getApplicationMenu() && Menu.getApplicationMenu().getMenuItemById('spell');
+  if (mi) mi.checked = !!on;
+});
+// macOS uses the system spell checker (it picks the language by itself); Windows/Linux choose one here
+ipcMain.handle('spell-languages', () => {
+  if (isMac || !win) return { available: [], current: [] };
+  const ses = win.webContents.session;
+  return { available: ses.availableSpellCheckerLanguages || [], current: ses.getSpellCheckerLanguages() };
+});
+ipcMain.handle('set-spell-language', (_e, lang) => {
+  if (isMac || !win) return false;
+  try { win.webContents.session.setSpellCheckerLanguages([lang]); writePrefs({ spellLang: lang }); return true; } catch (_) { return false; }
+});
 ipcMain.on('doc-state', (_e, { path: p, dirty }) => {
   if (!win) return;
   if (isMac) win.setRepresentedFilename(p || '');
@@ -279,6 +354,8 @@ function buildMenu() {
         { role: 'copy' },
         { role: 'paste' },
         { role: 'selectAll' },
+        { type: 'separator' },
+        { id: 'spell', label: 'Check Spelling While Typing', type: 'checkbox', checked: true, click: () => menuCommand('spell') },
       ],
     },
     {
@@ -311,6 +388,7 @@ function buildMenu() {
 app.whenReady().then(() => {
   buildMenu();
   createWindow();
+  if (!isMac) { const l = readPrefs().spellLang; if (l) try { win.webContents.session.setSpellCheckerLanguages([l]); } catch (_) {} }
   if (!isMac) process.argv.slice(1).forEach(queueOpen); // Windows: file given at launch
   screen.on('display-added', () => {
     if (projector && !projector.isDestroyed() && !projector.isFullScreen()) moveProjectorToSecondScreen();
@@ -320,3 +398,7 @@ app.on('activate', () => {
   if (!win) createWindow();
 });
 app.on('window-all-closed', () => app.quit());
+app.on('will-quit', () => {
+  // words ignored with "Ignore Spelling" are only for this session
+  try { const ses = require('electron').session.defaultSession; ignoredWords.forEach((w) => ses.removeWordFromSpellCheckerDictionary(w)); } catch (_) {}
+});

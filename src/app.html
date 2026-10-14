@@ -300,7 +300,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
       <div class="screen" id="pv"><div class="stage"><div class="stext" id="pvText"></div></div><div class="pvguide" id="pvGuide" hidden></div><div class="bo">BLACKOUT</div></div>
       <div class="nextline" id="nextLine"></div>
     </div>
-    <div class="slidehead">Slides<span class="sp"></span><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button data-act="importSlides">Import…</button></div>
+    <div class="slidehead">Slides<span class="sp"></span><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button data-act="importSlides">Import…</button></div>
     <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
     <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button id="pickUp" title="Move the selected slides up one place">▲</button><button id="pickDown" title="Move the selected slides down one place">▼</button><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
     <div id="slides"></div>
@@ -343,6 +343,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   </select></div>
   <div class="row"><span class="lbl">Text style</span><label><input type="checkbox" id="sItal"> Italic</label><label><input type="checkbox" id="sBold"> Bold</label></div>
   <div class="row"><span class="lbl">Colours</span><label>Text <input type="color" id="sFg"></label><label>Background <input type="color" id="sBg"></label></div>
+  <div class="row" id="spellLangRow" hidden><span class="lbl">Spelling language</span><select id="sSpellLang"></select></div>
   <div class="row"><span class="lbl">Alignment</span><div class="seg" id="sAlign"><button type="button" data-al="left">⯇ Left</button><button type="button" data-al="center">Center</button><button type="button" data-al="right">Right ⯈</button></div></div>
   <div class="row"><span class="lbl">Vertical position</span><span class="rlab">Top</span><input type="range" id="sVpos" min="-100" max="100" step="1"><span class="rlab">Bottom</span><button type="button" id="sMid">Middle</button></div>
   <div class="row"><span class="lbl">Side margins</span><input type="range" id="sSide" min="2" max="6" step="0.25"><span id="sSideV"></span></div>
@@ -625,8 +626,8 @@ function renderSlides(){
   const list=$('#slides'); list.replaceChildren();
   state.slides.forEach((s,i)=>{
     const c=document.createElement('div'); c.className='slide'; c.dataset.i=i;
-    c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)" spellcheck="false"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
-    const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = mode==='show';
+    c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
+    const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = mode==='show'; ta.spellcheck = spellOn() && mode==='edit';
     list.append(c);
   });
   const add=document.createElement('div'); add.className='addrow';
@@ -830,6 +831,25 @@ function flowRefit(i, caret){
   const ta=document.querySelector(`.slide[data-i="${k}"] textarea`); if(ta){ ta.focus(); ta.setSelectionRange(pos,pos); }
 }
 function flowRefitAll(){ for(let i=state.markers.length;i<state.slides.length;){ const [,e]=flowBlock(i); flowRefit(i,null); i=flowBlock(i)[1]+1; } }
+function caretLine(ta){ // which visual line the caret is on, and how many lines the box has
+  const cs=getComputedStyle(ta), d=document.createElement('div');
+  for(const k of ['fontFamily','fontSize','fontStyle','fontWeight','lineHeight','letterSpacing','paddingTop','paddingLeft','paddingRight','textAlign','boxSizing','borderLeftWidth','borderRightWidth'] ) d.style[k]=cs[k];
+  Object.assign(d.style,{position:'absolute', visibility:'hidden', whiteSpace:'pre-wrap', overflowWrap:'break-word', width:ta.clientWidth+'px', left:'-9999px', top:'0'});
+  const lh=parseFloat(cs.lineHeight)||parseFloat(cs.fontSize)*1.35, mk=document.createElement('span'); mk.textContent='\u200b';
+  d.textContent=ta.value.slice(0, ta.selectionStart); d.append(mk); document.body.append(d);
+  const line=Math.round((mk.offsetTop-(parseFloat(cs.paddingTop)||0))/lh);
+  d.textContent=ta.value+'\u200b'; const lines=Math.max(1, Math.round((d.scrollHeight-(parseFloat(cs.paddingTop)||0)-(parseFloat(cs.paddingBottom)||0))/lh)); d.remove();
+  return {line, lines};
+}
+slidesEl.addEventListener('keydown', e=>{
+  if(e.target.tagName!=='TEXTAREA' || mode!=='edit' || (e.key!=='ArrowUp' && e.key!=='ArrowDown') || e.shiftKey || e.altKey || e.metaKey || e.ctrlKey) return;
+  const ta=e.target, i=+ta.closest('.slide').dataset.i; if(ta.selectionStart!==ta.selectionEnd) return;
+  const {line, lines}=caretLine(ta), up=e.key==='ArrowUp';
+  if(up ? line>0 : line<lines-1) return;               // not on the edge line: normal caret movement
+  const j=i+(up?-1:1), nt=document.querySelector(`.slide[data-i="${j}"] textarea`); if(!nt) return;
+  e.preventDefault(); nt.focus(); const pos = up ? nt.value.length : 0; nt.setSelectionRange(pos,pos);
+  nt.closest('.slide').scrollIntoView({block:'nearest'});
+});
 slidesEl.addEventListener('keydown', e=>{
   if(!state.settings.flow || mode!=='edit' || e.target.tagName!=='TEXTAREA') return;
   const i=+e.target.closest('.slide').dataset.i; if(!canFlow(i)) return;
@@ -1080,8 +1100,17 @@ function nudgeCue(i, k, px){
   if(now!==before) toast(`Cue ${before+1} is now cue ${now+1} — numbers follow the position on the page`);
   const el=document.querySelector(`.mk[data-i="${now}"]`); if(el) el.scrollIntoView({block:'nearest', inline:'nearest'});
 }
+let kbZone='score';
+document.addEventListener('pointerdown', e=>{ if(e.target.closest('aside')) kbZone='slides'; else if(e.target.closest('#score')) kbZone='score'; }, true);
 function handleKey(k, e){
   const stop=()=>e && e.preventDefault();
+  if(e && mode==='edit' && kbZone==='slides' && (k==='ArrowUp'||k==='ArrowDown') && !e.shiftKey){
+    stop(); const n=lastIndex()+1; if(!n) return;
+    const to = cur<0 ? (k==='ArrowDown' ? 0 : n-1) : Math.max(0, Math.min(n-1, cur+(k==='ArrowDown'?1:-1)));
+    clearPicks(); pickAnchor=to; goTo(to);
+    const c=document.querySelector(`.slide[data-i="${to}"]`); if(c) c.scrollIntoView({block:'nearest'});
+    return;
+  }
   if(e && /^Arrow/.test(k) && nudgeTarget()>=0){ stop(); nudgeCue(nudgeTarget(), k, e.shiftKey ? 25 : 5); return; }
   switch(k){
     case 'ArrowRight': case 'PageDown': case ' ': stop(); next(); break;
@@ -1102,6 +1131,7 @@ function setMode(m){
   if(m==='show'){ document.activeElement && document.activeElement.blur && document.activeElement.blur(); }
   renderSlides(); renderMarkers(); updateHint();
 }
+
 document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 function updateHint(){
   const h=$('#hint');
@@ -1610,6 +1640,23 @@ $('#partsBtn').onclick=()=>{ if(!pdfBytes) return toast('Open a score PDF first'
 
 /* ---------- desktop app hooks ---------- */
 window.__stcIsDirty = () => !!(dirty && (state.markers.length || state.slides.length));
+/* ---------- spelling ---------- */
+function spellOn(){ try{ return localStorage.getItem('stc.spell')!=='0'; }catch(_){ return true; } }
+function applySpell(on){
+  try{ localStorage.setItem('stc.spell', on?'1':'0'); }catch(_){}
+  document.querySelectorAll('.slide textarea').forEach(ta=>{ ta.spellcheck = on && mode==='edit'; });
+  const b=$('#spellBtn'); b.classList.toggle('on', on); b.title = on ? 'Spell check is on — right-click a word with a red underline for suggestions. Click to switch it off.' : 'Spell check is off — click to switch it on';
+  if(NATIVE && window.stc.spellState) window.stc.spellState(on);
+}
+$('#spellBtn').onclick=()=>{ const on=!spellOn(); applySpell(on); toast(on?'Spell check on':'Spell check off'); };
+async function initSpellLang(){
+  if(!NATIVE || !window.stc.spellLanguages) return;
+  const info=await window.stc.spellLanguages().catch(()=>null); if(!info || !info.available || !info.available.length) return; // macOS uses the system's own languages
+  const sel=$('#sSpellLang'), names=new Intl.DisplayNames([navigator.language||'en'], {type:'language'});
+  sel.replaceChildren(...info.available.map(l=>{ const o=document.createElement('option'); o.value=l; try{ o.textContent=names.of(l)+' ('+l+')'; }catch(_){ o.textContent=l; } return o; }));
+  sel.value=(info.current&&info.current[0])||info.available[0]; $('#spellLangRow').hidden=false;
+  sel.onchange=()=>{ window.stc.setSpellLanguage(sel.value); toast('Spelling language: '+sel.selectedOptions[0].textContent); };
+}
 window.__stcMenu = (cmd) => {
   const ed = document.activeElement && document.activeElement.matches && document.activeElement.matches('textarea:not([readonly]), input[type=text]');
   const map = {
@@ -1617,13 +1664,14 @@ window.__stcMenu = (cmd) => {
     importSlides: openImport, exportCsv: actions.exportCsv,
     undo: ()=> ed ? document.execCommand('undo') : undo(), redo: ()=> ed ? document.execCommand('redo') : redo(),
     edit: ()=>setMode('edit'), show: ()=>setMode('show'), projector: openProjector, connect: ()=>$('#connectBtn').click(), settings: openSettings,
+    spell: ()=>{ const on=!spellOn(); applySpell(on); toast(on?'Spell check on':'Spell check off'); },
   };
   if(map[cmd]) map[cmd]();
 };
 
 /* ---------- start ---------- */
 (async function init(){
-  localizeKeys(document.body); loadLocal(); applyAlign(); sortMarkers(); if(state.markers.length) state.settings.flow=false; document.body.classList.toggle('flow', !!state.settings.flow); updateFlowBtn(); updateLocks(); const wasDirty=dirty; renderSlides(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
+  localizeKeys(document.body); loadLocal(); applyAlign(); sortMarkers(); if(state.markers.length) state.settings.flow=false; document.body.classList.toggle('flow', !!state.settings.flow); updateFlowBtn(); updateLocks(); const wasDirty=dirty; renderSlides(); applySpell(spellOn()); initSpellLang(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
   const d = await idbGet('doc'); if(d && d.handle && d.name===docName) fileHandle=d.handle;
   const rec = await idbGet('score');
   if(rec && rec.bytes && (!state.pdfName || rec.name===state.pdfName)){ await loadPdfBytes(rec.name, new Uint8Array(rec.bytes)); setDirty(wasDirty); toast(`Picked up where you left off`); }
