@@ -126,6 +126,13 @@ body.edit .mk{cursor:grab}
 aside{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
 .pvwrap{padding:12px;border-bottom:1px solid var(--line)}
 .pvhead{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+body.swapped main{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+body.swapped aside{order:-1;border-right:1px solid var(--line)}
+body.swapped #score{border-right:0}
+.swapbtn{position:relative;display:inline-flex;align-items:center;padding:3px 7px;text-transform:none;letter-spacing:0}
+.swapbtn svg{width:18px;height:12px;display:block}
+.swapbtn::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 8px);width:240px;padding:9px 11px;border-radius:8px;background:#000;border:1px solid var(--line);color:var(--text);font-weight:400;font-size:12.5px;line-height:1.4;text-align:left;text-transform:none;letter-spacing:0;white-space:normal;box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px);transition:opacity .15s,transform .15s;pointer-events:none;z-index:50}
+.swapbtn:hover::after{opacity:1;transform:none;transition-delay:.35s}
 .pvhead .live{margin-left:auto;display:flex;align-items:center;gap:6px}
 .dot{width:8px;height:8px;border-radius:50%;background:#555}
 .dot.on{background:var(--ok);box-shadow:0 0 6px var(--ok)}
@@ -280,7 +287,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   </section>
   <aside>
     <div class="pvwrap">
-      <div class="pvhead">Audience sees<span class="live"><span class="dot" id="projDot"></span><span id="projLbl">Projector off</span></span></div>
+      <div class="pvhead"><button type="button" class="swapbtn" id="swapBtn" aria-label="Swap sides" data-tip=""><svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h14M5.5 2.5 2 6l3.5 3.5M12.5 2.5 16 6l-3.5 3.5"/></svg></button>Audience sees<span class="live"><span class="dot" id="projDot"></span><span id="projLbl">Projector off</span></span></div>
       <div class="screen" id="pv"><div class="stage"><div class="stext" id="pvText"></div></div><div class="bo">BLACKOUT</div></div>
       <div class="nextline" id="nextLine"></div>
     </div>
@@ -422,7 +429,7 @@ let fileHandle = null, docName = null, dirty = false;
 let atStart = false; // after deleting cue 1, the next click refills position 1
 let anchor = null;    // the cue you just added (blue ring); new cues go after it. null = go after the gold (selected) cue
 let fresh = -1;
-let pdfDoc = null, pdfBytes = null, pageEls = [], projWin = null;
+let pdfDoc = null, pdfBytes = null, pageEls = [], projWin = null, pageHW = [];
 let undoStack = [], redoStack = [];
 
 /* ---------- persistence ---------- */
@@ -496,9 +503,9 @@ async function loadPdfBytes(name, bytes){
 }
 const io = new IntersectionObserver(es=>es.forEach(e=>{ const p=pageEls[e.target.dataset.page-1]; if(!p) return; p.visible=e.isIntersecting; if(p.visible) renderPage(p); }), {root:$('#score'), rootMargin:'1500px 0px'});
 async function buildPages(){
-  const host=$('#pages'); host.innerHTML=''; pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[];
+  const host=$('#pages'); host.innerHTML=''; pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[]; pageHW=[];
   for(let i=1;i<=pdfDoc.numPages;i++){
-    const page = await pdfDoc.getPage(i); const vp = page.getViewport({scale:1});
+    const page = await pdfDoc.getPage(i); const vp = page.getViewport({scale:1}); pageHW[i-1]=vp.height/vp.width;
     const wrap=document.createElement('div'); wrap.className='page'; wrap.dataset.page=i; wrap.style.aspectRatio = vp.width+' / '+vp.height;
     const canvas=document.createElement('canvas'), overlay=document.createElement('div'); overlay.className='overlay';
     const pno=document.createElement('div'); pno.className='pno'; pno.textContent='p. '+i;
@@ -550,7 +557,17 @@ function renderMarkers(){
 // then left to right for cues at the same height. Click order never matters.
 function sortMarkers(){
   const curObj = state.markers[cur], ancObj = anchor!=null ? state.markers[anchor] : null;
-  state.markers.sort((a,b)=> a.page-b.page || (Math.abs(a.y-b.y)>0.006 ? a.y-b.y : a.x-b.x));
+  // Rows: a cue counts as higher (earlier) only if its centre is at least 1.2 × the cue radius above
+  // the top cue of the row; closer than that, it is on the same row and goes left to right.
+  const byY=[...state.markers].sort((a,b)=> a.page-b.page || a.y-b.y || a.x-b.x), out=[];
+  let row=[], top=null;
+  const flush=()=>{ row.sort((a,b)=>a.x-b.x); out.push(...row); row=[]; };
+  for(const m of byY){
+    const hw=pageHW[m.page-1]||792/612, thr=1.2*(state.settings.markerSize||4)/200/hw; // 1.2 r as a fraction of page height
+    if(top && (m.page!==top.page || m.y-top.y>=thr-1e-9)) flush();
+    if(!row.length) top=m; row.push(m);
+  }
+  flush(); state.markers.splice(0, state.markers.length, ...out);
   if(curObj){ cur = state.markers.indexOf(curObj); }
   if(ancObj){ anchor = state.markers.indexOf(ancObj); }
 }
@@ -685,6 +702,21 @@ async function askDeleteSlide(i){
 // ---- shift-click range selection of supertitles
 let pickA=null, pickB=null, pickAnchor=null;
 function clearPicks(){ pickA=pickB=null; updatePicks(); }
+// Score left / slides right, or the other way round (remembered on this computer)
+function applySwap(on){ document.body.classList.toggle('swapped', on); $('#swapBtn').dataset.tip = on ? 'Swap sides — move the score back to the left and the slides to the right' : 'Swap sides — move the score to the right and the slides to the left'; try{ localStorage.setItem('stc.swapped', on?'1':'0'); }catch(_){} requestAnimationFrame(()=>{ layoutPages(true); updateOutput(); }); }
+$('#swapBtn').onclick=()=>applySwap(!document.body.classList.contains('swapped'));
+{ let on=false; try{ on=localStorage.getItem('stc.swapped')==='1'; }catch(_){} applySwap(on); }
+
+// Clicking empty space (not a cue, slide, control or the score page itself) un-highlights.
+document.addEventListener('pointerdown', e=>{
+  if(e.button!==0 || mode!=='edit' || e.shiftKey) return;
+  const t=e.target;
+  if(t.closest('.mk, .slide, .page, button, input, textarea, select, label, a, dialog, .menu, #pickbar, [data-lock], [contenteditable]')) return;
+  if((t===$('#score')||t===$('#slides')) && (e.offsetX>=t.clientWidth || e.offsetY>=t.clientHeight)) return; // scrollbar
+  if(cur<0 && anchor==null && pickA==null) return;
+  if(document.activeElement && document.activeElement.tagName==='TEXTAREA') document.activeElement.blur();
+  clearPicks(); pickAnchor=null; goTo(-1,false);
+});
 function updatePicks(){
   document.querySelectorAll('.slide').forEach(c=>{ const i=+c.dataset.i; c.classList.toggle('picked', pickA!=null && i>=pickA && i<=pickB); });
   const on = pickA!=null && pickB>pickA; $('#pickbar').classList.toggle('on', on);
@@ -1330,7 +1362,7 @@ $('#sMid').onclick=()=>{ $('#sVpos').value=0; $('#setDlg').dispatchEvent(new Eve
 $('#sAlign').addEventListener('click', e=>{ const b=e.target.closest('[data-al]'); if(!b) return; state.settings.align=b.dataset.al; applyAlign(); updateOutput(); setDirty(true); save(); });
 $('#setDlg').addEventListener('input', ()=>{
   const s=state.settings; s.textScale=(+$('#sFs').value)/100; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.vpos=+$('#sVpos').value; s.sideMargin=(+$('#sSide').value)/100; s.shape=$('#sShape').value;
-  const mk=+$('#sMk').value; if(mk!==s.markerSize){ s.markerSize=mk; layoutPages(); }
+  const mk=+$('#sMk').value; if(mk!==s.markerSize){ s.markerSize=mk; layoutPages(); if(state.markers.length){ sortMarkers(); changed(false); } }
   setVals(); updateOutput(); setDirty(true); save();
   clearTimeout(flowT); flowT=setTimeout(()=>{ if(state.settings.flow) flowRefitAll(); markOverflow(); }, 300);
 });
