@@ -183,7 +183,7 @@ body.flow.edit .flowhelp{display:block}
 .delpv .n{display:block;font:600 11px system-ui;color:var(--dim);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
 .slide .num{font-weight:700;font-size:15px;color:var(--dim);text-align:center;padding-top:3px;cursor:pointer;border-radius:5px}
 .slide .num:hover{background:#2a2d35;color:var(--text)}
-.slide textarea{width:100%;resize:none;background:transparent;border:0;color:#fff;font:15px/1.35 Georgia,serif;text-align:center;outline:none;padding:3px 0;overflow:hidden;min-height:24px}
+.slide textarea{width:100%;resize:none;background:transparent;border:0;color:#fff;font:15px/1.35 Georgia,serif;text-align:var(--talign,left);outline:none;padding:3px 0;overflow:hidden;min-height:24px}
 .slide textarea::placeholder{color:#555;font-style:italic}
 .slide .tools{display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .1s}
 .slide:hover .tools,.slide:focus-within .tools{opacity:1}
@@ -324,8 +324,9 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   </select></div>
   <div class="row"><span class="lbl">Text style</span><label><input type="checkbox" id="sItal"> Italic</label><label><input type="checkbox" id="sBold"> Bold</label></div>
   <div class="row"><span class="lbl">Colours</span><label>Text <input type="color" id="sFg"></label><label>Background <input type="color" id="sBg"></label></div>
+  <div class="row"><span class="lbl">Alignment</span><div class="seg" id="sAlign"><button type="button" data-al="left">⯇ Left</button><button type="button" data-al="center">Center</button><button type="button" data-al="right">Right ⯈</button></div></div>
   <div class="row"><span class="lbl">Vertical position</span><select id="sVa"><option value="flex-start">Top</option><option value="center">Middle</option><option value="flex-end">Bottom</option></select></div>
-  <div class="row"><span class="lbl">Preview shape</span><select id="sShape"><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select><span class="note" style="color:var(--dim);font-size:12px">(matches the projector window automatically once it's open)</span></div>
+  <div class="row"><span class="lbl">Screen shape</span><select id="sShape"><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select></div>
   <div class="row"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="7" step="0.25"><span id="sMkV"></span></div>
   <div class="row web-only"><span class="lbl">Second screen</span><button type="button" id="sScreens">Let the projector window open on the 2nd screen automatically</button></div>
   <div class="actions"><button class="primary" value="ok">Done</button></div>
@@ -404,7 +405,7 @@ function localizeKeys(root){ if(IS_MAC) return;
   root.querySelectorAll('[title*="⌘"]').forEach(el=>el.title=keyName(el.title)); }
 const LS_KEY = 'supertitle-cuer-v1';
 function migrateSettings(st){ st.shape=normShape(st.shape); if(st.textScale==null) st.textScale=1; st.textScale=Math.min(1, Math.max(0.75, st.textScale)); return st; }
-const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', shape:'16/9', markerSize:3.5, zoom:1, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:1 });
+const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', shape:'16/9', markerSize:3.5, zoom:1, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:1, align:'left' });
 
 const state = { pdfName:null, parts:null, markers:[], slides:[], settings:defaults() };
 // parts: the PDFs that make up the score, in order: [{id, name, pages}]. The merged score is pdfBytes.
@@ -861,6 +862,7 @@ function titleLayout(){
   return {shape:sh, lines:6, availW:0.96, fsOfWidth:137/1080*hOfW*k,
     px:(W,H)=>titleFrame(W, H, 6, 137*H/1080, 137*H/10800, 47*H/540, k) };
 }
+function applyAlign(){ const al=state.settings.align||'left'; document.body.style.setProperty('--talign', al); document.querySelectorAll('#sAlign [data-al]').forEach(b=>b.classList.toggle('on', b.dataset.al===al)); }
 function styleVars(el){
   const st=state.settings;
   el.style.setProperty('--fs', st.fontSize); el.style.setProperty('--font', st.font);
@@ -870,6 +872,7 @@ function fit(stage, text){
   const W=stage.clientWidth, H=stage.clientHeight; if(!W || !H) return;
   const m=titleLayout().px(W,H);
   stage.style.padding=`${m.padY}px ${m.padX}px`;
+  text.style.width='100%'; text.style.textAlign=state.settings.align||'left';
   text.style.lineHeight=m.lh; text.style.fontStyle=state.settings.italic?'italic':'normal'; text.style.fontWeight=state.settings.bold?'700':'400';
   let fs=m.font, n=0; text.style.fontSize=fs+'px';
   const availH=H-2*m.padY, availW=W-2*m.padX;
@@ -1174,7 +1177,7 @@ async function openAny(file, handle){
   const p=proj.project, orig=proj.original||bytes;
   undoStack=[]; redoStack=[]; cur=-1; blackout=false; atStart=false; anchor=null;
   state.parts=Array.isArray(p.parts)?p.parts:null;
-  state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true})); updateLocks();
+  state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true})); updateLocks(); applyAlign();
   await loadPdfBytes(p.pdfName||file.name, orig);
   renderSlides(); goTo(-1,false);
   fileHandle=handle||null; docName=file.name; setDirty(false); save();
@@ -1305,12 +1308,13 @@ $('#importDlg').addEventListener('close', ()=>{
 /* ---------- settings ---------- */
 function openSettings(){
   const s=state.settings;
-  $('#sFs').value=Math.round((s.textScale||1)*100); $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVa').value=s.va; $('#sShape').value=normShape(s.shape); $('#sMk').value=s.markerSize;
+  applyAlign(); $('#sFs').value=Math.round((s.textScale||1)*100); $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVa').value=s.va; $('#sShape').value=normShape(s.shape); $('#sMk').value=s.markerSize;
   if(![...$('#sFont').options].some(o=>o.value===s.font)) $('#sFont').selectedIndex=0;
   setVals(); $('#setDlg').showModal();
 }
 function setVals(){ $('#sFsV').textContent=$('#sFs').value+'%'; $('#sFsNote').textContent = ($('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = six lines on the screen: lines 137/1080 of its height, 137/10800 apart, 47/540 top/bottom and 2% side margins.') + ' Smaller sizes share the freed height evenly between the margins and the line gaps.'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%'; }
 $('#settingsBtn').onclick=openSettings;
+$('#sAlign').addEventListener('click', e=>{ const b=e.target.closest('[data-al]'); if(!b) return; state.settings.align=b.dataset.al; applyAlign(); updateOutput(); setDirty(true); save(); });
 $('#setDlg').addEventListener('input', ()=>{
   const s=state.settings; s.textScale=(+$('#sFs').value)/100; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.va=$('#sVa').value; s.shape=$('#sShape').value;
   const mk=+$('#sMk').value; if(mk!==s.markerSize){ s.markerSize=mk; layoutPages(); }
@@ -1474,7 +1478,7 @@ window.__stcMenu = (cmd) => {
 
 /* ---------- start ---------- */
 (async function init(){
-  localizeKeys(document.body); loadLocal(); sortMarkers(); if(state.markers.length) state.settings.flow=false; document.body.classList.toggle('flow', !!state.settings.flow); updateFlowBtn(); updateLocks(); const wasDirty=dirty; renderSlides(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
+  localizeKeys(document.body); loadLocal(); applyAlign(); sortMarkers(); if(state.markers.length) state.settings.flow=false; document.body.classList.toggle('flow', !!state.settings.flow); updateFlowBtn(); updateLocks(); const wasDirty=dirty; renderSlides(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
   const d = await idbGet('doc'); if(d && d.handle && d.name===docName) fileHandle=d.handle;
   const rec = await idbGet('score');
   if(rec && rec.bytes && (!state.pdfName || rec.name===state.pdfName)){ await loadPdfBytes(rec.name, new Uint8Array(rec.bytes)); setDirty(wasDirty); toast(`Picked up where you left off`); }
