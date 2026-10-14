@@ -85,6 +85,7 @@ body:not(.native) .native-only{display:none}
 .padd .plus{font-size:34px;line-height:1}
 #partsDlg.busy .partsGrid{opacity:.5;pointer-events:none}
 #projBtn.live{border-color:var(--ok);color:var(--ok);background:rgba(79,191,127,.1)}
+#verTag{position:fixed;right:8px;bottom:6px;font-size:10.5px;color:#7d808b;letter-spacing:.02em;pointer-events:none;z-index:4;user-select:none;background:rgba(22,23,27,.88);padding:1px 7px;border-radius:5px}
 .sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
 .docname{font-size:13px;color:var(--dim);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .docname.dirty::after{content:" • not saved";color:var(--warn)}
@@ -387,6 +388,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
 <input type="file" id="fPdf" hidden>
 <input type="file" id="fImp" accept=".csv,.txt,.tsv,.pdf,text/csv,text/plain,application/pdf" hidden>
 <div id="toast"></div>
+<div id="verTag">S.T.Cuer v@@VERSION@@</div>
 <div id="drop">Drop a score PDF, a slides CSV, or a project file</div>
 
 <script>
@@ -909,8 +911,23 @@ document.addEventListener('keydown', e=>{
   if(typing || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('dialog[open]')) return;
   handleKey(e.key, e);
 });
+// Edit mode: arrow keys nudge the highlighted cue 5 screen pixels (25 with Shift).
+let nudgeT=0;
+function nudgeTarget(){ const t = anchor!=null ? anchor : cur; return (mode==='edit' && !state.settings.lockCues && t>=0 && t<state.markers.length) ? t : -1; }
+function nudgeCue(i, k, px){
+  const m=state.markers[i], p=pageEls[m.page-1]; if(!p) return;
+  const r=p.wrap.getBoundingClientRect();
+  if(Date.now()-nudgeT>800) snap(); nudgeT=Date.now();             // a burst of nudges is one undo step
+  m.x=clamp01(m.x + ({ArrowLeft:-px, ArrowRight:px}[k]||0)/r.width);
+  m.y=clamp01(m.y + ({ArrowUp:-px, ArrowDown:px}[k]||0)/r.height);
+  const before=i; sortMarkers(); changed(false);
+  const now=state.markers.indexOf(m);
+  if(now!==before) toast(`Cue ${before+1} is now cue ${now+1} — numbers follow the position on the page`);
+  const el=document.querySelector(`.mk[data-i="${now}"]`); if(el) el.scrollIntoView({block:'nearest', inline:'nearest'});
+}
 function handleKey(k, e){
   const stop=()=>e && e.preventDefault();
+  if(e && /^Arrow/.test(k) && nudgeTarget()>=0){ stop(); nudgeCue(nudgeTarget(), k, e.shiftKey ? 25 : 5); return; }
   switch(k){
     case 'ArrowRight': case 'PageDown': case ' ': stop(); next(); break;
     case 'ArrowLeft': case 'PageUp': stop(); prev(); break;
@@ -938,7 +955,8 @@ function updateHint(){
   if(state.settings.lockCues){ h.innerHTML='🔒 Cues are locked — clicking the score just highlights a cue · unlock above the score to add, move or delete'; return; }
   const n=state.markers.length, tgt = anchor!=null ? anchor : cur, hasT = tgt>=0 && tgt<n;
   const del = hasT ? ` · <span class="kbd">Del</span> removes cue ${tgt+1}` : '';
-  h.innerHTML = `Click the score to add a cue — it's numbered by page, then by height on the page${del}`;
+  const nudge = nudgeTarget()>=0 ? ` · <span class="kbd">← ↑ → ↓</span> nudge cue ${nudgeTarget()+1} (<span class="kbd">⇧</span> for bigger steps)` : '';
+  h.innerHTML = `Click the score to add a cue — it's numbered by page, then by height on the page${nudge}${del}`;
 }
 function updateCounts(){
   const m=state.markers.length, s=state.slides.length, el=$('#counts');
