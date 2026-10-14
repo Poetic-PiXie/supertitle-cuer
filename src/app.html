@@ -79,6 +79,7 @@ body:not(.native) .native-only{display:none}
 .padd:hover{border-color:var(--accent);color:var(--accent)}
 .padd .plus{font-size:34px;line-height:1}
 #partsDlg.busy .partsGrid{opacity:.5;pointer-events:none}
+#projBtn.live{border-color:var(--ok);color:var(--ok);background:rgba(79,191,127,.1)}
 .sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
 .docname{font-size:13px;color:var(--dim);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .docname.dirty::after{content:" • not saved";color:var(--warn)}
@@ -222,7 +223,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
     <button data-mode="edit" class="on" title="Click the score to place cues; edit slide text">Edit</button>
     <button data-mode="show" title="Run the show: arrow keys advance">Show</button>
   </div>
-  <button id="projBtn" title="Open the audience output window (drag to projector, press F)">📽 Projector</button>
+  <button id="projBtn" title="Open the audience window — the one that goes on the projector">📽 Projector</button>
   <button id="connectBtn" title="Step-by-step: hooking this computer up to a projector">❔ How to connect</button>
   <button id="settingsBtn">⚙︎ Settings</button>
   <span class="sep"></span>
@@ -670,6 +671,9 @@ function updateOutput(){
   $('#nextLine').innerHTML = cur+1<=lastIndex() ? `Next <span class="kbd">→</span> <b>${cur+2}</b>: ${n? esc(n.text.replace(/[|\n]+/g,' / ')) || '<i>(blank)</i>' : '<i>(no slide)</i>'}` : (cur>=0? 'End of cues' : '');
   if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; const pt=d.getElementById('t'); pt.textContent=t; fit(d.getElementById('stage'), pt); }catch(e){} }
   $('#projDot').classList.toggle('on', projOpen()); $('#projLbl').textContent = projOpen()? 'Projector live' : 'Projector off';
+  const pb=$('#projBtn'); pb.classList.toggle('live', projOpen());
+  pb.textContent = projOpen() ? '■ Close projector' : '📽 Projector';
+  pb.title = projOpen() ? 'Close the audience window (the projector goes dark)' : 'Open the audience window — the one that goes on the projector';
 }
 const esc = s => s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const projOpen = () => projWin && !projWin.closed;
@@ -707,6 +711,7 @@ async function openProjector(){
   if(NATIVE){ try{ const hn=projWin.document.getElementById('hint'); hn.textContent='Press F to switch full screen on or off. Arrow keys work here too.'; setTimeout(()=>{ try{ hn.style.display='none'; }catch(_){} }, 5000); }catch(_){} }
   const watch=setInterval(()=>{ if(!projOpen()){ clearInterval(watch); updateOutput(); } }, 1000);
   setTimeout(updateOutput, 50); updateOutput();
+  toast(NATIVE ? 'Projector window open — click “Close projector” to close it' : 'Projector window open — drag it to the projector and press F. Click “Close projector” to close it.');
   window.focus();
 }
 window.cueKey = k => handleKey(k, null);
@@ -1045,7 +1050,13 @@ addEventListener('drop', async e=>{ e.preventDefault(); dragN=0; $('#drop').clas
   else if(/\.(csv|txt|tsv)$/i.test(f.name)) { openImport(); loadImportFile(f); }
   else if(/\.pdf$/i.test(f.name)) openAny(f, hp ? await hp : null);
 });
-$('#projBtn').onclick=openProjector;
+$('#projBtn').onclick=()=> projOpen() ? closeProjector() : openProjector();
+function closeProjector(){
+  if(!projOpen()) return;
+  if(mode==='show' && !confirm('Close the projector window? The audience screen will go dark.')) return;
+  try{ projWin.close(); }catch(_){}
+  projWin=null; updateOutput(); toast('Projector window closed');
+}
 function showOS(os){ document.querySelectorAll('#connectDlg .steps').forEach(o=>o.hidden = o.dataset.for!==os); document.querySelectorAll('#connectDlg [data-os]').forEach(b=>b.classList.toggle('on', b.dataset.os===os)); }
 document.querySelectorAll('#connectDlg [data-os]').forEach(b=>b.onclick=()=>showOS(b.dataset.os));
 $('#connectBtn').onclick=()=>{ showOS(IS_MAC?'mac':'win'); $('#connectDlg').showModal(); };
