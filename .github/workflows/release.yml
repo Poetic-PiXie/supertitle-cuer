@@ -53,17 +53,22 @@ jobs:
         shell: pwsh
         run: |
           $exe = Get-ChildItem release\*.exe | Select-Object -First 1
+          Write-Host "Installer: $($exe.Name) ($([math]::Round($exe.Length/1MB)) MB)"
           Start-Process $exe.FullName -ArgumentList '/S' -Wait
-          $app = Join-Path $env:LOCALAPPDATA 'Programs\supertitle-cuer\Supertitle Cuer.exe'
-          if (!(Test-Path $app)) { Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter *.exe | Select-Object -First 5 | ForEach-Object { Write-Host $_.FullName }; throw "app not installed at $app" }
-          $assoc = (Get-ItemProperty 'HKCU:\Software\Classes\.supertitles' -ErrorAction SilentlyContinue).'(default)'
-          if (!$assoc) { throw '.supertitles not registered' }
-          Write-Host "::notice::Windows installer OK: installed, .supertitles -> $assoc"
-          $p = Start-Process $app -PassThru
+          Start-Sleep 5
+          $app = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Supertitle Cuer.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (!$app) { Write-Host "::error::App not found after install"; Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Depth 1 | ForEach-Object { Write-Host $_.FullName }; exit 1 }
+          Write-Host "::notice::Windows installer OK: installed to $($app.FullName)"
+          $keys = 'HKCU:\Software\Classes\.supertitles','HKLM:\Software\Classes\.supertitles','Registry::HKEY_CLASSES_ROOT\.supertitles'
+          $assoc = $null; foreach ($k in $keys) { if (Test-Path $k) { $assoc = (Get-Item $k).GetValue(''); if ($assoc) { break } } }
+          if (!$assoc) { Write-Host "::error::.supertitles file type not registered"; exit 1 }
+          Write-Host "::notice::.supertitles files open with: $assoc"
+          $p = Start-Process $app.FullName -PassThru
           Start-Sleep 20
-          if ($p.HasExited) { throw 'app exited early' }
+          if ($p.HasExited) { Write-Host "::error::App exited early (code $($p.ExitCode))"; exit 1 }
           Write-Host '::notice::Windows app launched and kept running'
           Stop-Process -Id $p.Id -Force
+          exit 0
       - uses: actions/upload-artifact@v4
         with:
           name: app-${{ matrix.os }}
