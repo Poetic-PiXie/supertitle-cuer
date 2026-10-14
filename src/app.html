@@ -149,6 +149,15 @@ body.order-locked .slide .trash, body.show .slide .trash{display:none}
 button.danger{background:#c8372d;border-color:#c8372d;color:#fff;font-weight:600}
 button.danger:hover{background:#dd4135;border-color:#dd4135}
 .delpv{background:#000;color:#fff;border-radius:8px;padding:14px 16px;text-align:center;font:16px/1.35 Georgia,serif;white-space:pre-wrap;max-height:160px;overflow:auto}
+.askCheck{display:flex;align-items:center;gap:9px;margin:12px 0 2px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#15161a;cursor:pointer;font-size:14px}
+.askCheck input{width:17px;height:17px;accent-color:#c8372d;margin:0}
+.slide.picked{background:#1d2a3f;border-color:#3d6fb8}
+.slide.picked .num{color:#9cc3ff}
+.slide.picked.cur{background:linear-gradient(rgba(61,111,184,.28),rgba(61,111,184,.28)),#2a2210}
+.pickbar{display:none;align-items:center;gap:8px;margin:0 12px 6px;padding:6px 10px;border-radius:8px;background:#1d2a3f;border:1px solid #3d6fb8;font-size:13px}
+.pickbar.on{display:flex}
+.pickbar .sp{flex:1}
+.pickbar button{font-size:12px;padding:3px 9px}
 .delpv .n{display:block;font:600 11px system-ui;color:var(--dim);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
 .slide .num{font-weight:700;font-size:15px;color:var(--dim);text-align:center;padding-top:3px;cursor:pointer;border-radius:5px}
 .slide .num:hover{background:#2a2d35;color:var(--text)}
@@ -251,6 +260,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
       <div class="nextline" id="nextLine"></div>
     </div>
     <div class="slidehead">Slides<span class="sp"></span><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button data-act="importSlides">Import…</button></div>
+    <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
     <div id="slides"></div>
   </aside>
 </main>
@@ -340,11 +350,12 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <div class="actions"><button type="button" id="partsUnlock" class="primary">🔓 Unlock to make changes</button><button type="button" id="partsBrowse" class="primary">📂 Browse to add a PDF…</button><span class="info" id="partsInfo"></span></div>
 </form></dialog>
 <input type="file" id="fPart" accept="application/pdf,.pdf,.supertitles" hidden>
-<dialog id="delDlg"><form method="dialog">
-  <h2>Permanently delete this slide?</h2>
-  <div class="delpv" id="delPreview"></div>
-  <p class="note" id="delNote"></p>
-  <div class="actions"><button value="keep" id="delKeep">Keep</button><button value="delete" class="danger" id="delGo">Delete</button></div>
+<dialog id="askDlg"><form method="dialog">
+  <h2 id="askTitle"></h2>
+  <div class="delpv" id="askPreview"></div>
+  <label class="askCheck" id="askCheckRow"><input type="checkbox" id="askCheck"> <span id="askCheckLabel"></span></label>
+  <p class="note" id="askNote"></p>
+  <div class="actions"><button value="cancel" id="askCancel">Cancel</button><button value="ok" class="danger" id="askOk">Delete</button></div>
 </form></dialog>
 <input type="file" id="fPdf" hidden>
 <input type="file" id="fImp" accept=".csv,.txt,.tsv,.pdf,text/csv,text/plain,application/pdf" hidden>
@@ -545,18 +556,27 @@ function renderSlides(){
 function grow(ta){ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; }
 function updateSlideClasses(){
   document.querySelectorAll('.slide').forEach(c=>{ const i=+c.dataset.i;
-    c.classList.toggle('cur', i===cur); c.classList.toggle('next', i===cur+1); c.classList.toggle('nocue', i>=state.markers.length && !!state.pdfName); });
+    c.classList.toggle('cur', i===cur); c.classList.toggle('next', i===cur+1); c.classList.toggle('picked', pickA!=null && i>=pickA && i<=pickB); c.classList.toggle('nocue', i>=state.markers.length && !!state.pdfName); });
 }
 const slidesEl=$('#slides');
 slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; grow(e.target); if(i===cur||i===cur+1) updateOutput(); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); });
+slidesEl.addEventListener('mousedown', e=>{
+  const card=e.target.closest('.slide'); if(!card || e.target.closest('button') || mode!=='edit') return;
+  const i=+card.dataset.i;
+  if(!e.shiftKey){ pickAnchor=i; if(pickA!=null) clearPicks(); return; }
+  e.preventDefault(); // no text focus / selection while shift-picking
+  const a = pickAnchor!=null ? pickAnchor : (cur>=0 ? cur : i);
+  pickA=Math.min(a,i); pickB=Math.max(a,i); updatePicks();
+});
 slidesEl.addEventListener('focusin', e=>{ if(e.target.tagName==='TEXTAREA' && mode==='edit'){ e.target._before=e.target.value; const i=+e.target.closest('.slide').dataset.i; if(i!==cur) goTo(i,false); } });
 slidesEl.addEventListener('focusout', e=>{ const t=e.target; if(t.tagName==='TEXTAREA' && t._before!==undefined && t._before!==t.value){ const i=+t.closest('.slide').dataset.i; undoStack.push(JSON.stringify({m:state.markers,s:state.slides.map((s,j)=>j===i?{text:t._before}:s)})); redoStack=[]; } });
 slidesEl.addEventListener('click', e=>{
-  const num=e.target.closest('.num'); if(num){ goTo(+num.closest('.slide').dataset.i); return; }
+  if(e.shiftKey) return; // handled in mousedown (range selection)
+  const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
   const b=e.target.closest('button[data-a]'); if(!b) return;
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : -1;
   if(state.settings.lockOrder && a!=='append') return lockedNote('order');
-  if(a==='trash') return askDeleteSlide(i);
+  if(a==='trash') return (pickA!=null && pickB>pickA && i>=pickA && i<=pickB) ? askDeleteRange(pickA,pickB) : askDeleteSlide(i);
   if(a==='up' && i>0) return moveSlide(i,i-1);
   if(a==='down' && i<state.slides.length-1) return moveSlide(i,i+1);
   snap();
@@ -565,21 +585,52 @@ slidesEl.addEventListener('click', e=>{
   if(a==='del'){ state.slides.splice(i,1); if(cur>i) cur--; else if(cur===i) cur=Math.min(cur,state.slides.length-1); changed(true); toast(`Slide ${i+1} deleted — the ones after it were renumbered`); return; }
   undoStack.pop();
 });
-let pendingDel=-1;
-function askDeleteSlide(i){
-  pendingDel=i; const t=state.slides[i].text.replace(/\|/g,'\n').trim();
-  $('#delPreview').innerHTML = `<span class="n">Slide ${i+1}</span>` + (t ? esc(t) : '<i style="color:#777">(blank slide)</i>');
-  const after = state.slides.length-1-i;
-  $('#delNote').textContent = after>0 ? `The ${after} slide${after===1?'':'s'} after it will move up one number (slide ${i+2} becomes ${i+1}${after>1?', and so on':''}). You can still undo with ${keyName('⌘Z')} until you close the app.` : `You can still undo with ${keyName('⌘Z')} until you close the app.`;
-  $('#delDlg').returnValue=''; $('#delDlg').showModal(); $('#delKeep').focus();
+// Generic confirm with an optional checkbox (unchecked by default). Resolves {ok, checked}.
+function ask({title, html='', checkLabel=null, note='', okText='Delete'}){
+  $('#askTitle').textContent=title; $('#askPreview').innerHTML=html; $('#askPreview').hidden=!html;
+  $('#askCheck').checked=false; $('#askCheckRow').hidden=!checkLabel; $('#askCheckLabel').textContent=checkLabel||'';
+  $('#askNote').textContent=note; $('#askNote').hidden=!note; $('#askOk').textContent=okText;
+  const d=$('#askDlg'); d.returnValue=''; d.showModal(); $('#askCancel').focus();
+  return new Promise(res=>d.addEventListener('close', ()=>res({ok:d.returnValue==='ok', checked:$('#askCheck').checked}), {once:true}));
 }
-$('#delDlg').addEventListener('close', ()=>{
-  const i=pendingDel; pendingDel=-1;
-  if($('#delDlg').returnValue!=='delete' || i<0 || i>=state.slides.length) return;
-  snap(); state.slides.splice(i,1);
-  if(cur>i) cur--; else if(cur===i) cur=Math.min(cur,state.slides.length-1);
-  changed(true); toast(`Slide ${i+1} deleted — the ones after it were renumbered`);
-});
+const undoNote = () => `You can still undo with ${keyName('⌘Z')} until you close the app.`;
+const rangeTxt = (a,b) => a===b ? `${a+1}` : `${a+1}–${b+1}`;
+// Delete slides a..b (0-based, inclusive); with cues=true also the cues with the same numbers.
+function deleteSlides(a, b, cues){
+  snap();
+  const n=b-a+1; state.slides.splice(a, n);
+  let cn=0; if(cues){ const ce=Math.min(b, state.markers.length-1); if(ce>=a){ cn=ce-a+1; state.markers.splice(a, cn); } anchor=null; }
+  if(cur>b) cur-=n; else if(cur>=a) cur=Math.min(a, state.slides.length-1);
+  clearPicks(); changed(true);
+  toast(`Deleted ${n===1?'supertitle '+(a+1):'supertitles '+rangeTxt(a,b)}${cn?` and ${cn===1?'cue':'cues'} ${rangeTxt(a,a+cn-1)}`:''} — later ones were renumbered`);
+}
+async function askDeleteSlide(i){
+  const t=state.slides[i].text.replace(/\|/g,'\n').trim(), hasCue = i<state.markers.length;
+  const r=await ask({ title:'Permanently delete this supertitle?',
+    html:`<span class="n">Supertitle ${i+1}</span>` + (t ? esc(t) : '<i style="color:#777">(blank)</i>'),
+    checkLabel: hasCue ? `Delete associated cue ${i+1}` : null,
+    note: (hasCue ? 'Leave the box unchecked to keep the cue on the score; the supertitles after this one then move up to the cue before them. ' : '') + undoNote() });
+  if(r.ok) deleteSlides(i, i, r.checked);
+}
+// ---- shift-click range selection of supertitles
+let pickA=null, pickB=null, pickAnchor=null;
+function clearPicks(){ pickA=pickB=null; updatePicks(); }
+function updatePicks(){
+  document.querySelectorAll('.slide').forEach(c=>{ const i=+c.dataset.i; c.classList.toggle('picked', pickA!=null && i>=pickA && i<=pickB); });
+  const on = pickA!=null && pickB>pickA; $('#pickbar').classList.toggle('on', on);
+  if(on) $('#pickInfo').textContent = `${pickB-pickA+1} supertitles selected (${rangeTxt(pickA,pickB)})`;
+}
+async function askDeleteRange(a,b){
+  if(state.settings.lockOrder) return lockedNote('order');
+  const ce=Math.min(b, state.markers.length-1), hasCues = ce>=a;
+  const r=await ask({ title:`Permanently delete supertitles ${rangeTxt(a,b)}?`,
+    html: state.slides.slice(a,b+1).map((s,k)=>`<div style="margin:2px 0"><span style="color:var(--dim);font:600 11px system-ui;margin-right:8px">${a+k+1}</span>${esc(s.text.replace(/\|/g,' / ').trim()) || '<i style="color:#777">(blank)</i>'}</div>`).join(''),
+    checkLabel: hasCues ? `Also delete associated cue${ce>a?'s':''} ${rangeTxt(a,ce)}` : null,
+    note: (hasCues ? 'Leave the box unchecked to keep those cues on the score. ' : '') + undoNote(), okText:`Delete ${b-a+1}` });
+  if(r.ok) deleteSlides(a, b, r.checked);
+}
+$('#pickDel').onclick=()=>{ if(pickA!=null) askDeleteRange(pickA,pickB); };
+$('#pickClear').onclick=clearPicks;
 function moveSlide(from,to){
   if(from===to) return;
   snap(); const [x]=state.slides.splice(from,1); state.slides.splice(to,0,x);
@@ -725,7 +776,7 @@ document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='y' && !typing){ e.preventDefault(); redo(); return; }
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveDoc(e.shiftKey, e.shiftKey?'supertitles':undefined); return; }
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='o'){ e.preventDefault(); openDialog(); return; }
-  if(e.key==='Escape'){ if(typing){ t.blur(); return; } closeMenus(); if(mode==='edit' && !document.querySelector('dialog[open]')) goTo(-1,false); return; }
+  if(e.key==='Escape'){ if(typing){ t.blur(); return; } closeMenus(); if(pickA!=null && !document.querySelector('dialog[open]')){ clearPicks(); return; } if(mode==='edit' && !document.querySelector('dialog[open]')) goTo(-1,false); return; }
   if(typing || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('dialog[open]')) return;
   handleKey(e.key, e);
 });
@@ -736,7 +787,8 @@ function handleKey(k, e){
     case 'ArrowLeft': case 'PageUp': stop(); prev(); break;
     case 'b': case 'B': case '.': stop(); toggleBlackout(); break;
     case 'Home': stop(); goTo(-1); break;
-    case 'Delete': case 'Backspace': const tgt = anchor!=null ? anchor : cur; if(mode==='edit' && tgt>=0 && tgt<state.markers.length){ stop(); if(state.settings.lockCues) lockedNote('cues'); else deleteMarker(tgt); } break;
+    case 'Delete': case 'Backspace': if(mode==='edit' && pickA!=null && pickB>pickA){ stop(); askDeleteRange(pickA,pickB); break; }
+      const tgt = anchor!=null ? anchor : cur; if(mode==='edit' && tgt>=0 && tgt<state.markers.length){ stop(); if(state.settings.lockCues) lockedNote('cues'); else deleteMarker(tgt); } break;
   }
 }
 document.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b && !b.closest('dialog')) setTimeout(()=>b.blur(),0); });
@@ -1109,11 +1161,21 @@ $('#fPart').onchange=async e=>{
   toast(`Added “${f.name}” (${pages} page${pages===1?'':'s'}) — cue numbers updated`);
 };
 function movePart(i,j){ if(j<0||j>=state.parts.length||i===j) return; const np=[...state.parts]; const [x]=np.splice(i,1); np.splice(j,0,x); applyParts(np); }
-function removePart(i){
+async function removePart(i){
   const p=state.parts[i], st=partStarts(state.parts)[p.id];
-  const n=state.markers.filter(m=>m.page>=st && m.page<st+p.pages).length;
-  if(!confirm(`Remove “${p.name}” from the score?`+(n?`\n\nThe ${n} cue${n===1?'':'s'} placed on it will be removed too.`:''))) return;
-  applyParts(state.parts.filter((_,k)=>k!==i), p.id);
+  const idx=state.markers.map((m,k)=>(m.page>=st && m.page<st+p.pages)?k:-1).filter(k=>k>=0);
+  const a=idx[0], b=idx[idx.length-1], sb=Math.min(b, state.slides.length-1), hasSlides = idx.length && sb>=a;
+  $('#partsDlg').close();
+  const r=await ask({ title:`Remove “${p.name}” from the score?`,
+    html: idx.length ? `Its pages hold cue${idx.length>1?'s':''} <b>${rangeTxt(a,b)}</b>, which will be removed with it.` : 'No cues are placed on it.',
+    checkLabel: hasSlides ? `Also delete supertitle${sb>a?'s':''} ${rangeTxt(a,sb)}` : null,
+    note: hasSlides ? 'Leave the box unchecked to keep those supertitles; they will then pair with the cues that follow.' : '', okText:'Remove' });
+  renderParts(); $('#partsDlg').showModal();
+  if(!r.ok) return;
+  if(r.checked && hasSlides) state.slides.splice(a, sb-a+1);
+  await applyParts(state.parts.filter((_,k)=>k!==i), p.id);
+  renderSlides();
+  if(r.checked && hasSlides) toast(`Removed “${p.name}” with cues and supertitles ${rangeTxt(a,b)}`);
 }
 async function renderParts(){
   const grid=$('#partsGrid'), locked=!!state.settings.lockCues, parts=state.parts||[], st=partStarts(parts);
