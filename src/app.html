@@ -322,6 +322,7 @@ body.cues-locked .mk{cursor:pointer}
 .slide .trash:hover{color:#ff7a70;border-color:#6b2a26;background:rgba(224,53,43,.14)}
 body.order-locked .slide .trash, body.show .slide .trash{display:none}
 body.order-locked .addrow{display:none}
+body.order-locked .slide .sring, body.show .slide .sring{display:none}
 body.order-locked:not(.show) .slide textarea{cursor:default}
 button.danger{background:linear-gradient(180deg,#e0493e,#b92e25);border-color:#b92e25;color:#fff;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.4)}
 button.danger:hover:not(:disabled){background:linear-gradient(180deg,#f0594d,#cf372d);border-color:#f0594d;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(229,72,77,.5),0 2px 6px rgba(0,0,0,.4)}
@@ -1024,7 +1025,7 @@ slidesEl.addEventListener('click', e=>{
   const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
   const b=e.target.closest('button[data-a]'); if(!b) return;
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : (b.dataset.i!=null ? +b.dataset.i : -1);
-  if(a==='color'){ const sl=state.slides[i]; return openPalette(b, sl && sl.color, {clear:'No color', cueBox:true, cueOn: sl && sl.color ? !!sl.colorCue : null, onPick:(c,also)=>setSlideColor(i,c,also)}); }
+  if(a==='color'){ if(state.settings.lockOrder || mode==='show') return lockedNote('order'); const sl=state.slides[i]; return openPalette(b, sl && sl.color, {clear:'No color', cueBox:true, cueOn: sl && sl.color ? !!sl.colorCue : null, onPick:(c,also)=>setSlideColor(i,c,also)}); }
   if(state.settings.lockOrder) return lockedNote('order');
   if(a==='trash') return (pickA!=null && pickB>pickA && i>=pickA && i<=pickB) ? askDeleteRange(pickA,pickB) : askDeleteSlide(i);
   if((a==='up'||a==='down') && inPick(i)) return nudgePick(a==='up'?-1:1);
