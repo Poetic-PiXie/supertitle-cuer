@@ -387,8 +387,12 @@ function buildMenu() {
     {
       label: 'View',
       submenu: [
-        item('Edit Mode', 'edit', 'CmdOrCtrl+1'),
-        item('Show Mode', 'show', 'CmdOrCtrl+2'),
+        item('Edit Mode', 'edit', 'Shift+CmdOrCtrl+E'),
+        item('Show Mode', 'show', 'Shift+CmdOrCtrl+R'),
+        { type: 'separator' },
+        item('Actual Size (100%)', 'view100', 'CmdOrCtrl+0'),
+        item('Fit Page Height', 'viewFitH', 'CmdOrCtrl+1'),
+        item('Fit Page Width', 'viewFitW', 'CmdOrCtrl+2'),
         { type: 'separator' },
         item('Open Projector', 'projector', 'CmdOrCtrl+P'),
         { label: 'Move Projector to Second Screen', accelerator: 'Shift+CmdOrCtrl+P', click: moveProjectorToSecondScreen },
