@@ -102,9 +102,15 @@ const matchCase = (orig, w) => (orig[0] === orig[0].toUpperCase() && orig[0] !==
 function createWindow() {
   rendererReady = false;
   allowClose = false;
+  // First launch: fill the usable screen (below the menu bar, above the Dock / taskbar) — not full-screen mode.
+  // After that, open where and how big the window was last time, as long as that still fits on a screen.
+  const wa = screen.getPrimaryDisplay().workArea, saved = readPrefs().windowBounds;
+  const fits = saved && screen.getAllDisplays().some((d) => { const a = d.workArea; return saved.x >= a.x - 40 && saved.y >= a.y - 40 && saved.x + saved.width <= a.x + a.width + 40 && saved.y + saved.height <= a.y + a.height + 40; });
+  const b = fits ? saved : { x: wa.x, y: wa.y, width: wa.width, height: wa.height };
   win = new BrowserWindow({
-    width: 1440,
-    height: 900,
+    x: b.x, y: b.y,
+    width: b.width,
+    height: b.height,
     minWidth: 960,
     minHeight: 600,
     backgroundColor: '#16171b',
@@ -193,6 +199,8 @@ function createWindow() {
   });
 
   // unsaved-changes check before the window closes
+  const rememberBounds = () => { if (!win || win.isDestroyed() || win.isFullScreen() || win.isMinimized()) return; writePrefs({ windowBounds: win.getNormalBounds() }); };
+  win.on('resized', rememberBounds); win.on('moved', rememberBounds);
   win.on('close', async (e) => {
     if (allowClose) return;
     e.preventDefault();
@@ -286,6 +294,18 @@ async function openGuidePdf() {
   return !err;
 }
 ipcMain.handle('save-guide-pdf', () => saveGuidePdf());
+// Printing through the system's own print dialog (page range, copies, printer, preview, Save as PDF) —
+// the page (a printable score or the guide) is laid out in a hidden window first.
+ipcMain.handle('print-html', async (_e, html, title) => {
+  const f = path.join(app.getPath('temp'), `stq-print-${Date.now()}.html`);
+  fs.writeFileSync(f, html);
+  const pw = new BrowserWindow({ show: false, title: title || 'Supertitle Cuer', webPreferences: { sandbox: true } });
+  try {
+    await pw.loadFile(f);
+    await pw.webContents.executeJavaScript('Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))).then(() => document.fonts && document.fonts.ready)');
+    return await new Promise((res) => pw.webContents.print({ silent: false, printBackground: true }, (ok, why) => res(ok ? 'printed' : (why || 'cancelled'))));
+  } finally { pw.destroy(); fs.unlink(f, () => {}); }
+});
 ipcMain.on('set-theme', (_e, t) => { nativeTheme.themeSource = t === 'day' ? 'light' : 'dark'; });
 ipcMain.handle('open-guide-pdf', () => openGuidePdf());
 // Follow: macOS asks the user once for the microphone (Windows uses its own privacy settings)
@@ -364,6 +384,7 @@ function buildMenu() {
         item('Save As…', 'saveAs', 'Shift+CmdOrCtrl+S'),
         item('Save As PDF…', 'saveAsPdf', 'Alt+Shift+CmdOrCtrl+S'),
         item('Export Printable Score (PDF)…', 'exportPrintable', 'CmdOrCtrl+E'),
+        item('Print Score…', 'printScore', 'CmdOrCtrl+P'),
         { type: 'separator' },
         item('Import Slides…', 'importSlides'),
         item('Export Slides (CSV)', 'exportCsv'),
@@ -395,8 +416,8 @@ function buildMenu() {
         item('Fit Page Height', 'viewFitH', 'CmdOrCtrl+1'),
         item('Fit Page Width', 'viewFitW', 'CmdOrCtrl+2'),
         { type: 'separator' },
-        item('Open Projector', 'projector', 'CmdOrCtrl+P'),
-        { label: 'Move Projector to Second Screen', accelerator: 'Shift+CmdOrCtrl+P', click: moveProjectorToSecondScreen },
+        item('Open Projector', 'projector'),
+        { label: 'Move Projector to Second Screen', click: moveProjectorToSecondScreen },
         { type: 'separator' },
         item('Settings…', 'settings', 'CmdOrCtrl+,'),
         { type: 'separator' },

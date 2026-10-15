@@ -601,7 +601,8 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <button data-act="save">Save<span class="sc">⌘S</span></button>
       <button data-act="saveAs">Save As…<span class="sc">⇧⌘S</span></button>
       <button data-act="saveAsPdf">Save As PDF… <span class="sc" style="float:none;margin-left:6px">opens in any PDF viewer, reopens here</span></button>
-      <button data-act="exportPrintable">Export printable score (PDF)…</button>
+      <button data-act="exportPrintable">Export printable score (PDF)…<span class="sc">⌘E</span></button>
+      <button data-act="printScore">Print score…<span class="sc">⌘P</span></button>
       <hr>
       <button data-act="importSlides">Import slides (CSV / text / PDF)…</button>
       <button data-act="exportCsv">Export slides (CSV)</button>
@@ -1528,6 +1529,7 @@ const actions = {
   importSlides: ()=>openImport(),
   saveAsPdf: ()=>saveDoc(true,'pdf'),
   exportPrintable: ()=>exportPrintable(),
+  printScore: ()=>printScore(),
   exportCsv: ()=>{ if(!state.slides.length) return toast('No slides to export'); download(baseName()+' - slides.csv', '﻿'+state.slides.map(s=>'"'+s.text.replace(/"/g,'""')+'"').join('\r\n')+'\r\n','text/csv'); },
   clearMarkers: ()=>{ if(state.markers.length && confirm(`Remove all ${state.markers.length} cue markers from the score?`)){ snap(); state.markers=[]; cur=-1; changed(false); } },
   clearSlides: ()=>{ if(state.slides.length && confirm(`Remove all ${state.slides.length} slides?`)){ snap(); state.slides=[]; changed(true); } },
@@ -2351,7 +2353,26 @@ function openHelp(id){
 }
 $('#helpBtn').onclick=()=>openHelp();
 // the whole guide on paper (or as a PDF from the print window), laid out like the published PDF
+// Print the score with its cues (exactly what Export printable score makes). Desktop app: the system print dialog.
+async function printScore(){
+  if(!pdfBytes) return toast('Open a score PDF first');
+  toast('Preparing the score for printing…');
+  let bytes; try{ bytes=await buildPrintablePdf(); }catch(e){ return toast('Could not prepare the score: '+e.message); }
+  const d=await pdfjsLib.getDocument({data:bytes.slice()}).promise, pages=[];
+  for(let n=1;n<=d.numPages;n++){ const pg=await d.getPage(n), v1=pg.getViewport({scale:1}), v=pg.getViewport({scale:2.2});
+    const c=document.createElement('canvas'); c.width=Math.ceil(v.width); c.height=Math.ceil(v.height); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height);
+    await pg.render({canvasContext:g, viewport:v}).promise; pages.push({w:v1.width, h:v1.height, src:c.toDataURL('image/jpeg',0.9)}); }
+  d.destroy();
+  const title=projectFileName().replace(/\.supertitles$/i,'')+' - printable';
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>html,body{margin:0;padding:0;background:#fff}${pages.map((p,i)=>`@page p${i}{size:${p.w}pt ${p.h}pt;margin:0} .p${i}{page:p${i};width:${p.w}pt;height:${p.h}pt}`).join('')} .pg{break-after:page;overflow:hidden} .pg:last-child{break-after:auto} .pg img{display:block;width:100%;height:100%}</style></head><body>${pages.map((p,i)=>`<div class="pg p${i}"><img src="${p.src}"></div>`).join('')}</body></html>`;
+  if(NATIVE && window.stc.printHtml){ toast('Opening the print dialog…'); try{ await window.stc.printHtml(html, title); }catch(e){ toast('Could not print: '+e.message); } return; }
+  const w=window.open('', 'stq-print'); if(!w) return toast('The browser blocked the window — allow pop-ups for this page and try again');
+  w.document.open(); w.document.write(html); w.document.close();
+  Promise.all([...w.document.images].map(i=>i.complete?0:new Promise(r=>{ i.onload=i.onerror=r; }))).then(()=>setTimeout(()=>{ try{ w.focus(); w.print(); }catch(_){} },200));
+}
+document.addEventListener('keydown', e=>{ if(!NATIVE && (e.metaKey||e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase()==='p'){ e.preventDefault(); printScore(); } });
 function printGuide(){
+  if(NATIVE && window.stc.printHtml){ toast('Opening the print dialog…'); window.stc.printHtml(STCGuide.document($('#helpTpl').innerHTML.replace(/ loading="lazy"/g,''), {version:'@@VERSION@@', icon:'@@ICON256@@'}), 'Supertitle Cuer — User Guide').catch(e=>toast('Could not print: '+e.message)); return; }
   const w=window.open('', 'stq-guide', 'width=900,height=1000');
   if(!w) return toast('The browser blocked the window — allow pop-ups for this page and try again');
   w.document.open(); w.document.write(STCGuide.document($('#helpTpl').innerHTML.replace(/ loading="lazy"/g,''), {version:'@@VERSION@@', icon:'@@ICON256@@'})); w.document.close();
@@ -2395,7 +2416,7 @@ window.__stcMenu = (cmd) => {
     new: newProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true,'supertitles'), saveAsPdf: ()=>saveDoc(true,'pdf'), exportPrintable,
     importSlides: openImport, exportCsv: actions.exportCsv,
     undo: ()=> ed ? document.execCommand('undo') : undo(), redo: ()=> ed ? document.execCommand('redo') : redo(),
-    edit: ()=>setMode('edit'), show: ()=>setMode('show'), view100: ()=>setView('pct',100), viewFitH: ()=>setView('height'), viewFitW: ()=>setView('width'), projector: openProjector, connect: ()=>openHelp('connect'), help: ()=>openHelp(), printGuide: ()=>printGuide(), settings: openSettings,
+    printScore: ()=>printScore(), edit: ()=>setMode('edit'), show: ()=>setMode('show'), view100: ()=>setView('pct',100), viewFitH: ()=>setView('height'), viewFitW: ()=>setView('width'), projector: openProjector, connect: ()=>openHelp('connect'), help: ()=>openHelp(), printGuide: ()=>printGuide(), settings: openSettings,
     spell: ()=>{ const on=!spellOn(); applySpell(on); toast(on?'Spell check on':'Spell check off'); },
   };
   if(map[cmd]) map[cmd]();

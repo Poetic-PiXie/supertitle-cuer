@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('stc', {
   saveGuidePdf: () => ipcRenderer.invoke('save-guide-pdf'),
   openGuidePdf: () => ipcRenderer.invoke('open-guide-pdf'),
   setTheme: (t) => ipcRenderer.send('set-theme', t),
+  printHtml: (html, title) => ipcRenderer.invoke('print-html', html, title),
   spellState: (on) => ipcRenderer.send('spell-state', !!on),
   spellLanguages: () => ipcRenderer.invoke('spell-languages'),
   setSpellLanguage: (lang) => ipcRenderer.invoke('set-spell-language', lang),
