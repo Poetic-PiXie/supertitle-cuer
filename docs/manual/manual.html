@@ -108,7 +108,7 @@
 <li>The <b>hint line</b> — what clicking and the keys do right now.</li>
 <li>The <b>score</b>, with its toolbar: lock the cues, manage PDFs, and the view size (100 %, fit height, fit width, or any size on the slider).</li>
 <li><b>Audience sees</b> — exactly what is on the projector (or what will be), with the <b>Projector switch</b> above it: flip it on to open the audience window. It glows green and gently breathes while the projector is live.</li>
-<li>The <b>slides</b> (supertitles), with spelling, flow mode, order lock and import.</li>
+<li>The <b>slides</b> (supertitles), with the slides lock, spelling, flow mode and import.</li>
 </ol>
 <p>The <span class="ui">↔</span> button above the preview swaps the two sides, so the score can be on the right and the slides on the left. Each computer remembers its choice.</p>
 <div class="keybox"><div class="kbt">⌨ Anywhere</div><div class="kbr"><span class="k"><kbd>F1</kbd> or <kbd>⌘?</kbd></span><span>open this Help</span></div><div class="kbr"><span class="k"><kbd>⌘,</kbd></span><span>Settings (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⇧⌘E</kbd> / <kbd>⇧⌘R</kbd></span><span>Edit / Show mode (desktop app)</span></div></div>
@@ -156,7 +156,7 @@
 </ul>
 <div class="keybox"><div class="kbt">⌨ Cues</div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></span><span>nudge the selected cue 5 px — Edit mode, cues unlocked, after clicking the score</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd> + arrows</span><span>nudge 25 px</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>→</kbd></span><span>previous / next cue — in Show mode, or while the cues are locked</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd></span><span>delete the selected cue</span></div><div class="kbr"><span class="k"><kbd>Esc</kbd></span><span>deselect</span></div></div>
 <h3>Locking the cues</h3>
-<p><span class="ui">🔓 Cues unlocked</span> above the score turns into <span class="ui">🔒 Cues locked</span> with a click. When locked, clicking the score only selects cues, and nothing can add, move or delete them by accident. Opening a saved project locks both the cues and the slide order — unlock them when you want to make changes.</p>
+<p><span class="ui">🔓 Cues unlocked</span> above the score turns into <span class="ui">🔒 Cues locked</span> with a click. When locked, clicking the score only selects cues, and nothing can add, move or delete them by accident. Opening a saved project locks both the cues and the slides — unlock them when you want to make changes.</p>
 <figure class="shot small"><img src="shots/score-toolbar.webp" alt="The score toolbar: cue lock, PDFs and zoom"></figure>
 <h3>Cue circle size</h3>
 <p><span class="ui">⚙︎ Settings → Cue circle size</span> (2 to 6, default 4) changes how big the circles are, on screen and in the printable score.</p>
@@ -207,7 +207,7 @@
 <li><b>Select</b> a slide by clicking it; the projector and the score follow. After clicking in the list, <kbd>↑</kbd> <kbd>↓</kbd> step through the slides. While typing, <kbd>↑</kbd> on a slide's first line and <kbd>↓</kbd> on its last line carry on into the neighbouring slide.</li>
 <li><b>Several at once:</b> click one slide, then <kbd>Shift</kbd>-click another to select the range. <span class="ui">▲</span> / <span class="ui">▼</span> (on a selected card or in the selection bar) or dragging one of them moves the whole block; <span class="ui">🗑 Delete…</span> deletes them together. Any other click ends the selection.</li>
 <li class="fig"><figure class="shot"><img src="shots/slides-range.webp" alt="Three slides selected as a block, with the selection bar"></figure></li>
-<li><b>Lock the order</b> with <span class="ui">🔓 Order unlocked</span> above the list, so slides can't be moved, inserted or deleted by accident. Text can still be corrected.</li>
+<li><b>Lock the slides</b> with <span class="ui">🔓 Slides unlocked</span> above the list. While it reads <span class="ui">🔒 Slides locked</span>, nothing can change by accident: no typing, no moving, adding, deleting or importing. You can still click a slide to select it. Click the button again to unlock.</li>
 </ul>
 <div class="keybox"><div class="kbt">⌨ Slides</div><div class="kbr"><span class="k"><kbd>↑</kbd> <kbd>↓</kbd></span><span>previous / next slide — after clicking in the slide list</span></div><div class="kbr"><span class="k"><kbd>↑</kbd> on the first line, <kbd>↓</kbd> on the last</span><span>while typing: carry on into the neighbouring slide</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>-click</span><span>select a range of slides</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd></span><span>delete the selected range (asks first)</span></div><div class="kbr"><span class="k"><kbd>Esc</kbd></span><span>stop typing / clear the selection</span></div><div class="kbr"><span class="k">right-click a word</span><span>spelling suggestions, synonyms</span></div></div>
 <figure class="shot"><img src="shots/slides-states.webp" alt="A slide that is too long, and slides without cues"></figure>
@@ -367,7 +367,7 @@
 <section data-id="files" data-part="Guide">
 <h2>Saving your work (and finding it again)</h2>
 <p class="lead">One file holds the whole production, so there is nothing to lose track of.</p>
-<p><span class="ui">💾 Save</span> (<kbd>⌘S</kbd>) and <span class="ui">File ▾ → Save As…</span> (<kbd>⇧⌘S</kbd>) write the project as one <code>.supertitles</code> file. Double-click it to open it in the desktop app, or open it with <span class="ui">File ▾ → Open…</span> (<kbd>⌘O</kbd>) or by dropping it on the window. Opening a project locks its cues and slide order, so nothing moves by accident.</p>
+<p><span class="ui">💾 Save</span> (<kbd>⌘S</kbd>) and <span class="ui">File ▾ → Save As…</span> (<kbd>⇧⌘S</kbd>) write the project as one <code>.supertitles</code> file. Double-click it to open it in the desktop app, or open it with <span class="ui">File ▾ → Open…</span> (<kbd>⌘O</kbd>) or by dropping it on the window. Opening a project locks its cues and slides, so nothing changes by accident.</p>
 <ul>
 <li>The app remembers your work between sessions (“Picked up where you left off”), but only a saved file can be moved to another computer or backed up.</li>
 <li><b>Undo</b> <kbd>⌘Z</kbd> and <b>Redo</b> <kbd>⇧⌘Z</kbd> (<kbd>Ctrl</kbd>+<kbd>Y</kbd> on Windows) cover cues, slides, and moved or removed PDFs.</li>
@@ -448,7 +448,7 @@
 <dt>The projector window opened on my own screen</dt><dd>Desktop app: <span class="ui">View → Move Projector to Second Screen</span>. Browser: drag it to the projector and press <kbd>F</kbd>.</dd>
 <dt>The arrow keys don't change the title</dt><dd>Make sure <span class="ui">Show</span> is selected and click once in the main window so it has the keyboard. In Edit mode the arrow keys nudge cues or step through slides instead.</dd>
 <dt>Clicking the score does nothing</dt><dd>The cues are locked (opening a project locks them). Click <span class="ui">🔒 Cues locked</span> above the score. In Show mode clicks select cues instead of adding them.</dd>
-<dt>I can't move or delete a slide</dt><dd>The order is locked: click <span class="ui">🔒 Order locked</span> above the slides.</dd>
+<dt>I can't type in, move or delete a slide</dt><dd>The slides are locked: click <span class="ui">🔒 Slides locked</span> above the slides.</dd>
 <dt>A slide is red</dt><dd>Its text is longer than the screen allows; the grey words won't be shown. Shorten it, split it, or use a smaller text size or wider screen shape.</dd>
 <dt>A cue circle is dashed, or a slide says “no cue”</dt><dd>There are more cues than slides, or more slides than cues. Add the missing titles or cues.</dd>
 <dt>Flow mode is greyed out</dt><dd>It switches off once cues are on the score, so cued titles never move.</dd>

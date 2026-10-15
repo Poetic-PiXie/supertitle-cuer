@@ -287,9 +287,8 @@ body.swapped .swapbtn::after{left:auto;right:0}
 .pvguide{position:absolute;box-sizing:border-box;border:0 solid rgba(255,255,255,.4);pointer-events:none}
 .nextline{margin-top:8px;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nextline b{color:var(--text);font-weight:500}
-.slidehead{display:flex;align-items:center;gap:8px;padding:10px 12px 6px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
-.slidehead .sp{flex:1}
-.slidehead button{text-transform:none;letter-spacing:0;font-size:12px;padding:3px 8px}
+.slidehead{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr));gap:8px;padding:10px 12px 8px}
+.slidehead button{height:30px;min-width:0;padding:0 8px;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 #slides{flex:1;overflow:auto;padding:4px 12px 40px;display:flex;flex-direction:column;gap:6px}
 .slide{display:grid;grid-template-columns:14px 34px 1fr auto auto;gap:8px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-sh);transition:border-color .15s,box-shadow .15s;padding:7px 8px;position:relative}
 .lockbtn{font-size:12px;padding:3px 9px}
@@ -306,6 +305,8 @@ body.cues-locked .mk{cursor:pointer}
 .slide .trash{background:transparent;border:1px solid transparent;color:var(--dim);padding:1px 6px;font-size:15px;line-height:22px;border-radius:6px;align-self:start}
 .slide .trash:hover{color:#ff7a70;border-color:#6b2a26;background:rgba(224,53,43,.14)}
 body.order-locked .slide .trash, body.show .slide .trash{display:none}
+body.order-locked .addrow{display:none}
+body.order-locked:not(.show) .slide textarea{cursor:default}
 button.danger{background:linear-gradient(180deg,#e0493e,#b92e25);border-color:#b92e25;color:#fff;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.4)}
 button.danger:hover:not(:disabled){background:linear-gradient(180deg,#f0594d,#cf372d);border-color:#f0594d;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(229,72,77,.5),0 2px 6px rgba(0,0,0,.4)}
 .delpv{background:#000;color:#fff;border-radius:8px;padding:14px 16px;text-align:center;font:16px/1.35 Georgia,serif;white-space:pre-wrap;max-height:160px;overflow:auto}
@@ -587,7 +588,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <div class="nextline" id="nextLine"></div>
       <div class="followbar" id="followBar" hidden><div class="fbtext" id="fbText"></div><div class="fbtrack"><div class="fbfill" id="fbFill"></div></div></div>
     </div>
-    <div class="slidehead">Slides<span class="sp"></span><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button data-act="importSlides">Import…</button></div>
+    <div class="slidehead"><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button data-act="importSlides" title="Bring in titles from a spreadsheet (CSV), a text file or a PDF of existing slides">Import…</button></div>
     <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
     <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button id="pickUp" title="Move the selected slides up one place">▲</button><button id="pickDown" title="Move the selected slides down one place">▼</button><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
     <div id="slides"></div>
@@ -908,7 +909,7 @@ function renderSlides(){
   state.slides.forEach((s,i)=>{
     const c=document.createElement('div'); c.className='slide'; c.dataset.i=i;
     c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
-    const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = mode==='show'; ta.spellcheck = spellOn() && mode==='edit';
+    const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = mode==='show' || !!state.settings.lockOrder; ta.spellcheck = spellOn() && mode==='edit';
     list.append(c);
   });
   const add=document.createElement('div'); add.className='addrow';
@@ -962,7 +963,7 @@ slidesEl.addEventListener('click', e=>{
   const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
   const b=e.target.closest('button[data-a]'); if(!b) return;
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : (b.dataset.i!=null ? +b.dataset.i : -1);
-  if(state.settings.lockOrder && a!=='append') return lockedNote('order');
+  if(state.settings.lockOrder) return lockedNote('order');
   if(a==='trash') return (pickA!=null && pickB>pickA && i>=pickA && i<=pickB) ? askDeleteRange(pickA,pickB) : askDeleteSlide(i);
   if((a==='up'||a==='down') && inPick(i)) return nudgePick(a==='up'?-1:1);
   if(a==='up' && i>0) return moveSlide(i,i-1);
@@ -1168,15 +1169,17 @@ $('#flowBtn').onclick=()=>setFlow(!state.settings.flow);
 function focusSlide(i){ const ta=document.querySelector(`.slide[data-i="${i}"] textarea`); if(ta){ ta.focus(); ta.scrollIntoView({block:'nearest'}); } }
 
 /* ---------- locks ---------- */
-function lockedNote(what){ toast(what==='cues' ? 'Cues are locked — click “🔒 Cues locked” above the score to change them' : 'Slide order is locked — click “🔒 Order locked” to move, insert or delete slides'); }
+document.addEventListener('keydown', e=>{ const t=e.target; if(mode!=='edit' || !state.settings.lockOrder || !t.matches || !t.matches('#slides textarea') || e.metaKey || e.ctrlKey || e.altKey) return; if(e.key.length===1 || e.key==='Backspace' || e.key==='Delete' || e.key==='Enter'){ e.preventDefault(); lockedNote('order'); } }, true);
+function lockedNote(what){ toast(what==='cues' ? 'Cues are locked — click “🔒 Cues locked” above the score to change them' : 'Slides are locked — click “🔒 Slides locked” to edit, move, add or delete slides'); }
 function updateLocks(){
   const st=state.settings;
   document.body.classList.toggle('cues-locked', !!st.lockCues); document.body.classList.toggle('order-locked', !!st.lockOrder);
   const a=$('#lockCues'), b=$('#lockOrder');
   a.textContent = st.lockCues ? '🔒 Cues locked' : '🔓 Cues unlocked'; a.classList.toggle('unlocked', !st.lockCues);
   a.title = st.lockCues ? 'Click to allow adding, moving and deleting cue numbers' : 'Click to lock the cue numbers so stray clicks can’t change them';
-  b.textContent = st.lockOrder ? '🔒 Order locked' : '🔓 Order unlocked'; b.classList.toggle('unlocked', !st.lockOrder);
-  b.title = st.lockOrder ? 'Click to allow dragging, inserting and deleting slides' : 'Click to lock the slide order';
+  b.textContent = st.lockOrder ? '🔒 Slides locked' : '🔓 Slides unlocked'; b.classList.toggle('unlocked', !st.lockOrder);
+  { const tt = st.lockOrder ? 'Slides are locked: no typing, moving, adding or deleting. Click to unlock' : 'Click to lock the slides — their text and their order — so nothing changes by accident'; if(b.dataset.ttl!=null) b.dataset.ttl=tt; else b.title=tt; }
+  document.querySelectorAll('#slides .slide textarea').forEach(t=>{ t.readOnly = mode==='show' || !!st.lockOrder; });
   updateHint();
   if(typeof placeAddBelow==='function') placeAddBelow();
 }
@@ -1597,7 +1600,7 @@ async function openDialog(){
 async function openAny(file, handle){
   if(/\.json$/i.test(file.name)) return openProjectFile(file);
   const bytes=new Uint8Array(await file.arrayBuffer());
-  if(!(bytes[0]===0x25 && bytes[1]===0x50 && bytes[2]===0x44 && bytes[3]===0x46)){ if(/\.(csv|txt|tsv)$/i.test(file.name)){ openImport(); return loadImportFile(file); } return toast('That isn’t a PDF — open a score PDF or a project you saved'); }
+  if(!(bytes[0]===0x25 && bytes[1]===0x50 && bytes[2]===0x44 && bytes[3]===0x46)){ if(/\.(csv|txt|tsv)$/i.test(file.name)){ if(!openImport()) return; return loadImportFile(file); } return toast('That isn’t a PDF — open a score PDF or a project you saved'); }
   let proj=null; try{ proj=await readProjectFromPdf(bytes); }catch(e){ console.warn(e); }
   if(!proj){ // a plain score: use it in the current project
     await openPdfFile(file, bytes); fileHandle=null; docName=null; setDirty(true); save(); return;
@@ -1727,7 +1730,7 @@ const textLines = t => t.replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(B
 function parsedImport(){ const t=$('#impText').value, segs = $('#impFmt').value==='csv' ? csvToSlides(t) : textLines(t);
   return $('#impFit').checked ? fitSegments(segs) : segs.map(text=>({text, b:'hard'})); }
 function updateImpInfo(){ const n=parsedImport().length; $('#impInfo').textContent = n ? `→ ${n} slide${n===1?'':'s'}, numbered ${ $('input[name=impMode]:checked').value==='append' ? (state.slides.length+1)+'–'+(state.slides.length+n) : '1–'+n }` : ''; $('#impGo').disabled=!n; }
-function openImport(){ $('#impText').value=''; $('#impFmt').value='csv'; $('#impFit').checked=state.settings.fit!==false; impFitNote(); updateImpInfo(); $('#importDlg').showModal(); }
+function openImport(){ if(state.settings.lockOrder){ lockedNote('order'); return false; } $('#impText').value=''; $('#impFmt').value='csv'; $('#impFit').checked=state.settings.fit!==false; impFitNote(); updateImpInfo(); $('#importDlg').showModal();  return true; }
 function impFitNote(){ const shp={'4/3':'4:3','16/9':'16:9','6/1':'6:1 strip'}[normShape(state.settings.shape)]; $('#impFitNote').textContent=`Fits each slide to ${maxLines()} lines on the ${shp} screen at the current title size (change both in ⚙︎ Settings). Sentences are kept together where they fit.`; }
 ['input','change'].forEach(ev=>{ $('#impText').addEventListener(ev,updateImpInfo); $('#impFmt').addEventListener(ev,updateImpInfo); });
 $('#impFit').addEventListener('change',()=>{ state.settings.fit=$('#impFit').checked; save(); updateImpInfo(); });
@@ -1835,7 +1838,7 @@ addEventListener('drop', async e=>{ e.preventDefault(); dragN=0; $('#drop').clas
   const f=e.dataTransfer.files[0]; if(!f) return;
   const it=e.dataTransfer.items && e.dataTransfer.items[0]; const hp = it && it.getAsFileSystemHandle ? it.getAsFileSystemHandle().catch(()=>null) : null;
   if(/\.json$/i.test(f.name)) openProjectFile(f);
-  else if(/\.(csv|txt|tsv)$/i.test(f.name)) { openImport(); loadImportFile(f); }
+  else if(/\.(csv|txt|tsv)$/i.test(f.name)) { if(openImport()) loadImportFile(f); }
   else if(/\.pdf$/i.test(f.name)) openAny(f, hp ? await hp : null);
 });
 $('#projBtn').onclick=()=> projOpen() ? closeProjector() : openProjector();
