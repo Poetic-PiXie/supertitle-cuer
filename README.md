@@ -16,6 +16,10 @@ Cue opera supertitles from the score: number the cues on your PDF score, pair th
 - **Run the show.** In Show mode, press → / Space (or a presentation clicker) to advance. The current cue glows on the score, the next one pulses, and the title goes to the projector window. **B** blanks the screen.
 - **One file per production.** Projects are saved as `.supertitles` files that hold the score, the cues, the slides and the display settings. **File → Save As PDF** stores the same project as a `.pdf` instead — it opens in any PDF viewer and still reopens here with everything editable. **File → Export Printable Score** writes a plain PDF with the numbered cues and a cue sheet, for the booth binder.
 
+## Help
+
+**❔ Help** in the app (or F1, ⌘? / Ctrl+?) opens a searchable guide to every button and panel, with a Quick Start. The same guide is a PDF: [Supertitle_Cuer_Manual.pdf](https://github.com/Poetic-PiXie/supertitle-cuer/releases/latest/download/Supertitle_Cuer_Manual.pdf) (also in `docs/`).
+
 ## Install
 
 **Mac (Homebrew)**
@@ -67,6 +71,6 @@ npm run dist:mac     # Mac .dmg files (on a Mac)
 npm run dist:win     # Windows installer (on Windows)
 ```
 
-The app lives in `src/app.html`. `scripts/build-html.js` inlines pdf.js and pdf-lib into it to make the single-file version, and the desktop shell in `electron/` loads that same file.
+The app lives in `src/app.html`; the guide in `docs/manual/manual.html` (inlined into the app as Help). `scripts/manual-shots.py` remakes its screenshots from an example project, and `npx electron scripts/build-manual-pdf.js` builds `docs/Supertitle_Cuer_Manual.pdf`. `scripts/build-html.js` inlines pdf.js and pdf-lib into it to make the single-file version, and the desktop shell in `electron/` loads that same file.
 
 **Releasing:** bump `version` in `package.json`, then on GitHub go to **Actions → Build & release → Run workflow**, tick **Publish a release**, and run it (pushing a tag such as `v1.0.1` works too). GitHub Actions builds the Mac and Windows apps and publishes them with the HTML file on the Releases page. Afterwards, update `version` and the two `sha256` values in `Casks/supertitle-cuer.rb` in [poetic-pixie/homebrew-tap](https://github.com/poetic-pixie/homebrew-tap) — the release's `SHA256SUMS.txt` lists them.

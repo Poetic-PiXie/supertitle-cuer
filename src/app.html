@@ -48,8 +48,54 @@ header .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
 .steps .sub{display:block;color:var(--dim);font-size:13px}
 .trouble{margin-top:12px;padding:10px 12px;background:#15161a;border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--dim)}
 .trouble b{color:var(--text)}
-#connectDlg{width:min(680px,94vw)}
-#connectDlg form{max-height:86vh;overflow:auto}
+#helpDlg{width:min(1180px,96vw);height:min(860px,92vh);max-width:none;max-height:none}
+#helpDlg .hwrap{display:grid;grid-template-columns:250px minmax(0,1fr);height:100%;position:relative}
+#helpDlg .hside{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:#121317}
+#helpDlg .hsearch{padding:14px 12px 8px}
+#helpQ{width:100%;box-sizing:border-box;background:#0d0e11;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:8px 10px;font-size:14px;outline:none}
+#helpQ:focus{border-color:var(--accent)}
+#helpToc{overflow:auto;flex:1;padding:4px 8px 10px}
+#helpToc .tpart{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin:12px 6px 4px}
+#helpToc a{display:block;padding:5px 8px;border-radius:6px;color:var(--text);text-decoration:none;font-size:13.5px}
+#helpToc a:hover{background:#1e2026}
+#helpToc a.on{background:#2a2210;color:var(--cur)}
+#helpToc a[hidden]{display:none}
+#helpDlg .hpdf{margin:8px 12px 14px;font-size:13px;color:var(--accent);text-decoration:none}
+#helpDlg .hmain{overflow:auto;padding:22px 36px 60px;min-width:0}
+#helpDlg .xclose{position:absolute;top:10px;right:12px}
+.hmain .noresults{color:var(--dim);margin-top:30px}
+.manual{font-size:15px;line-height:1.55;color:var(--text)}
+.manual section{max-width:820px;padding-bottom:18px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+.manual section[hidden]{display:none}
+.manual h2{font-size:22px;margin:4px 0 12px;color:#fff}
+.manual h3{font-size:16px;margin:20px 0 6px;color:#fff}
+.manual p,.manual li,.manual dd{color:#d6d8de}
+.manual .lead{font-size:16px;color:var(--text)}
+.manual a{color:var(--accent)}
+.manual .ui{font-weight:600;color:#fff;white-space:nowrap}
+.manual kbd{display:inline-block;min-width:1.2em;text-align:center;font:12px/1.4 ui-monospace,Menlo,monospace;background:#26282e;border:1px solid #3a3d45;border-bottom-width:2px;border-radius:5px;padding:0 5px;color:#fff}
+.manual code,.manual pre{font:13px ui-monospace,Menlo,monospace;background:#111215;border:1px solid var(--line);border-radius:5px}
+.manual code{padding:0 4px}
+.manual pre{padding:8px 10px;white-space:pre-wrap;user-select:text}
+.manual figure{margin:12px 0 16px}
+.manual figure img{max-width:100%;border-radius:8px;border:1px solid var(--line);display:block}
+.manual figure.small img{max-width:420px}
+.manual figcaption{font-size:13px;color:var(--dim);margin-top:5px}
+.manual dt{font-weight:700;color:#fff;margin-top:10px}
+.manual dd{margin:2px 0 0 18px}
+.manual ol.callouts{counter-reset:co;list-style:none;padding-left:0}
+.manual ol.callouts>li{counter-increment:co;position:relative;padding-left:34px;margin:6px 0}
+.manual ol.callouts>li::before{content:counter(co);position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:50%;background:#e5484d;color:#fff;font:700 12px/22px system-ui;text-align:center}
+.manual ol.steps>li{margin:6px 0}
+.manual .tip,.manual .note{background:#16181d;border-left:3px solid var(--accent);padding:8px 12px;border-radius:0 6px 6px 0;color:#c9ccd3}
+.manual .note{border-left-color:#6b6f7a}
+.manual table.keys{border-collapse:collapse;margin:8px 0}
+.manual table.keys td,.manual table.keys th{padding:5px 12px 5px 0;vertical-align:top;text-align:left}
+.manual table.keys th{padding-top:14px;color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.manual mark{background:#f2b134;color:#1a1a1a;border-radius:2px}
+.manual table.exports{border-collapse:collapse;margin:10px 0;font-size:14px}
+.manual table.exports th,.manual table.exports td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+.manual table.exports th{color:var(--dim);font-weight:600;background:#16181d}
 body.native .web-only{display:none}
 body:not(.native) .native-only{display:none}
 .partsGrid{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch;margin:6px 0 4px}
@@ -305,7 +351,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   </div>
   <button id="projBtn" title="Open the audience window — the one that goes on the projector">📽 Projector</button>
   <button id="followBtn" title="Follow the music: a countdown to the next cue (beta)">🎧 Follow</button>
-  <button id="connectBtn" title="Step-by-step: hooking this computer up to a projector">❔ How to connect</button>
+  <button id="helpBtn" title="Help: a searchable guide to every button and panel (⌘?)">❔ Help</button>
   <button id="settingsBtn">⚙︎ Settings</button>
   <span class="sep"></span>
   <span class="counts" id="counts"></span>
@@ -404,46 +450,16 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
 </form></dialog>
 <input type="file" id="fAudio" accept="audio/*,video/*,.mp3,.m4a,.wav,.aif,.aiff,.flac,.ogg,.webm,.mp4,.mov" hidden>
 <div class="runbar" id="runBar" hidden></div>
-<dialog id="connectDlg"><form method="dialog">
-  <h2>Connecting to a projector</h2>
-  <div class="osTabs"><button type="button" data-os="mac">Mac</button><button type="button" data-os="win">Windows</button></div>
-  <ol class="steps" data-for="mac">
-    <li><b>Plug in the projector</b> (HDMI, or USB-C with an adapter) and turn it on.</li>
-    <li><b>Open System Settings → Displays.</b> The projector should appear next to your built-in screen.
-      <span class="sub">Not there? Unplug the cable, wait a few seconds, and plug it back in.</span></li>
-    <li><b>Make it a separate screen, not a mirror.</b> Click the projector, then set <b>Use as</b> to <b>Extended display</b>.
-      <span class="sub">If it says "Mirror", the audience would see your whole screen — score and all.</span></li>
-    <li><b>Check System Settings → Desktop &amp; Dock → "Displays have separate Spaces"</b> is on (it is by default).
-      <span class="sub">Otherwise full screen on the projector can black out your laptop screen.</span></li>
-    <li class="web-only"><b>Keep the Mac awake:</b> plug in the power adapter, then in <b>System Settings → Lock Screen</b> set the "turn display off" options to <b>Never</b> and the screen saver to <b>Never</b>.</li>
-    <li class="native-only"><b>Plug in the power adapter.</b> Supertitle Cuer keeps the Mac and both screens awake by itself while you're in <b>Show</b> mode — no sleep settings to change.</li>
-    <li><b>Silence pop-ups:</b> turn on <b>Do Not Disturb</b> from Control Center (the switches icon in the menu bar).</li>
-    <li class="web-only"><b>In Supertitle Cuer, click 📽 Projector.</b> Drag the new window onto the projector screen, then press <b>F</b> (or double-click it) for full screen.</li>
-    <li class="native-only"><b>In Supertitle Cuer, click 📽 Projector.</b> It opens full screen on the projector by itself. If it lands on your own screen instead, choose <b>View → Move Projector to Second Screen</b>.</li>
-    <li><b>Test:</b> click back in this window, switch to <b>Show</b>, and press <b>→</b> — the title should appear on the projector.</li>
-  </ol>
-  <ol class="steps" data-for="win">
-    <li><b>Plug in the projector</b> (HDMI, or an adapter) and turn it on.</li>
-    <li><b>Press the Windows key + P</b> and choose <b>Extend</b>.
-      <span class="sub">"Duplicate" would show the audience your whole screen — score and all.</span></li>
-    <li><b>Not showing up?</b> Open <b>Settings → System → Display → Multiple displays</b> and click <b>Detect</b>.</li>
-    <li class="web-only"><b>Keep the PC awake:</b> plug in the charger, then in <b>Settings → System → Power</b> (or <b>Power &amp; battery</b>) set the screen and sleep times for "plugged in" to <b>Never</b>.</li>
-    <li class="native-only"><b>Plug in the charger.</b> Supertitle Cuer keeps the PC and both screens awake by itself while you're in <b>Show</b> mode — no sleep settings to change.</li>
-    <li><b>Silence pop-ups:</b> turn on <b>Do not disturb</b> (click the clock/notification area at the bottom right).</li>
-    <li class="web-only"><b>In Supertitle Cuer, click 📽 Projector.</b> Drag the new window onto the projector screen, then press <b>F</b> (or double-click it) for full screen.</li>
-    <li class="native-only"><b>In Supertitle Cuer, click 📽 Projector.</b> It opens full screen on the projector by itself. If it lands on your own screen instead, choose <b>View → Move Projector to Second Screen</b>.</li>
-    <li><b>Test:</b> click back in this window, switch to <b>Show</b>, and press <b>→</b> — the title should appear on the projector.</li>
-  </ol>
-  <div class="trouble">
-    <b>If something looks wrong</b><br>
-    • The projector shows your whole screen → it's mirroring/duplicating: go back to step 3 (Mac) or 2 (Windows).<br>
-    • Titles are too big or small → ⚙︎ Settings → Title size, and set Preview shape to match the projector.<br>
-    • The projector window got closed → click 📽 Projector again; it reopens showing the current title.<br>
-    <span class="native-only">• The projector opened on your own screen → View → Move Projector to Second Screen (it also moves there by itself when a projector is plugged in).<br></span>
-    • Arrow keys don't advance → click once anywhere in this main window to give it the keyboard.
+<dialog id="helpDlg"><div class="hwrap">
+  <div class="hside">
+    <div class="hsearch"><input type="search" id="helpQ" placeholder="Search the guide" autocomplete="off" spellcheck="false"></div>
+    <nav id="helpToc"></nav>
+    <a class="hpdf" href="https://github.com/Poetic-PiXie/supertitle-cuer/releases/latest/download/Supertitle_Cuer_Manual.pdf" target="_blank" rel="noopener">⬇ The guide as a PDF</a>
   </div>
-  <div class="actions"><button class="primary" value="ok">Done</button></div>
-</form></dialog>
+  <div class="hmain" id="helpMain"></div>
+  <button type="button" class="xclose" id="helpX" aria-label="Close help">×</button>
+</div></dialog>
+<template id="helpTpl">/*@@MANUAL@@*/</template>
 <dialog id="partsDlg"><form method="dialog">
   <button class="xclose" value="ok" title="Close" aria-label="Close">✕</button>
   <h2>PDFs in this score</h2>
@@ -956,8 +972,8 @@ document.addEventListener('click', e=>{ const b=e.target.closest('[data-lock]');
 function lastIndex(){ return Math.max(state.slides.length, state.markers.length) - 1; }
 function goTo(i, scroll=true){
   atStart=false; anchor=null;
-  cur = Math.max(-1, Math.min(i, lastIndex())); blackout=false;
-  onCue(cur);
+  const was=cur; cur = Math.max(-1, Math.min(i, lastIndex())); blackout=false;
+  onCue(cur, was);
   renderMarkers(); updateSlideClasses(); updateOutput(); updateHint(); save();
   if(scroll) scrollToCue();
 }
@@ -1573,9 +1589,6 @@ function closeProjector(){
   try{ projWin.close(); }catch(_){}
   projWin=null; updateOutput(); toast('Projector window closed');
 }
-function showOS(os){ document.querySelectorAll('#connectDlg .steps').forEach(o=>o.hidden = o.dataset.for!==os); document.querySelectorAll('#connectDlg [data-os]').forEach(b=>b.classList.toggle('on', b.dataset.os===os)); }
-document.querySelectorAll('#connectDlg [data-os]').forEach(b=>b.onclick=()=>showOS(b.dataset.os));
-$('#connectBtn').onclick=()=>{ showOS(IS_MAC?'mac':'win'); $('#connectDlg').showModal(); };
 addEventListener('beforeunload', e=>{ save(); if(!NATIVE && dirty && (state.markers.length||state.slides.length)){ e.preventDefault(); e.returnValue=''; } });
 
 /* ---------- score made of several PDFs ---------- */
@@ -1759,10 +1772,10 @@ async function fillMics(){
 function micError(e){ toast(e && e.name==='NotAllowedError' ? 'No microphone access — allow it for Supertitle Cuer (on a Mac: System Settings → Privacy & Security → Microphone)' : 'Could not use the microphone: '+(e && e.message || e)); }
 
 // ----- the cue hook: a cue change stamps a time (during a run) or re-syncs Follow -----
-function onCue(i){
+function onCue(i, was=-1){
   if(i<0 || i>=state.markers.length) return;
   const p=cuePart(i);
-  if(run){ if(p && p.id===run.part){ state.markers[i].t=Math.round(run.time()*100)/100; run.timed.add(i); setDirty(true); paintRun(); } return; }
+  if(run){ /* only moving forward stamps a time; going back to fix one leaves times alone */ if(p && p.id===run.part && i>was){ state.markers[i].t=Math.round(run.time()*100)/100; run.timed.add(i); setDirty(true); paintRun(); } return; }
   if(follow) followCue(i);
 }
 
@@ -1939,6 +1952,62 @@ $('#fMic').addEventListener('focus', ()=>{ if(!meterTap) testMic(); });
 $('#fAudio').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f && loadFor) startCueAlong(loadFor, f); };
 $('#fToggle').onclick=async()=>{ if(follow) stopFollow(); else { $('#followDlg').close(); await startFollow(); } paintFollowDlg(); };
 
+/* ---------- Help: the guide, searchable ---------- */
+let helpBuilt=false;
+const fold = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function helpKeys(root){ if(IS_MAC) return; // the guide is written with Mac keys
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+  while((n=w.nextNode())) if(/[⌘⌥⇧]/.test(n.nodeValue) && n.parentElement.closest('kbd'))
+    n.nodeValue=n.nodeValue.replace(/⌥⇧⌘/g,'Ctrl+Alt+Shift+').replace(/⇧⌘/g,'Ctrl+Shift+').replace(/⌘/g,'Ctrl+').replace(/⌥/g,'Alt+'); }
+function buildHelp(){
+  if(helpBuilt) return; helpBuilt=true;
+  const main=$('#helpMain'); main.innerHTML='<div class="manual">'+$('#helpTpl').innerHTML+'</div><p class="noresults" hidden>Nothing found. Try fewer or other words.</p>';
+  helpKeys(main);
+  const toc=$('#helpToc'); let part='';
+  main.querySelectorAll('section[data-id]').forEach(sec=>{
+    const p=sec.dataset.part||''; if(p!==part){ part=p; const d=document.createElement('div'); d.className='tpart'; d.textContent=p; toc.append(d); }
+    const a=document.createElement('a'); a.href='#'+sec.dataset.id; a.dataset.id=sec.dataset.id; a.textContent=sec.querySelector('h2').textContent; toc.append(a);
+    sec.dataset.text=fold(sec.textContent);
+  });
+}
+function showHelpSection(id){
+  const sec=$('#helpMain').querySelector(`section[data-id="${CSS.escape(id)}"]`); if(!sec) return;
+  if(sec.hidden){ $('#helpQ').value=''; searchHelp(); }
+  sec.scrollIntoView({block:'start'}); markToc(id);
+}
+function markToc(id){ document.querySelectorAll('#helpToc a').forEach(a=>a.classList.toggle('on', a.dataset.id===id)); }
+function unmark(root){ root.querySelectorAll('mark').forEach(m=>{ m.replaceWith(document.createTextNode(m.textContent)); }); root.normalize(); }
+function searchHelp(){
+  const main=$('#helpMain'), q=fold($('#helpQ').value.trim()), words=q.split(/\s+/).filter(Boolean); let any=false;
+  unmark(main);
+  main.querySelectorAll('section[data-id]').forEach(sec=>{
+    const hit=!words.length || words.every(w=>sec.dataset.text.includes(w)); sec.hidden=!hit; any=any||hit;
+    const a=$('#helpToc').querySelector(`a[data-id="${sec.dataset.id}"]`); if(a) a.hidden=!hit;
+    if(hit && words.length){ // highlight the words
+      const w=document.createTreeWalker(sec, NodeFilter.SHOW_TEXT), nodes=[]; let n; while((n=w.nextNode())) nodes.push(n);
+      for(const node of nodes){ const t=node.nodeValue, ft=fold(t); if(ft.length!==t.length) continue;
+        const ranges=[]; for(const wd of words){ let i=-1; while((i=ft.indexOf(wd,i+1))>=0) ranges.push([i,i+wd.length]); }
+        if(!ranges.length) continue; ranges.sort((a,b)=>a[0]-b[0]); const frag=document.createDocumentFragment(); let at=0;
+        for(const [a,b] of ranges){ if(a<at) continue; frag.append(t.slice(at,a)); const m=document.createElement('mark'); m.textContent=t.slice(a,b); frag.append(m); at=b; }
+        frag.append(t.slice(at)); node.replaceWith(frag); }
+    }
+  });
+  main.querySelector('.noresults').hidden=any; main.scrollTop=0;
+  const first=main.querySelector('section[data-id]:not([hidden])'); markToc(first && words.length ? first.dataset.id : '');
+}
+function openHelp(id){
+  buildHelp(); if(!$('#helpDlg').open) $('#helpDlg').showModal();
+  if(id) showHelpSection(id); else setTimeout(()=>$('#helpQ').focus(),30);
+}
+$('#helpBtn').onclick=()=>openHelp();
+$('#helpX').onclick=()=>$('#helpDlg').close();
+$('#helpQ').addEventListener('input', searchHelp);
+$('#helpToc').addEventListener('click', e=>{ const a=e.target.closest('a[data-id]'); if(!a) return; e.preventDefault(); showHelpSection(a.dataset.id); });
+$('#helpMain').addEventListener('click', e=>{ const a=e.target.closest('a[href^="#"]'); if(!a) return; e.preventDefault(); showHelpSection(a.getAttribute('href').slice(1)); });
+$('#helpMain').addEventListener('scroll', ()=>{ if($('#helpQ').value.trim()) return; const top=$('#helpMain').getBoundingClientRect().top+40; let cur='';
+  $('#helpMain').querySelectorAll('section[data-id]').forEach(s=>{ if(s.getBoundingClientRect().top<=top) cur=s.dataset.id; }); markToc(cur); });
+document.addEventListener('keydown', e=>{ if(e.key==='F1' || ((e.metaKey||e.ctrlKey) && (e.key==='?' || (e.shiftKey && e.key==='/')))){ e.preventDefault(); openHelp(); } });
+
 /* ---------- spelling ---------- */
 function spellOn(){ try{ return localStorage.getItem('stc.spell')!=='0'; }catch(_){ return true; } }
 function applySpell(on){
@@ -1962,7 +2031,7 @@ window.__stcMenu = (cmd) => {
     new: newProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true,'supertitles'), saveAsPdf: ()=>saveDoc(true,'pdf'), exportPrintable,
     importSlides: openImport, exportCsv: actions.exportCsv,
     undo: ()=> ed ? document.execCommand('undo') : undo(), redo: ()=> ed ? document.execCommand('redo') : redo(),
-    edit: ()=>setMode('edit'), show: ()=>setMode('show'), projector: openProjector, connect: ()=>$('#connectBtn').click(), settings: openSettings,
+    edit: ()=>setMode('edit'), show: ()=>setMode('show'), projector: openProjector, connect: ()=>openHelp('connect'), help: ()=>openHelp(), settings: openSettings,
     spell: ()=>{ const on=!spellOn(); applySpell(on); toast(on?'Spell check on':'Spell check off'); },
   };
   if(map[cmd]) map[cmd]();

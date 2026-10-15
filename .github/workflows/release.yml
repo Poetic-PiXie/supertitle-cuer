@@ -91,10 +91,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:html
+      - run: cp docs/Supertitle_Cuer_Manual.pdf dist/
       - uses: actions/upload-artifact@v4
         with:
           name: app-html
-          path: dist/Supertitle_Cuer.html
+          path: |
+            dist/Supertitle_Cuer.html
+            dist/Supertitle_Cuer_Manual.pdf
           if-no-files-found: error
 
   release:

@@ -381,7 +381,9 @@ function buildMenu() {
     {
       role: 'help',
       submenu: [
+        item('Supertitle Cuer Help', 'help', 'CmdOrCtrl+?'),
         item('How to Connect a Projector', 'connect'),
+        { label: 'The Guide as a PDF', click: () => shell.openExternal(HOMEPAGE + '/releases/latest/download/Supertitle_Cuer_Manual.pdf') },
         { label: 'Supertitle Cuer on GitHub', click: () => shell.openExternal(HOMEPAGE) },
       ],
     },

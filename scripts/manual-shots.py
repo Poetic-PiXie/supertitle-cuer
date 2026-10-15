@@ -1,0 +1,202 @@
+"""Screenshots for the manual (docs/manual/shots/*.webp).
+
+Replays a real project step by step in the built app (dist/Supertitle_Cuer.html):
+the titles pasted into Import, the score added, the cues placed — then every panel.
+Needs Python with Playwright + Pillow. Usage:
+  python3 scripts/manual-shots.py <project.json> <score.pdf> [<reference.wav>]
+where project.json holds {markers, slides, settings} of the example project.
+"""
+import asyncio, json, os, sys, io
+from playwright.async_api import async_playwright
+from PIL import Image
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+APP = 'file://' + os.path.join(ROOT, 'dist', 'Supertitle_Cuer.html')
+OUT = os.path.join(ROOT, 'docs', 'manual', 'shots')
+PROJ, SCORE = sys.argv[1], sys.argv[2]
+WAV = sys.argv[3] if len(sys.argv) > 3 else None
+W, H, DSF = 1440, 900, 1.5
+
+def save(png, name, max_w=None):
+    im = Image.open(io.BytesIO(png)).convert('RGB')
+    if max_w and im.width > max_w: im = im.resize((max_w, round(im.height * max_w / im.width)), Image.LANCZOS)
+    im.save(os.path.join(OUT, name + '.webp'), 'WEBP', quality=80, method=6)
+    print('  ', name, im.size)
+
+BADGES_JS = """(list)=>{ document.querySelectorAll('.__badge').forEach(b=>b.remove());
+  for(const [sel, n, side] of list){ const el=document.querySelector(sel); if(!el) { console.log('no '+sel); continue; } const r=el.getBoundingClientRect();
+    const b=document.createElement('div'); b.className='__badge'; b.textContent=n;
+    Object.assign(b.style,{position:'fixed', zIndex:99999, width:'26px', height:'26px', borderRadius:'50%', background:'#e5484d', color:'#fff',
+      font:'700 14px/26px system-ui', textAlign:'center', boxShadow:'0 0 0 2px #fff, 0 2px 8px rgba(0,0,0,.6)', pointerEvents:'none'});
+    const pos = side==='l' ? [r.left-16, r.top+r.height/2-13] : side==='r' ? [r.right-10, r.top+r.height/2-13] : side==='t' ? [r.left+r.width/2-13, r.top-12] : side==='b' ? [r.left+r.width/2-13, r.bottom-14] : side==='below' ? [r.left+r.width*0.35, r.bottom+2] : [r.left+6, r.top+6];
+    b.style.left=Math.max(2,pos[0])+'px'; b.style.top=Math.max(2,pos[1])+'px'; document.body.append(b); } }"""
+
+async def main():
+    proj = json.load(open(PROJ))
+    os.makedirs(OUT, exist_ok=True)
+    async with async_playwright() as p:
+        args = ['--autoplay-policy=no-user-gesture-required']
+        if WAV: args += ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--use-file-for-fake-audio-capture=' + os.path.abspath(WAV)]
+        br = await p.chromium.launch(args=args)
+        ctx = await br.new_context(viewport={'width': W, 'height': H}, device_scale_factor=DSF)
+        await ctx.add_init_script("Object.defineProperty(navigator,'platform',{get:()=>'MacIntel'}); Object.defineProperty(navigator,'userAgentData',{get:()=>({platform:'macOS'})});")  # pictures show Mac keys (⌘)
+        pg = await ctx.new_page()
+        pg.on('dialog', lambda d: asyncio.ensure_future(d.accept()))
+        pg.on('pageerror', lambda e: print('PAGE ERROR', e))
+        await pg.goto(APP); await pg.evaluate("localStorage.clear(); indexedDB.deleteDatabase('supertitle-cuer')"); await pg.reload(); await pg.wait_for_timeout(600)
+        await pg.evaluate("(s)=>{ Object.assign(state.settings, s, {lockCues:false, lockOrder:false, flow:false, zoom:1}); applyAlign(); updateLocks(); updateOutput(); save(); }", proj['settings'])
+        shot = lambda **kw: pg.screenshot(**kw)
+        async def clip(sel, pad=0):
+            r = await pg.evaluate("(s)=>{ const r=document.querySelector(s).getBoundingClientRect(); return [r.left,r.top,r.width,r.height]; }", sel)
+            return {'x': max(0, r[0]-pad), 'y': max(0, r[1]-pad), 'width': min(W, r[2]+2*pad), 'height': min(H, r[3]+2*pad)}
+        async def toast_off(): await pg.evaluate("(()=>{ clearTimeout(toastT); const t=document.getElementById('toast'); if(t) t.classList.remove('on'); })()"); await pg.wait_for_timeout(350)
+        badges = lambda lst: pg.evaluate(BADGES_JS, lst)
+        nobadges = lambda: pg.evaluate("document.querySelectorAll('.__badge').forEach(b=>b.remove())")
+
+        print('quick start')
+        save(await shot(), 'qs-1-empty', 1600)
+        # 2. paste all the titles into Import (CSV, | for line breaks)
+        csv = ','.join('"' + s['text'].replace('\n', '|').replace('"', '""') + '"' for s in proj['slides'])
+        await pg.click('.slidehead [data-act="importSlides"]'); await pg.wait_for_timeout(300)
+        await pg.fill('#impText', csv); await pg.select_option('#impFmt', 'csv'); await pg.evaluate("updateImpInfo()"); await pg.wait_for_timeout(200)
+        save(await shot(), 'qs-2-import', 1600)
+        save(await shot(clip=await clip('#importDlg')), 'import', 1100)
+        await pg.click('#impGo'); await pg.wait_for_timeout(500); await toast_off()
+        save(await shot(), 'qs-3-slides', 1600)
+        # 4. add the score
+        await pg.set_input_files('#fPdf', files=[{'name': proj.get('pdfName') or os.path.basename(SCORE), 'mimeType': 'application/pdf', 'buffer': open(SCORE, 'rb').read()}]); await pg.wait_for_selector('.page'); await pg.wait_for_timeout(1500)
+        await pg.evaluate("document.querySelector('.page[data-page=\"2\"]').scrollIntoView({block:'start'})"); await pg.wait_for_timeout(700); await toast_off()
+        save(await shot(), 'qs-4-score', 1600)
+        # 5. the first cues, clicked onto the score where the original project has them
+        async def click_cue(m):
+            box = await (await pg.query_selector(f'.page[data-page="{m["page"]}"]')).bounding_box()
+            await pg.mouse.click(box['x'] + m['x'] * box['width'], box['y'] + m['y'] * box['height'])
+        for m in proj['markers'][:3]:
+            await click_cue(m); await pg.wait_for_timeout(150)
+        await toast_off(); save(await shot(), 'qs-5-cues', 1600)
+        await pg.evaluate("(ms)=>{ state.markers=ms.map(m=>({page:m.page,x:m.x,y:m.y})); sortMarkers(); changed(true); goTo(2,false); docName='Verdi Anvil Chorus.supertitles'; setDirty(false); state.settings.zoom=0.8; layoutPages(); }", proj['markers'])
+        await pg.evaluate("document.querySelector('.page[data-page=\"2\"]').scrollIntoView({block:'start'})"); await pg.wait_for_timeout(700); await toast_off()
+
+        print('overview')
+        save(await shot(), 'overview', 1600)
+        await badges([['#fileMenu', 1, 'b'], ['#saveBtn', 2, 'b'], ['#modeSeg', 3, 'b'], ['#projBtn', 4, 'b'], ['#followBtn', 5, 'b'], ['#helpBtn', 6, 'b'],
+                      ['#settingsBtn', 7, 'b'], ['#counts', 8, 'b'], ['#hint', 9, 'l'], ['#lockCues', 10, 'l'], ['.pvhead', 11, 'l'], ['.slidehead', 12, 'l']])
+        save(await shot(), 'overview-callouts', 1600); await nobadges()
+        save(await shot(clip={'x': 0, 'y': 0, 'width': W, 'height': 80}), 'toolbar', 1600)
+        save(await shot(clip=await clip('.scorebar' if await pg.query_selector('.scorebar') else '#lockCues', 6)), 'score-toolbar-x', 700)
+        # score toolbar (the buttons above the score)
+        r = await pg.evaluate("(()=>{ const a=document.getElementById('lockCues').getBoundingClientRect(), b=[...document.querySelectorAll('#zoomCtl button')].pop().getBoundingClientRect(); return [a.left-8,a.top-8,b.right-a.left+16,a.height+16]; })()")
+        save(await shot(clip={'x': r[0], 'y': r[1], 'width': r[2], 'height': r[3]}), 'score-toolbar', 800)
+        os.remove(os.path.join(OUT, 'score-toolbar-x.webp'))
+        # cues: current (gold), next (pulsing), a new one (blue ring), and a dashed one without a slide
+        await pg.evaluate("goTo(1,false)"); await pg.evaluate("document.querySelector('.page[data-page=\"2\"]').scrollIntoView({block:'start'})"); await pg.wait_for_timeout(600); await toast_off()
+        pr = await pg.evaluate("(()=>{ const r=document.querySelector('#score').getBoundingClientRect(); return [r.left,r.top,r.width,r.height]; })()")
+        save(await shot(clip={'x': pr[0], 'y': pr[1] + 30, 'width': pr[2], 'height': min(H - pr[1] - 30, 780)}), 'cues', 1300)
+        await pg.evaluate("goTo(2,false)")
+
+        print('slides')
+        await pg.evaluate("document.querySelector('.slide[data-i=\"3\"]').scrollIntoView({block:'center'})")
+        card = await pg.query_selector('.slide[data-i="3"]'); await card.hover(); await pg.wait_for_timeout(300)
+        await badges([['.slide[data-i="3"] .grip', 1, 'l'], ['.slide[data-i="3"] .num', 2, 't'], ['.slide[data-i="3"] textarea', 3, 'below'], ['.slide[data-i="3"] .tools', 4, 't'], ['.slide[data-i="3"] .trash', 5, 't']])
+        save(await shot(clip=await clip('.slide[data-i="3"]', 32)), 'slide-card', 1000); await nobadges()
+        # states: a too-long slide and slides without cues (cues 7-11 taken off for the picture)
+        await pg.evaluate("(()=>{ window.__mk=state.markers.slice(); state.slides[4].text='THE GYPSY LADY! The gypsy lady with her dark and shining eyes, who sings by the fire all the night long until dawn'; state.markers=state.markers.slice(0,6); changed(true); goTo(5,false); })()")
+        await pg.evaluate("document.querySelector('.slide[data-i=\"4\"]').scrollIntoView({block:'start'})"); await pg.wait_for_timeout(300); await toast_off()
+        r = await pg.evaluate("(()=>{ const a=document.querySelector('.slide[data-i=\"4\"]').getBoundingClientRect(), b=document.querySelector('.slide[data-i=\"7\"]').getBoundingClientRect(); return [a.left-10,a.top-10,a.width+20,b.bottom-a.top+20]; })()")
+        save(await shot(clip={'x': r[0], 'y': r[1], 'width': r[2], 'height': r[3]}), 'slides-states', 900)
+        await pg.evaluate("(t)=>{ state.slides[4].text=t; state.markers=window.__mk; changed(true); goTo(2,false); }", proj['slides'][4]['text'])
+        await pg.click('.slide[data-i="5"] .num'); await pg.click('.slide[data-i="7"] .num', modifiers=['Shift']); await pg.wait_for_timeout(300)
+        await pg.evaluate("document.querySelector('#pickbar').scrollIntoView({block:'start'}); document.querySelector('.slide[data-i=\"5\"]').scrollIntoView({block:'nearest'})"); await pg.wait_for_timeout(300); await toast_off()
+        r = await pg.evaluate("(()=>{ const a=document.querySelector('.slidehead').getBoundingClientRect(), b=document.querySelector('.slide[data-i=\"8\"]').getBoundingClientRect(); return [a.left-6,a.top-4,a.width+12,Math.min(b.bottom,900)-a.top+10]; })()")
+        save(await shot(clip={'x': r[0], 'y': r[1], 'width': r[2], 'height': r[3]}), 'slides-range', 900)
+        await pg.evaluate("clearPicks(); goTo(2,false)")
+
+        print('exports')
+        await pg.click('#fileMenu [data-menu]'); await pg.wait_for_timeout(300)
+        save(await shot(clip=await clip('#fileMenu .items', 10)), 'file-menu', 700)
+        await pg.keyboard.press('Escape'); await pg.mouse.click(700, 60); await pg.wait_for_timeout(200)
+        import subprocess, tempfile
+        pdfb = bytes(await pg.evaluate("buildPrintablePdf().then(b=>Array.from(b))"))
+        with tempfile.TemporaryDirectory() as td:
+            open(td + '/p.pdf', 'wb').write(pdfb)
+            n = int([l for l in subprocess.run(['pdfinfo', td + '/p.pdf'], capture_output=True, text=True).stdout.splitlines() if l.startswith('Pages')][0].split()[-1])
+            for pgno, nm in [(2, 'a'), (n, 'b')]:
+                subprocess.run(['pdftoppm', '-r', '90', '-f', str(pgno), '-l', str(pgno), '-png', td + '/p.pdf', td + '/' + nm], check=True)
+            import glob as _g
+            pa, pb = [Image.open(sorted(_g.glob(td + f'/{nm}*.png'))[0]).convert('RGB') for nm in 'ab']
+        hh = max(pa.height, pb.height); comp = Image.new('RGB', (pa.width + pb.width + 40, hh + 40), (60, 62, 68))
+        comp.paste(pa, (14, 20)); comp.paste(pb, (pa.width + 26, 20))
+        b = io.BytesIO(); comp.save(b, 'PNG'); save(b.getvalue(), 'exports', 1400)
+
+        print('dialogs')
+        await pg.click('#settingsBtn'); await pg.wait_for_timeout(300)
+        save(await shot(clip=await clip('#setDlg')), 'settings', 1100); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
+        await pg.click('#partsBtn'); await pg.wait_for_timeout(1200)
+        save(await shot(clip=await clip('#partsDlg')), 'pdfs', 1300)
+        await pg.hover('#tkLink'); await pg.wait_for_timeout(700)
+        r = await pg.evaluate("(()=>{ const b=document.getElementById('tkLink').getBoundingClientRect(); return [b.right-330, b.top-120, 350, b.height+132]; })()")
+        save(await shot(clip={'x': r[0], 'y': r[1], 'width': r[2], 'height': r[3]}), 'toolkit-button', 700)
+        await pg.mouse.move(10, 10); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
+
+        print('projector and show')
+        async with pg.expect_popup() as pi: await pg.click('#projBtn')
+        pj = await pi.value; await pj.set_viewport_size({'width': 1280, 'height': 720}); await pg.wait_for_timeout(500)
+        await pg.evaluate("setMode('show'); goTo(5,false); scrollToCue()"); await pg.wait_for_timeout(1500); await toast_off()
+        save(await shot(), 'show', 1600)
+        await pj.evaluate("document.getElementById('hint').style.display='none'")
+        save(await pj.screenshot(), 'projector', 1280)
+        # the three screen shapes, as the preview shows them with the projector on
+        tiles = []
+        for sh in ['16/9', '4/3', '6/1']:
+            await pg.evaluate(f"state.settings.shape='{sh}'; updateOutput()"); await pg.wait_for_timeout(400)
+            tiles.append(Image.open(io.BytesIO(await shot(clip=await clip('#pv')))).convert('RGB'))
+        await pg.evaluate("(s)=>{ state.settings.shape=s; updateOutput(); }", proj['settings']['shape'])
+        gap = 24; tw = sum(t.width for t in tiles) + gap * 2; th = max(t.height for t in tiles)
+        from PIL import ImageDraw, ImageFont
+        try: font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 30)
+        except Exception: font = ImageFont.load_default()
+        comp = Image.new('RGB', (tw, th + 50), (22, 23, 27)); x = 0; d = ImageDraw.Draw(comp)
+        for t, lab in zip(tiles, ['16:9', '4:3', '6:1 Strip']): comp.paste(t, (x, 50)); d.text((x + 4, 6), lab, fill=(230, 230, 235), font=font); x += t.width + gap
+        b = io.BytesIO(); comp.save(b, 'PNG'); save(b.getvalue(), 'shapes', 1600)
+        await pj.close(); await pg.wait_for_timeout(1300)
+
+        print('follow')
+        await pg.evaluate("setMode('edit')")
+        # an example reference run for the score (cue times spread over the music) — for the pictures only
+        await pg.evaluate("""(()=>{ const id=state.parts[0].id, n=Math.round(251*STCFollow.FPS), f=new Float32Array(n*STCFollow.NB);
+          state.markers.forEach((m,i)=>m.t=8+i*21.5); setRun(id,{feat:STCFollow.pack(f), audio:null, name:'Anvil Chorus - dress rehearsal.m4a', source:'file', duration:251}); })()""")
+        await pg.click('#followBtn'); await pg.wait_for_timeout(500)
+        save(await shot(clip=await clip('#followDlg')), 'follow-dialog', 1100); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
+        # the countdown (a stand-in follower showing a typical moment)
+        await pg.evaluate("""(()=>{ setMode('show'); goTo(5,false); follow={stream:{getTracks:()=>[]}, tap:null, part:state.parts[0].id, f:{anchor(){}}, st:{refTime:state.markers[6].t-4.2, confidence:.8, tempo:.97, held:0}};
+          paintFollow(); updateFollowBtn(); })()"""); await pg.wait_for_timeout(300); await toast_off()
+        fb = await clip('.pvwrap')
+        save(await shot(clip=fb), 'followbar', 1000)
+        await pg.evaluate("clearInterval(follow.timer); follow=null; $('#followBar').hidden=true; updateFollowBtn();")
+        if WAV:
+            bars = []
+            await pg.evaluate("startRecording(state.parts[0].id)"); await pg.wait_for_timeout(2500); await pg.evaluate("next(); next()"); await pg.wait_for_timeout(1200); await toast_off()
+            bars.append(Image.open(io.BytesIO(await shot(clip=await clip('#runBar', 1)))).convert('RGB'))
+            await pg.evaluate("stopRun(false)"); await pg.wait_for_timeout(600)
+            async with pg.expect_file_chooser() as fc: await pg.evaluate("loadFor=state.parts[0].id; $('#fAudio').click()")
+            await (await fc.value).set_files(os.path.abspath(WAV)); await pg.wait_for_selector('#runBar:not([hidden])')
+            await pg.evaluate("run.media.currentTime=42; paintRun()"); await pg.wait_for_timeout(600); await toast_off()
+            bars.append(Image.open(io.BytesIO(await shot(clip=await clip('#runBar', 1)))).convert('RGB'))
+            await pg.evaluate("stopRun(false)")
+            tw = max(b.width for b in bars); th = sum(b.height for b in bars) + 20
+            comp = Image.new('RGB', (tw, th), (22, 23, 27)); y = 0
+            for bb in bars: comp.paste(bb, (0, y)); y += bb.height + 20
+            b = io.BytesIO(); comp.save(b, 'PNG'); save(b.getvalue(), 'runbars', 1300)
+
+        print('flow mode')
+        await pg.evaluate("(()=>{ setMode('edit'); state.markers=[]; state.slides=state.slides.slice(0,5).map(s=>({...s, b:'soft'})); changed(true); setFlow(true); goTo(1,false); })()")
+        await pg.wait_for_timeout(600); await toast_off()
+        save(await shot(clip=await clip('aside')), 'flow', 900)
+
+        print('help')
+        await pg.evaluate("setFlow(false); openHelp('slides')"); await pg.wait_for_timeout(600)
+        await pg.fill('#helpQ', 'blackout'); await pg.wait_for_timeout(400)
+        save(await shot(clip=await clip('#helpDlg')), 'help', 1300)
+        await br.close()
+
+asyncio.run(main())
