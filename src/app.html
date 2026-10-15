@@ -18,9 +18,9 @@
   --float-a:rgba(44,47,55,.96); --float-b:rgba(34,36,43,.96); --float-sh:inset 0 1px 0 rgba(255,255,255,.07),0 2px 8px rgba(0,0,0,.45);
   --unl-a:rgba(66,40,26,.97); --unl-b:rgba(50,30,20,.97); --hover-wash:rgba(255,255,255,.08); --seg-ink:#aeb1bd; --score-bg:#2a2c32;
   --cur-bg:#2e1c12; --over-bg:#2b1416; --pick-bg:#1d2a3f; --nocue-a:#1b1c20; --nocue-b:#202126; --box-bg:#16181d; --side-bg:#121317; --kbd-bg:#26282e;
-  --tip-bg:#30333c; --tip-line:#444855; --tip-ink:#e6e8ee; --lk-a:rgba(70,26,28,.97); --lk-b:rgba(52,20,22,.97);
+  --tip-bg:#30333c; --tip-line:#444855; --tip-ink:#e6e8ee; --cue-default:#e0352b; --lk-a:rgba(70,26,28,.97); --lk-b:rgba(52,20,22,.97);
 }
-/* Day: a light, warm theme — same gold, dark ink, soft lilac-grey chrome */
+/* Day: a light, warm theme — same gold, dark ink, soft lilac-gray chrome */
 body.day{
   --bg:#ebe9ef; --panel:#f7f6f9; --panel2:#ffffff; --line:#dcd8e3; --text:#1d1b22; --dim:#6b6673;
   --accent:#e8661c; --cur:#f0691a; --ok:#0e8c87; --warn:#d0701e;
@@ -282,7 +282,7 @@ body.swapped .swapbtn{order:3;margin-left:auto}
 .pvhead.live .pvlbl{max-width:calc(50% - 170px)}
 @container (max-width:560px){ .pvhead.live .pvlbl{display:none} }
 .pvctl .projsw{width:148px;justify-content:space-between}
-/* blackout: grey pill, red glow while the screen is blacked out */
+/* blackout: gray pill, red glow while the screen is blacked out */
 .bobtn{width:148px;height:32px;border-radius:999px;padding:0 14px;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--soft)}
 .bobtn.on{border-color:#e5484d;color:#ff8a85;background:linear-gradient(180deg,var(--lk-a),var(--lk-b));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 12px rgba(229,72,77,.5),0 1px 2px rgba(0,0,0,.4)}
 .bobtn.on:hover:not(:disabled){border-color:#ff6b66;color:#ffb0ac;background:linear-gradient(180deg,var(--lk-a),var(--lk-b));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 20px rgba(229,72,77,.7),0 1px 2px rgba(0,0,0,.4)}
@@ -539,7 +539,7 @@ body.day .themesw .knob{transform:translateX(34px);background:linear-gradient(18
 body.day .themesw .moon{color:#b8774a}
 body.day .themesw .sun{color:#5a2a00}
 body.day .themesw:hover:not(:disabled){background:linear-gradient(180deg,#fff0e4,#fbd9bd);box-shadow:0 0 14px rgba(255,140,60,.45)}
-/* second header row: the score's controls sit centred over the score; the hint takes the space on the slides' side */
+/* second header row: the score's controls sit centered over the score; the hint takes the space on the slides' side */
 header .hrow2{flex-basis:100%;position:relative;min-height:36px;display:flex;align-items:center;--zw:0px}
 #zoomCtl{position:absolute;left:calc(33.333% - 4px);top:50%;transform:translate(-50%,-50%);height:auto;padding:0;gap:6px;justify-content:center;white-space:nowrap}
 body.swapped #zoomCtl{left:calc(66.667% + 4px)}
@@ -555,6 +555,23 @@ body.day .lockbtn[data-lock]:not(.unlocked):hover:not(:disabled){color:#a81f18}
 @media (max-width:1420px){ .docname{max-width:110px} header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:88px !important} }
 @media (max-width:1300px){ header .brand .bnf, header .brand .by{display:none} }
 @media (max-width:1180px){ .counts{display:none} }
+/* color rings (slides) and the palette */
+.slide .sring{position:absolute;left:9px;top:max(calc(50% - 7px), 28px);width:14px;height:14px;padding:0;border-radius:50%;border:1.5px solid var(--dim);background:var(--sc,transparent);box-shadow:none;z-index:2}
+.slide .sring:hover:not(:disabled){border-color:var(--text);background:var(--sc,var(--hover-wash));box-shadow:0 0 6px var(--sc,rgba(255,255,255,.25))}
+.slide.tinted .sring{border-color:color-mix(in srgb,var(--sc) 55%,#fff)}
+.slide.tinted{border-color:color-mix(in srgb,var(--sc) 70%,#fff 10%);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 0 10px color-mix(in srgb,var(--sc) 70%,transparent),0 0 2px color-mix(in srgb,var(--sc) 80%,transparent)}
+.slide.tinted.cur{border-color:var(--cur);box-shadow:0 0 0 2px var(--cur),0 0 16px color-mix(in srgb,var(--sc) 85%,transparent)}
+body.day .slide.tinted{border-color:color-mix(in srgb,var(--sc) 75%,#fff)}
+.palette{position:fixed;inset:auto;margin:0;z-index:1001;display:grid;grid-template-columns:repeat(6,22px);gap:7px;padding:10px;border-radius:14px;background:var(--panel2);border:1px solid var(--btn-line);box-shadow:0 14px 40px rgba(0,0,0,.45);color:var(--text)}
+.palette button{width:22px;height:22px;padding:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);box-shadow:none;cursor:pointer}
+body.day .palette button{border-color:rgba(0,0,0,.12)}
+.palette button:hover:not(:disabled){transform:scale(1.15);border-color:#fff;box-shadow:0 0 8px rgba(255,255,255,.25)}
+.palette button.on{box-shadow:0 0 0 2px var(--panel2),0 0 0 4px var(--accent)}
+.palette .clear{grid-column:1/-1;width:auto;height:28px;border-radius:999px;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:7px;background:linear-gradient(180deg,var(--btn-a),var(--btn-b));border:1px solid var(--btn-line)}
+.palette .clear:hover:not(:disabled){transform:none}
+.palette .clear i{width:12px;height:12px;border-radius:50%;display:inline-block}
+#setDlg button.pcol{cursor:pointer;width:100%}
+#setDlg .pcol .swatch{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.75);box-shadow:0 1px 3px rgba(0,0,0,.5);flex:none}
 /* the header buttons share one size */
 header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96px;height:34px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 /* one tooltip for the whole app: anything with a title gets a soft pill-shaped tip */
@@ -597,7 +614,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
     <button data-mode="show" title="Run the show: arrow keys advance">Show</button>
   </div>
   <button id="followBtn" title="Follow the music: a countdown to the next cue (beta)">🎧 Follow</button>
-  <button id="settingsBtn" title="Settings: screen shape, font, colours, text size and position (⌘,)">⚙︎ Settings</button>
+  <button id="settingsBtn" title="Settings: screen shape, font, colors, text size and position (⌘,)">⚙︎ Settings</button>
   <button type="button" id="themeSw" class="themesw" role="switch" aria-checked="false" aria-label="Day look" title="Switch between the Night (dark) and Day (light) look of the app"><svg class="moon" viewBox="0 0 20 20" width="15" height="15"><path d="M15.9 12.4A6.6 6.6 0 0 1 7.6 4.1a6.6 6.6 0 1 0 8.3 8.3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 20 20" width="15" height="15"><circle cx="10" cy="10" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.2v2.1M10 15.7v2.1M2.2 10h2.1M15.7 10h2.1M4.5 4.5L6 6M14 14l1.5 1.5M15.5 4.5L14 6M6 14l-1.5 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="knob"></span></button>
   <span class="counts" id="counts" title="How many cues are on the score, and how many slides there are"></span>
   <div class="hrow2" id="hrow2">
@@ -659,7 +676,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
 <dialog id="setDlg"><form method="dialog">
   <div class="dhead" title="Drag to move · double-click to put it back in the middle"><span class="grip" aria-hidden="true"></span><h2>Settings</h2><span class="ver">STQ v@@VERSION@@</span></div>
   <div class="sgrid">
-    <div class="srow"><span class="lbl">Screen shape</span><div class="pseg" id="sShapeSeg" style="--n:3"><button type="button" data-v="4/3" title="A classic 4:3 projector: the titles use a centred 4:3 area">4:3</button><button type="button" data-v="16/9" title="A widescreen projector: the titles use the whole screen">16:9</button><button type="button" data-v="6/1" title="A wide band of two lines, e.g. above the proscenium">6:1 Strip</button></div><select id="sShape" hidden><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select><span></span></div>
+    <div class="srow"><span class="lbl">Screen shape</span><div class="pseg" id="sShapeSeg" style="--n:3"><button type="button" data-v="4/3" title="A classic 4:3 projector: the titles use a centered 4:3 area">4:3</button><button type="button" data-v="16/9" title="A widescreen projector: the titles use the whole screen">16:9</button><button type="button" data-v="6/1" title="A wide band of two lines, e.g. above the proscenium">6:1 Strip</button></div><select id="sShape" hidden><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select><span></span></div>
     <div class="srow"><span class="lbl">Font</span><select id="sFont" class="pill" title="The typeface of the titles">
       <option value='Georgia, "Times New Roman", serif'>Georgia (serif)</option>
       <option value='"Palatino Linotype", Palatino, "Book Antiqua", serif'>Palatino (serif)</option>
@@ -668,14 +685,15 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <option value='Verdana, Geneva, sans-serif'>Verdana (sans)</option>
     </select><span></span></div>
     <div class="srow"><span class="lbl">Text style</span><div class="ppair"><label class="ptog" title="Italic titles on or off"><input type="checkbox" id="sItal"><i>Italic</i></label><label class="ptog" title="Bold titles on or off"><input type="checkbox" id="sBold"><b>Bold</b></label></div><span></span></div>
-    <div class="srow"><span class="lbl">Colours</span><div class="ppair"><label class="pcol" title="Colour of the title text">Text<input type="color" id="sFg"></label><label class="pcol" title="Colour of the screen behind the titles">Background<input type="color" id="sBg"></label></div><span></span></div>
-    <div class="srow"><span class="lbl">Alignment</span><div class="pseg" id="sAlign" style="--n:3"><button type="button" data-al="left" title="Lines start at the left margin">Left</button><button type="button" data-al="center" title="Lines are centred">Center</button><button type="button" data-al="right" title="Lines end at the right margin">Right</button></div><span></span></div>
+    <div class="srow"><span class="lbl">Slide Colors</span><div class="ppair"><label class="pcol" title="Color of the title text">Text<input type="color" id="sFg"></label><label class="pcol" title="Color of the screen behind the titles">Background<input type="color" id="sBg"></label></div><span></span></div>
+    <div class="srow"><span class="lbl">Alignment</span><div class="pseg" id="sAlign" style="--n:3"><button type="button" data-al="left" title="Lines start at the left margin">Left</button><button type="button" data-al="center" title="Lines are centered">Center</button><button type="button" data-al="right" title="Lines end at the right margin">Right</button></div><span></span></div>
     <div class="srow" id="spellLangRow" hidden><span class="lbl">Spelling language</span><select id="sSpellLang" class="pill"></select><span></span></div>
     <div class="srow web-only"><span class="lbl">Second screen</span><button type="button" id="sScreens" class="pbtn" title="Let the projector window open on the 2nd screen automatically">Open the projector on screen 2</button><span></span></div>
     <div class="srow"><span class="lbl">Text size <span class="info" id="sFsNote" tabindex="0">i</span></span><input type="range" id="sFs" min="75" max="100" step="1" title="Size of the titles (75–100 %)"><span class="val" id="sFsV"></span></div>
     <div class="srow"><span class="lbl">Vertical position</span><input type="range" id="sVpos" min="-100" max="100" step="1" title="Left = higher on the screen · right = lower"><button type="button" id="sMid" class="val pbtn" title="Put the titles back in the middle">Middle</button></div>
     <div class="srow"><span class="lbl">Side margins</span><input type="range" id="sSide" min="2" max="6" step="0.25" title="Space kept clear at each side"><span class="val" id="sSideV"></span></div>
     <div class="srow"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="6" step="0.25" title="Size of the cue circles on the score and in the printable score"><span class="val" id="sMkV"></span></div>
+    <div class="srow"><span class="lbl">Cue color</span><div class="ppair"><button type="button" class="pcol" id="sCueCol" title="Color of the cue circles on the score — click for the palette">Cues<span class="swatch"></span></button></div><span></span></div>
   </div>
   <div class="actions"><button class="primary pbtn" value="ok" title="Close Settings — every change is already applied">Done</button></div>
 </form></dialog>
@@ -877,6 +895,7 @@ function renderMarkers(){
     if(i===anchor && mode==='edit' && !state.settings.lockCues) d.classList.add('anchor');
     if(i===fresh) d.classList.add('fresh'); else if(mode==='show' && i===cur+1) d.classList.add('next');
     if(i>=state.slides.length) d.classList.add('noslide');
+    { const col=cueColor(i); if(col) d.style.setProperty('--cue', col); }
     d.style.left=(m.x*100)+'%'; d.style.top=(m.y*100)+'%';
     d.title = `Cue ${i+1}` + (state.slides[i]? ` — ${state.slides[i].text.split('\n')[0].slice(0,60)}` : ' — no slide yet') + (mode==='edit'?'\nDrag to move · right-click or Delete to remove':'');
     p.overlay.append(d);
@@ -887,7 +906,7 @@ function renderMarkers(){
 // then left to right for cues at the same height. Click order never matters.
 function sortMarkers(){
   const curObj = state.markers[cur], ancObj = anchor!=null ? state.markers[anchor] : null;
-  // Rows: a cue counts as higher (earlier) only if its centre is at least 1.5 × the cue radius above
+  // Rows: a cue counts as higher (earlier) only if its center is at least 1.5 × the cue radius above
   // the top cue of the row; closer than that, it is on the same row and goes left to right.
   const byY=[...state.markers].sort((a,b)=> a.page-b.page || a.y-b.y || a.x-b.x), out=[];
   let row=[], top=null;
@@ -946,7 +965,8 @@ function renderSlides(){
   const list=$('#slides'); list.replaceChildren();
   state.slides.forEach((s,i)=>{
     const c=document.createElement('div'); c.className='slide'; c.dataset.i=i;
-    c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
+    c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><button type="button" class="sring" data-a="color" title="Color this slide in the list (only here — the projector never shows it)"></button><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
+    { const col=slideColor(i); c.classList.toggle('tinted', !!col); if(col) c.style.setProperty('--sc', col); }
     const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = mode==='show' || !!state.settings.lockOrder; ta.spellcheck = spellOn() && mode==='edit';
     list.append(c);
   });
@@ -965,7 +985,7 @@ function updateSlideClasses(){
     c.classList.toggle('fixed', state.settings.flow && i<state.markers.length); });
   placeAddBelow();
 }
-// Marks a slide box whose text won't fit on the screen, and greys out (50%) the words that won't make it.
+// Marks a slide box whose text won't fit on the screen, and grays out (50%) the words that won't make it.
 function showOverflow(c, text, ctx=measureCtx()){
   const cut = text.trim() ? overflowCut(text.replace(/\|/g,'\n'), ctx) : -1, mir=c.querySelector('.mirror');
   c.classList.toggle('over', cut>=0);
@@ -1002,6 +1022,7 @@ slidesEl.addEventListener('click', e=>{
   const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
   const b=e.target.closest('button[data-a]'); if(!b) return;
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : (b.dataset.i!=null ? +b.dataset.i : -1);
+  if(a==='color') return openPalette(b, state.slides[i] && state.slides[i].color, {clear:'No color', onPick:c=>setSlideColor(i,c)});
   if(state.settings.lockOrder) return lockedNote('order');
   if(a==='trash') return (pickA!=null && pickB>pickA && i>=pickA && i<=pickB) ? askDeleteRange(pickA,pickB) : askDeleteSlide(i);
   if((a==='up'||a==='down') && inPick(i)) return nudgePick(a==='up'?-1:1);
@@ -1290,7 +1311,7 @@ function fit(stage, text){
   text.style.width='100%'; text.style.textAlign=state.settings.align||'left';
   text.style.lineHeight=m.lh; text.style.fontStyle=state.settings.italic?'italic':'normal'; text.style.fontWeight=state.settings.bold?'700':'400';
   // The type size comes only from Settings. Text beyond the shape's lines (2 on 6:1, 6 otherwise)
-  // is not shown on the screens at all (the slide box in the list greys it out instead).
+  // is not shown on the screens at all (the slide box in the list grays it out instead).
   const fs=m.font, lineH=fs*m.lh, maxLines=titleLayout().lines;
   const availH=H-2*m.padY;
   text.style.fontSize=fs+'px'; text.style.maxHeight='none'; text.style.height='auto';
@@ -1328,7 +1349,7 @@ function updateOutput(){
   { const tt=projOpen() ? 'Close the audience window (the projector goes dark)' : 'Open the audience window — the one that goes on the projector'; if(pb.dataset.ttl!=null) pb.dataset.ttl=tt; else pb.title=tt; }
 }
 // On the projector, 6:1 is a full-width band of height width/6 at the top, middle or bottom of the screen;
-// 4:3 is the centred 4:3 area; 16:9 fills the screen.
+// 4:3 is the centered 4:3 area; 16:9 fills the screen.
 // Where the title area sits on a projector screen of w × h
 function stageBox(w,h){
   const sh=normShape(state.settings.shape), vp=(state.settings.vpos||0)/100;
@@ -1507,8 +1528,8 @@ function setDirty(d){
 }
 const projectData = () => ({app:'supertitle-cuer', version:4, savedAt:new Date().toISOString(), pdfName:state.pdfName, parts:state.parts, markers:state.markers, slides:state.slides, settings:state.settings, follow: {runs:Object.fromEntries(partsList().filter(p=>refRuns[p.id]).map(p=>[p.id, refMeta(refRuns[p.id])]))}});
 function drawCues(doc, font){
-  const {rgb, degrees} = PDFLib; const red=rgb(0.86,0.1,0.1);
-  state.markers.forEach((m,i)=>{
+  const {rgb, degrees} = PDFLib;
+  state.markers.forEach((m,i)=>{ const red=hexRgb(cueColor(i)||'#dc1a1a');
     if(m.page-1 >= doc.getPageCount()) return; const page=doc.getPage(m.page-1);
     const cb=page.getCropBox(); const rot=(((page.getRotation().angle||0)%360)+360)%360;
     const W=cb.width, H=cb.height, x0=cb.x, y0=cb.y, dispW = rot%180 ? H : W;
@@ -1534,7 +1555,7 @@ async function addCueSheet(doc, fb){
     const txt=s.text.replace(/\|/g,'\n').trim();
     const lines = txt ? txt.split('\n').flatMap(l=>wrap(safe(l,f))) : ['(blank)'];
     const block=lines.length*lh+7; if(y-block<M) newPage();
-    page.drawText(String(i+1), {x:M, y, size, font:fb, color: i<state.markers.length ? rgb(.86,.1,.1) : rgb(.55,.55,.55)});
+    page.drawText(String(i+1), {x:M, y, size, font:fb, color: i<state.markers.length ? hexRgb(cueColor(i)||'#dc1a1a') : rgb(.55,.55,.55)});
     lines.forEach((ln,k)=>page.drawText(ln, {x:M+40, y:y-k*lh, size, font:f, color: txt ? rgb(0,0,0) : rgb(.55,.55,.55)}));
     y-=block;
   });
@@ -1635,7 +1656,7 @@ function openNativeFile(f){
 async function openDialog(){
   if(NATIVE){ const f=await window.stc.openDialog(); if(f) openNativeFile(f); return; }
   if('showOpenFilePicker' in window){
-    try{ const [h]=await window.showOpenFilePicker(); // no type filter: macOS greys out files under Chrome's filters
+    try{ const [h]=await window.showOpenFilePicker(); // no type filter: macOS grays out files under Chrome's filters
       return openAny(await h.getFile(), h);
     }catch(e){ if(e.name==='AbortError') return; }
   }
@@ -1808,7 +1829,7 @@ function openSettings(){
   const s=state.settings;
   applyAlign(); $('#sFs').value=Math.round((s.textScale||1)*100); $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVpos').value=s.vpos||0; $('#sSide').value=((s.sideMargin||0.02)*100); $('#sShape').value=normShape(s.shape); $('#sMk').value=s.markerSize;
   if(![...$('#sFont').options].some(o=>o.value===s.font)) $('#sFont').selectedIndex=0;
-  setVals(); $('#setDlg').showModal(); placeSetDlg();
+  paintCueSwatch(); setVals(); $('#setDlg').showModal(); placeSetDlg();
 }
 function setVals(){ $('#sSideV').textContent=(+$('#sSide').value).toFixed(2)+'%'; const vp=+$('#sVpos').value; $('#sMid').classList.toggle('on', vp===0); $('#sMid').textContent = vp===0 ? 'Middle' : (vp<0 ? '↑ ' : '↓ ')+Math.abs(vp)+'%'; $('#sFsV').textContent=$('#sFs').value+'%'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%';
   $('#sFsNote').dataset.tip = ($('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = six lines on the screen: lines 137/1080 of its height, 137/10800 apart, 47/540 top/bottom and 2% side margins.') + ' Smaller sizes share the freed height evenly between the margins and the line gaps.';
@@ -1820,11 +1841,11 @@ $('#sShapeSeg').addEventListener('click', e=>{ const b=e.target.closest('[data-v
 function makeDraggable(d, h, key){ let pos=null; if(key) try{ pos=JSON.parse(localStorage.getItem(key)||'null'); }catch(_){}
   function place(x,y){ const r=d.getBoundingClientRect(); x=Math.min(Math.max(x, 80-r.width), innerWidth-80); y=Math.min(Math.max(y, 0), innerHeight-44);
     Object.assign(d.style, {margin:'0', left:x+'px', top:y+'px', right:'auto', bottom:'auto'}); pos={x,y}; }
-  function centre(){ Object.assign(d.style, {margin:'', left:'', top:'', right:'', bottom:''}); pos=null; if(key) try{ localStorage.removeItem(key); }catch(_){} }
+  function center(){ Object.assign(d.style, {margin:'', left:'', top:'', right:'', bottom:''}); pos=null; if(key) try{ localStorage.removeItem(key); }catch(_){} }
   h.addEventListener('pointerdown', e=>{ if(e.button!==0 || e.target.closest('button,input,select,a')) return; const r=d.getBoundingClientRect(), ox=e.clientX-r.left, oy=e.clientY-r.top; h.setPointerCapture(e.pointerId); d.classList.add('dragging'); e.preventDefault();
     const mv=ev=>place(ev.clientX-ox, ev.clientY-oy), up=()=>{ h.removeEventListener('pointermove',mv); h.removeEventListener('pointerup',up); h.removeEventListener('pointercancel',up); d.classList.remove('dragging'); if(key) try{ if(pos) localStorage.setItem(key, JSON.stringify(pos)); }catch(_){} };
     h.addEventListener('pointermove',mv); h.addEventListener('pointerup',up); h.addEventListener('pointercancel',up); });
-  h.addEventListener('dblclick', centre); if(!h.title) h.title='Drag to move · double-click to put it back in the middle';
+  h.addEventListener('dblclick', center); if(!h.title) h.title='Drag to move · double-click to put it back in the middle';
   d.__place=()=>{ if(pos) requestAnimationFrame(()=>place(pos.x,pos.y)); };
   addEventListener('resize', ()=>{ if(pos && d.open) place(pos.x,pos.y); });
 }
@@ -2386,6 +2407,29 @@ window.__stcMenu = (cmd) => {
     dn.classList.remove('back'); dn.style.setProperty('--sd', Math.max(.8, over/60)+'s'); dn.classList.add('scrolling'); dn.style.setProperty('--sx','0px'); void dn.offsetWidth; dn.style.setProperty('--sx', -(over+6)+'px'); });
   host.addEventListener('mouseleave', ()=>{ const dn=host.querySelector('.dn'); if(!dn || !dn.classList.contains('scrolling')) return; dn.classList.add('back'); dn.style.setProperty('--sx','0px');
     setTimeout(()=>{ if(dn.style.getPropertyValue('--sx')==='0px') dn.classList.remove('scrolling','back'); }, 220); }); }
+
+/* ---------- colors: the same 24 as Attascript! ---------- */
+const PALETTE=["#000000","#C12715","#6E2C1C","#C16B15","#6E551C","#9C8E11","#4D6E1C","#579C11","#15C115","#15C15A","#2BAB78","#1C6E5E","#15B0C1","#158DC1","#1C556E","#156BC1","#1C346E","#1515C1","#782BAB","#C115C1","#6E1C66","#C1157C","#7C0E3A","#C11549"];
+const hexRgb=h=>{ const n=parseInt(String(h).replace('#',''),16); return PDFLib.rgb(((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255); };
+// A slide and its cue share one color: the slide's own, or else the Cue color from Settings (when it isn't the standard red).
+function slideColor(i){ const s=state.slides[i]; return (s && s.color) || state.settings.cueColor || ''; }
+function cueColor(i){ return slideColor(i); }
+function setSlideColor(i, c){ const s=state.slides[i]; if(!s) return; snap(); if(c) s.color=c; else delete s.color; renderSlides(); renderMarkers(); setDirty(true); save(); }
+function paintCueSwatch(){ const sw=$('#sCueCol .swatch'); if(sw) sw.style.background = state.settings.cueColor || 'var(--cue-default)'; }
+$('#sCueCol').onclick=e=>openPalette(e.currentTarget, state.settings.cueColor, {clear:'Standard red', clearColor:'var(--cue-default)', onPick:c=>{ if(c) state.settings.cueColor=c; else delete state.settings.cueColor; paintCueSwatch(); renderSlides(); renderMarkers(); setDirty(true); save(); }});
+function openPalette(anchor, current, opts){
+  closePalette(); const pop=document.createElement('div'); pop.className='palette'; pop.id='palette'; pop.setAttribute('popover','manual');
+  PALETTE.forEach(c=>{ const b=document.createElement('button'); b.type='button'; b.style.background=c; b.title=c; if(current && current.toLowerCase()===c.toLowerCase()) b.className='on'; b.onclick=()=>{ closePalette(); opts.onPick(c); }; pop.append(b); });
+  const cl=document.createElement('button'); cl.type='button'; cl.className='clear'+(current?'':' on'); cl.textContent=opts.clear||'No color'; if(opts.clearColor) cl.innerHTML=`<i style="background:${opts.clearColor}"></i>${opts.clear}`; cl.onclick=()=>{ closePalette(); opts.onPick(''); }; pop.append(cl);
+  (anchor.closest('dialog[open]') || document.body).append(pop); try{ pop.showPopover(); }catch(_){}   // inside an open dialog, so it stays clickable
+  const r=anchor.getBoundingClientRect(), w=pop.offsetWidth, h=pop.offsetHeight;
+  pop.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'; pop.style.top=Math.max(8, r.bottom+6+h>innerHeight-8 ? r.top-h-6 : r.bottom+6)+'px';
+  setTimeout(()=>document.addEventListener('pointerdown', closeOnOut, true), 0);
+}
+function closeOnOut(e){ const p=$('#palette'); if(p && !p.contains(e.target)) closePalette(); }
+function closePalette(){ document.removeEventListener('pointerdown', closeOnOut, true); const p=$('#palette'); if(p){ try{ p.hidePopover(); }catch(_){} p.remove(); } }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#palette')){ e.preventDefault(); e.stopPropagation(); closePalette(); } }, true);
+paintCueSwatch();
 
 /* ---------- start ---------- */
 (async function init(){
