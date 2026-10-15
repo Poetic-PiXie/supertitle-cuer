@@ -125,11 +125,11 @@ async def main():
         await pg.evaluate("clearPicks(); goTo(2,false)")
 
         print('slide colors')
-        await pg.evaluate("""(()=>{ const c={2:'#15B0C1',3:'#15B0C1',5:'#C115C1',7:'#579C11'}; for(const k in c){ state.slides[k].color=c[k]; if(state.markers[k]) state.markers[k].color=c[k]; } renderSlides(); renderMarkers(); goTo(4,false); document.querySelector('.slide[data-i="4"]').scrollIntoView({block:'center'}); const sc=document.getElementById('score'), mk=document.querySelector('.mk[data-i="2"]'); sc.scrollTop += mk.getBoundingClientRect().top - sc.getBoundingClientRect().top - 60; })()""")
+        await pg.evaluate("""(()=>{ const c={2:'#15B0C1',3:'#15B0C1',5:'#C115C1',7:'#579C11'}; for(const k in c){ state.slides[k].color=c[k]; state.slides[k].colorCue=true; } renderSlides(); renderMarkers(); goTo(4,false); document.querySelector('.slide[data-i="4"]').scrollIntoView({block:'center'}); const sc=document.getElementById('score'), mk=document.querySelector('.mk[data-i="2"]'); sc.scrollTop += mk.getBoundingClientRect().top - sc.getBoundingClientRect().top - 60; })()""")
         await pg.wait_for_timeout(700); await toast_off()
         await pg.click('.slide[data-i="6"] .sring'); await pg.wait_for_timeout(400)
         save(await shot(), 'slide-colors', 1600)
-        await pg.keyboard.press('Escape'); await pg.evaluate("state.slides.forEach(s=>delete s.color); state.markers.forEach(m=>delete m.color); renderSlides(); renderMarkers(); goTo(2,false)"); await pg.wait_for_timeout(300)
+        await pg.keyboard.press('Escape'); await pg.evaluate("state.slides.forEach(s=>{ delete s.color; delete s.colorCue; }); renderSlides(); renderMarkers(); goTo(2,false)"); await pg.wait_for_timeout(300)
 
         print('exports')
         await pg.click('#fileMenu [data-menu]'); await pg.wait_for_timeout(300)

@@ -567,7 +567,7 @@ body.day .slide.tinted{border-color:color-mix(in srgb,var(--sc) 75%,#fff)}
 body.day .palette button{border-color:rgba(0,0,0,.12)}
 .palette button:hover:not(:disabled){transform:scale(1.15);border-color:#fff;box-shadow:0 0 8px rgba(255,255,255,.25)}
 .palette button.on{box-shadow:0 0 0 2px var(--panel2),0 0 0 4px var(--accent)}
-.palette .clear{grid-column:1/-1;width:auto;height:28px;border-radius:999px;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:7px;background:linear-gradient(180deg,var(--btn-a),var(--btn-b));border:1px solid var(--btn-line)}
+.palette .clear{grid-column:1/-1;margin-top:6px;width:auto;height:28px;border-radius:999px;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:7px;background:linear-gradient(180deg,var(--btn-a),var(--btn-b));border:1px solid var(--btn-line)}
 .palette .clear:hover:not(:disabled){transform:none}
 .palette .clear i{width:12px;height:12px;border-radius:50%;display:inline-block}
 .palette .pcheck{grid-column:1/-1;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--soft);cursor:pointer;padding:2px 2px 0}
@@ -760,6 +760,7 @@ function localizeKeys(root){ if(IS_MAC) return;
   const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while((n=w.nextNode())) if(n.nodeValue.includes('⌘')) n.nodeValue=keyName(n.nodeValue);
   root.querySelectorAll('[title*="⌘"]').forEach(el=>el.title=keyName(el.title)); }
 const LS_KEY = 'supertitle-cuer-v1';
+function migrateCueColors(){ (state.markers||[]).forEach((m,i)=>{ if(m && m.color){ const s=state.slides[i]; if(s && s.color && s.color.toLowerCase()===m.color.toLowerCase()) s.colorCue=true; delete m.color; } }); }
 function migrateSettings(st){ if(!st.view){ st.view='width'; st.zoomPct=100; }  st.shape=normShape(st.shape); if(st.textScale==null) st.textScale=1; st.textScale=Math.min(1, Math.max(0.75, st.textScale));
   if(st.vpos==null) st.vpos = st.va==='flex-start' ? -100 : st.va==='flex-end' ? 100 : 0;
   st.vpos=Math.max(-100, Math.min(100, +st.vpos||0));
@@ -785,6 +786,7 @@ function loadLocal(){
     state.pdfName=s.pdfName||null; state.parts=Array.isArray(s.parts)?s.parts:null; state.markers=Array.isArray(s.markers)?s.markers:[]; state.slides=Array.isArray(s.slides)?s.slides:[];
     state.settings=migrateSettings(Object.assign(defaults(), s.settings||{})); cur = typeof s.cur==='number'? s.cur : -1; dirty=!!s.dirty; docName=s.docName||null;
   }catch(e){}
+  migrateCueColors();
 }
 function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open('supertitle-cuer',1); r.onupgradeneeded=()=>r.result.createObjectStore('files'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
 async function idbPut(k,v){ try{ const db=await idb(); await new Promise((res,rej)=>{ const t=db.transaction('files','readwrite'); t.objectStore('files').put(v,k); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }catch(e){} }
@@ -1022,7 +1024,7 @@ slidesEl.addEventListener('click', e=>{
   const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
   const b=e.target.closest('button[data-a]'); if(!b) return;
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : (b.dataset.i!=null ? +b.dataset.i : -1);
-  if(a==='color') return openPalette(b, state.slides[i] && state.slides[i].color, {clear:'No color', cueBox:i<state.markers.length, onPick:(c,also)=>setSlideColor(i,c,also)});
+  if(a==='color'){ const sl=state.slides[i]; return openPalette(b, sl && sl.color, {clear:'No color', cueBox:true, cueOn: sl && sl.color ? !!sl.colorCue : null, onPick:(c,also)=>setSlideColor(i,c,also)}); }
   if(state.settings.lockOrder) return lockedNote('order');
   if(a==='trash') return (pickA!=null && pickB>pickA && i>=pickA && i<=pickB) ? askDeleteRange(pickA,pickB) : askDeleteSlide(i);
   if((a==='up'||a==='down') && inPick(i)) return nudgePick(a==='up'?-1:1);
@@ -1674,7 +1676,7 @@ async function openAny(file, handle){
   const p=proj.project, orig=proj.original||bytes;
   undoStack=[]; redoStack=[]; cur=-1; blackout=false; atStart=false; anchor=null;
   state.parts=Array.isArray(p.parts)?p.parts:null;
-  state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true})); updateLocks(); applyAlign();
+  state.markers=p.markers||[]; state.slides=p.slides||[]; migrateCueColors(); state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true})); updateLocks(); applyAlign();
   stopFollow(); refRuns={}; for(const [id,meta] of Object.entries((p.follow&&p.follow.runs)||{})) if(proj.follow[id]) refRuns[id]={...meta, feat:proj.follow[id].feat, audio:proj.follow[id].audio||null}; saveRuns();
   await loadPdfBytes(p.pdfName||file.name, orig);
   renderSlides(); goTo(-1,false);
@@ -1694,7 +1696,7 @@ function newProject(){
 async function openProjectFile(f){
   try{
     const p=JSON.parse(await f.text()); if(!Array.isArray(p.slides) && !Array.isArray(p.markers)) throw 0;
-    snap(); state.markers=p.markers||[]; state.slides=p.slides||[]; state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}));
+    snap(); state.markers=p.markers||[]; state.slides=p.slides||[]; migrateCueColors(); state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}));
     const hadPdf=state.pdfName; state.pdfName = hadPdf || p.pdfName; cur=-1;
     if(p.pdfName && hadPdf && p.pdfName!==hadPdf) toast(`Project was made for "${p.pdfName}" — markers placed on the open score`);
     else if(p.pdfName && !pdfDoc) toast(`Now open the score: "${p.pdfName}"`);
@@ -2408,16 +2410,15 @@ window.__stcMenu = (cmd) => {
   host.addEventListener('mouseleave', ()=>{ const dn=host.querySelector('.dn'); if(!dn || !dn.classList.contains('scrolling')) return; dn.classList.add('back'); dn.style.setProperty('--sx','0px');
     setTimeout(()=>{ if(dn.style.getPropertyValue('--sx')==='0px') dn.classList.remove('scrolling','back'); }, 220); }); }
 
-/* ---------- colors: the same 24 as Attascript! ---------- */
-const PALETTE=["#000000","#C12715","#6E2C1C","#C16B15","#6E551C","#9C8E11","#4D6E1C","#579C11","#15C115","#15C15A","#2BAB78","#1C6E5E","#15B0C1","#158DC1","#1C556E","#156BC1","#1C346E","#1515C1","#782BAB","#C115C1","#6E1C66","#C1157C","#7C0E3A","#C11549"];
+/* ---------- colors: Attascript!’s 24, with a bright yellow in place of black ---------- */
+const PALETTE=["#F2D21B","#C12715","#6E2C1C","#C16B15","#6E551C","#9C8E11","#4D6E1C","#579C11","#15C115","#15C15A","#2BAB78","#1C6E5E","#15B0C1","#158DC1","#1C556E","#156BC1","#1C346E","#1515C1","#782BAB","#C115C1","#6E1C66","#C1157C","#7C0E3A","#C11549"];
 const hexRgb=h=>{ const n=parseInt(String(h).replace('#',''),16); return PDFLib.rgb(((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255); };
 // A slide and its cue share one color: the slide's own, or else the Cue color from Settings (when it isn't the standard red).
 const CUE_RED='#e0352b';
 function slideColor(i){ const s=state.slides[i]; return (s && s.color) || ''; }
-// A cue's own color (given through its slide) beats the Cue color from Settings, which beats the standard red.
-function cueColor(i){ const m=state.markers[i]; return (m && m.color) || state.settings.cueColor || ''; }
-function setSlideColor(i, c, alsoCue){ const s=state.slides[i]; if(!s) return; snap(); if(c) s.color=c; else delete s.color;
-  const m=state.markers[i]; if(alsoCue && m){ if(c) m.color=c; else delete m.color; }
+// The cue linked to a slide (same number) shows the slide's color when the slide asks for it; otherwise the Cue color from Settings, or the standard red.
+function cueColor(i){ const s=state.slides[i]; return (s && s.color && s.colorCue) ? s.color : (state.settings.cueColor || ''); }
+function setSlideColor(i, c, alsoCue){ const s=state.slides[i]; if(!s) return; snap(); if(c){ s.color=c; if(alsoCue) s.colorCue=true; else delete s.colorCue; } else { delete s.color; delete s.colorCue; }
   renderSlides(); renderMarkers(); setDirty(true); save(); }
 $('#sCue').addEventListener('input', e=>{ const v=e.target.value.toLowerCase(); if(v===CUE_RED) delete state.settings.cueColor; else state.settings.cueColor=v; renderMarkers(); setDirty(true); save(); });
 const colorCueToo=()=>{ try{ return localStorage.getItem('stq-colorcue')!=='0'; }catch(_){ return true; } };
@@ -2425,7 +2426,7 @@ function openPalette(anchor, current, opts){
   closePalette(); const pop=document.createElement('div'); pop.className='palette'; pop.id='palette'; pop.setAttribute('popover','manual');
   PALETTE.forEach(c=>{ const b=document.createElement('button'); b.type='button'; b.style.background=c; b.title=c; if(current && current.toLowerCase()===c.toLowerCase()) b.className='on'; b.onclick=()=>{ const also=boxOn(); closePalette(); opts.onPick(c, also); }; pop.append(b); });
   const cl=document.createElement('button'); cl.type='button'; cl.className='clear'+(current?'':' on'); cl.textContent=opts.clear||'No color'; if(opts.clearColor) cl.innerHTML=`<i style="background:${opts.clearColor}"></i>${opts.clear}`; cl.onclick=()=>{ const also=boxOn(); closePalette(); opts.onPick('', also); }; pop.append(cl);
-  let cb=null; if(opts.cueBox){ const l=document.createElement('label'); l.className='pcheck'; l.innerHTML='<input type="checkbox"> Also color its cue'; cb=l.firstChild; cb.checked=colorCueToo(); cb.onchange=()=>{ try{ localStorage.setItem('stq-colorcue', cb.checked?'1':'0'); }catch(_){} }; pop.append(l); }
+  let cb=null; if(opts.cueBox){ const l=document.createElement('label'); l.className='pcheck'; l.innerHTML='<input type="checkbox"> Also color its cue'; cb=l.firstChild; cb.checked = opts.cueOn!=null ? opts.cueOn : colorCueToo(); cb.onchange=()=>{ try{ localStorage.setItem('stq-colorcue', cb.checked?'1':'0'); }catch(_){} }; pop.append(l); }
   function boxOn(){ return cb ? cb.checked : false; }
   (anchor.closest('dialog[open]') || document.body).append(pop); try{ pop.showPopover(); }catch(_){}   // inside an open dialog, so it stays clickable
   const r=anchor.getBoundingClientRect(), w=pop.offsetWidth, h=pop.offsetHeight;
