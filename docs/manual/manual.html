@@ -104,9 +104,9 @@
 <li><b>? Help</b> — this guide, searchable.</li>
 <li><b>⚙︎ Settings</b> — the look of the titles, the screen shape and cue size.</li>
 <li>The <b>Night / Day switch</b> — dark or light look for the app.</li>
-<li>How many <b>cues</b> are on the score and how many <b>slides</b> there are, and the app's version.</li>
+<li>How many <b>cues</b> are on the score and how many <b>slides</b> there are.</li>
 <li>The <b>hint line</b> — what clicking and the keys do right now.</li>
-<li>The <b>score</b>, with its toolbar: lock the cues, manage PDFs, and the view size (100 %, fit height, fit width, or any size on the slider).</li>
+<li>The <b>score controls</b>, centred over the score: lock the cues, manage PDFs, and the view size (100 %, fit height, fit width, or any size on the slider).</li>
 <li><b>Audience sees</b> — exactly what is on the projector (or what will be), with the <b>Projector switch</b> above it: flip it on to open the audience window. It glows green and gently breathes while the projector is live.</li>
 <li>The <b>slides</b> (supertitles), with the slides lock, spelling, flow mode and import.</li>
 </ol>
@@ -156,10 +156,19 @@
 </ul>
 <div class="keybox"><div class="kbt">⌨ Cues</div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></span><span>nudge the selected cue 5 px — Edit mode, cues unlocked, after clicking the score</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd> + arrows</span><span>nudge 25 px</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>→</kbd></span><span>previous / next cue — in Show mode, or while the cues are locked</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd></span><span>delete the selected cue</span></div><div class="kbr"><span class="k"><kbd>Esc</kbd></span><span>deselect</span></div></div>
 <h3>Locking the cues</h3>
-<p><span class="ui">🔓 Cues unlocked</span> above the score turns into <span class="ui">🔒 Cues locked</span> with a click. When locked, clicking the score only selects cues, and nothing can add, move or delete them by accident. Opening a saved project locks both the cues and the slides — unlock them when you want to make changes.</p>
+<p>The score's own controls sit in the top bar, centred over the score (they move with it when you swap sides). <span class="ui">🔓 Cues unlocked</span> (gold) turns into a red <span class="ui">🔒 Cues locked</span> with a click. When locked, clicking the score only selects cues, and nothing can add, move or delete them by accident.</p>
+<div class="lockbox"><b>🔒 Show locks, Edit unlocks.</b> Switching to <span class="ui">Show</span> locks both the cues and the slides, so nothing can change during the performance; switching back to <span class="ui">Edit</span> unlocks them both. You can still flip either lock by hand at any time — that never changes the mode. Opening a saved project also locks both.</div>
 <figure class="shot small"><img src="shots/score-toolbar.webp" alt="The score toolbar: cue lock, PDFs and zoom"></figure>
 <h3>Cue circle size</h3>
 <p><span class="ui">⚙︎ Settings → Cue circle size</span> (2 to 6, default 4) changes how big the circles are, on screen and in the printable score.</p>
+<div class="tipsbox"><div class="tbt">💡 Tips for placing cues</div><ul>
+<li>Put each cue on the note or syllable where the title should <em>appear</em> — usually a beat before the singer starts the line, so the audience reads as they hear.</li>
+<li>Repeated text? Give each repeat its own cue and its own title (even if the words are the same), so the count never drifts during the show.</li>
+<li>Long instrumental passages need no cue: the last title stays up, or add a blank slide to clear the screen.</li>
+<li>Work through the score page by page with the piano reduction open, or listen along with a recording — cues placed while hearing the music land best.</li>
+<li>When the cues are right, lock them. The red <span class="ui">🔒 Cues locked</span> button makes stray clicks harmless, and Show mode locks them for you anyway.</li>
+<li>Print the score with <span class="ui">File ▾ → Export printable score</span> for the stage manager or a second operator: same numbers, same places.</li>
+</ul></div>
 </section>
 
 <section data-id="pdfs" data-part="Guide">
@@ -207,7 +216,7 @@
 <li><b>Select</b> a slide by clicking it; the projector and the score follow. After clicking in the list, <kbd>↑</kbd> <kbd>↓</kbd> step through the slides. While typing, <kbd>↑</kbd> on a slide's first line and <kbd>↓</kbd> on its last line carry on into the neighbouring slide.</li>
 <li><b>Several at once:</b> click one slide, then <kbd>Shift</kbd>-click another to select the range. <span class="ui">▲</span> / <span class="ui">▼</span> (on a selected card or in the selection bar) or dragging one of them moves the whole block; <span class="ui">🗑 Delete…</span> deletes them together. Any other click ends the selection.</li>
 <li class="fig"><figure class="shot"><img src="shots/slides-range.webp" alt="Three slides selected as a block, with the selection bar"></figure></li>
-<li><b>Lock the slides</b> with <span class="ui">🔓 Slides unlocked</span> above the list. While it reads <span class="ui">🔒 Slides locked</span>, nothing can change by accident: no typing, no moving, adding, deleting or importing. You can still click a slide to select it. Click the button again to unlock.</li>
+<li><b>Lock the slides</b> with <span class="ui">🔓 Slides unlocked</span> above the list. While it is red and reads <span class="ui">🔒 Slides locked</span>, nothing can change by accident: no typing, no moving, adding, deleting or importing. You can still click a slide to select it. Click the button again to unlock.</li>
 </ul>
 <div class="keybox"><div class="kbt">⌨ Slides</div><div class="kbr"><span class="k"><kbd>↑</kbd> <kbd>↓</kbd></span><span>previous / next slide — after clicking in the slide list</span></div><div class="kbr"><span class="k"><kbd>↑</kbd> on the first line, <kbd>↓</kbd> on the last</span><span>while typing: carry on into the neighbouring slide</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>-click</span><span>select a range of slides</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd></span><span>delete the selected range (asks first)</span></div><div class="kbr"><span class="k"><kbd>Esc</kbd></span><span>stop typing / clear the selection</span></div><div class="kbr"><span class="k">right-click a word</span><span>spelling suggestions, synonyms</span></div></div>
 <figure class="shot"><img src="shots/slides-states.webp" alt="A slide that is too long, and slides without cues"></figure>
@@ -447,7 +456,7 @@
 <dt>The projector shows my whole screen</dt><dd>The display is mirrored. Set it to extended (see <a href="#connect">The quickest way to connect your projector</a>).</dd>
 <dt>The projector window opened on my own screen</dt><dd>Desktop app: <span class="ui">View → Move Projector to Second Screen</span>. Browser: drag it to the projector and press <kbd>F</kbd>.</dd>
 <dt>The arrow keys don't change the title</dt><dd>Make sure <span class="ui">Show</span> is selected and click once in the main window so it has the keyboard. In Edit mode the arrow keys nudge cues or step through slides instead.</dd>
-<dt>Clicking the score does nothing</dt><dd>The cues are locked (opening a project locks them). Click <span class="ui">🔒 Cues locked</span> above the score. In Show mode clicks select cues instead of adding them.</dd>
+<dt>Clicking the score does nothing</dt><dd>The cues are locked (opening a project locks them). Click the red <span class="ui">🔒 Cues locked</span> button over the score (or switch to <span class="ui">Edit</span>). In Show mode clicks select cues instead of adding them.</dd>
 <dt>I can't type in, move or delete a slide</dt><dd>The slides are locked: click <span class="ui">🔒 Slides locked</span> above the slides.</dd>
 <dt>A slide is red</dt><dd>Its text is longer than the screen allows; the grey words won't be shown. Shorten it, split it, or use a smaller text size or wider screen shape.</dd>
 <dt>A cue circle is dashed, or a slide says “no cue”</dt><dd>There are more cues than slides, or more slides than cues. Add the missing titles or cues.</dd>

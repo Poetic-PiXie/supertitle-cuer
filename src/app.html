@@ -18,7 +18,7 @@
   --float-a:rgba(44,47,55,.96); --float-b:rgba(34,36,43,.96); --float-sh:inset 0 1px 0 rgba(255,255,255,.07),0 2px 8px rgba(0,0,0,.45);
   --unl-a:rgba(62,52,30,.97); --unl-b:rgba(48,40,24,.97); --hover-wash:rgba(255,255,255,.08); --seg-ink:#aeb1bd; --score-bg:#2a2c32;
   --cur-bg:#2a2210; --over-bg:#2b1416; --pick-bg:#1d2a3f; --nocue-a:#1b1c20; --nocue-b:#202126; --box-bg:#16181d; --side-bg:#121317; --kbd-bg:#26282e;
-  --tip-bg:#30333c; --tip-line:#444855; --tip-ink:#e6e8ee;
+  --tip-bg:#30333c; --tip-line:#444855; --tip-ink:#e6e8ee; --lk-a:rgba(70,26,28,.97); --lk-b:rgba(52,20,22,.97);
 }
 /* Day: a light, warm theme — same gold, dark ink, soft lilac-grey chrome */
 body.day{
@@ -33,7 +33,7 @@ body.day{
   --float-a:rgba(255,255,255,.96); --float-b:rgba(242,240,246,.96); --float-sh:inset 0 1px 0 #fff,0 2px 10px rgba(40,30,60,.18);
   --unl-a:#fff6e2; --unl-b:#fbecc8; --hover-wash:rgba(80,60,120,.08); --seg-ink:#5d5769; --score-bg:#d9d6df;
   --cur-bg:#fff4dc; --over-bg:#fdeaea; --pick-bg:#e3ecfb; --nocue-a:#f4f2f6; --nocue-b:#ebe8ef; --box-bg:#f4f1fa; --side-bg:#f1eff5; --kbd-bg:#ffffff;
-  --tip-bg:#2b2733; --tip-line:#2b2733; --tip-ink:#f3f1f7;
+  --tip-bg:#2b2733; --tip-line:#2b2733; --tip-ink:#f3f1f7; --lk-a:#fff1f0; --lk-b:#fde0de;
 }
 body.day dialog::backdrop{background:rgba(60,50,80,.25)}
 body.day #setDlg::backdrop{background:rgba(60,50,80,.12)}
@@ -213,7 +213,7 @@ body:not(.native) .native-only{display:none}
 .vertag{margin-left:auto;font-size:11px;color:#7d808b;letter-spacing:.02em;user-select:none;padding:3px 2px}
 .rlab{font-size:12px;color:var(--dim)}
 .sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
-.docname{font-size:13px;color:var(--dim);max-width:210px;display:inline-flex;white-space:nowrap;min-width:0}
+.docname{font-size:13px;color:var(--dim);max-width:180px;display:inline-flex;white-space:nowrap;min-width:0}
 .docname .dn{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .docname.dirty::after{content:" • not saved";color:var(--warn);flex-shrink:0;white-space:pre}
 .hint{color:var(--dim);flex-basis:100%;text-align:right;font-size:13px}
@@ -519,6 +519,24 @@ body.day .themesw .knob{transform:translateX(34px);background:linear-gradient(18
 body.day .themesw .moon{color:#b08a3a}
 body.day .themesw .sun{color:#5a3a00}
 body.day .themesw:hover:not(:disabled){background:linear-gradient(180deg,#fff6dc,#f9e4a6);box-shadow:0 0 14px rgba(255,190,40,.45)}
+/* second header row: the score's controls sit centred over the score; the hint takes the space on the slides' side */
+header .hrow2{flex-basis:100%;position:relative;min-height:36px;display:flex;align-items:center;--zw:0px}
+#zoomCtl{position:absolute;left:calc(33.333% - 4px);top:50%;transform:translate(-50%,-50%);height:auto;padding:0;gap:6px;justify-content:center;white-space:nowrap}
+body.swapped #zoomCtl{left:calc(66.667% + 4px)}
+header .hrow2 .hint{flex:1;flex-basis:auto;text-align:right;padding-left:calc(33.333% - 4px + var(--zw) / 2 + 16px)}
+body.swapped header .hrow2 .hint{text-align:left;padding-left:0;padding-right:calc(33.333% - 4px + var(--zw) / 2 + 16px)}
+header .hrow2 .vertag{position:absolute;left:0;top:50%;transform:translateY(-50%);margin:0}
+body.swapped header .hrow2 .vertag{left:auto;right:0}
+/* locks: red while locked, gold while unlocked */
+.lockbtn[data-lock]:not(.unlocked){border-color:#e5484d;color:#ff8a85;background:linear-gradient(180deg,var(--lk-a),var(--lk-b));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 10px rgba(229,72,77,.35),0 1px 2px rgba(0,0,0,.4)}
+.lockbtn[data-lock]:not(.unlocked):hover:not(:disabled){border-color:#ff6b66;color:#ffb0ac;background:linear-gradient(180deg,var(--lk-a),var(--lk-b));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 18px rgba(229,72,77,.6),0 1px 2px rgba(0,0,0,.4)}
+body.day .lockbtn[data-lock]:not(.unlocked){color:#c42b23}
+body.day .lockbtn[data-lock]:not(.unlocked):hover:not(:disabled){color:#a81f18}
+.lockbtn[data-lock].unlocked{border-color:var(--accent);color:var(--accent)}
+.lockbtn[data-lock].unlocked:hover:not(:disabled){border-color:#ffc95c;box-shadow:0 0 14px rgba(242,177,52,.45)}
+@media (max-width:1420px){ .docname{max-width:110px} header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:88px !important} }
+@media (max-width:1300px){ header .brand .bnf, header .brand .by{display:none} }
+@media (max-width:1180px){ .counts{display:none} }
 /* the header buttons share one size */
 header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96px;height:34px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 /* one tooltip for the whole app: anything with a title gets a soft pill-shaped tip */
@@ -564,16 +582,18 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   <button id="settingsBtn" title="Settings: screen shape, font, colours, text size and position (⌘,)">⚙︎ Settings</button>
   <button type="button" id="themeSw" class="themesw" role="switch" aria-checked="false" aria-label="Day look" title="Switch between the Night (dark) and Day (light) look of the app"><svg class="moon" viewBox="0 0 20 20" width="15" height="15"><path d="M15.9 12.4A6.6 6.6 0 0 1 7.6 4.1a6.6 6.6 0 1 0 8.3 8.3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 20 20" width="15" height="15"><circle cx="10" cy="10" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.2v2.1M10 15.7v2.1M2.2 10h2.1M15.7 10h2.1M4.5 4.5L6 6M14 14l1.5 1.5M15.5 4.5L14 6M6 14l-1.5 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="knob"></span></button>
   <span class="counts" id="counts" title="How many cues are on the score, and how many slides there are"></span>
-  <span class="vertag" id="verTag" title="STQ (Supertitle Cuer) version">v@@VERSION@@</span>
-  <span class="hint" id="hint"></span>
+  <div class="hrow2" id="hrow2">
+  <div class="zoom" id="zoomCtl" hidden>
+    <button class="lockbtn" id="lockCues" data-lock="lockCues"></button>
+    <button class="lockbtn" id="partsBtn" title="Add PDFs to the score, or change their order">PDFs</button>
+    <div class="zbox"><button type="button" class="zb" data-view="pct" id="z100">100%</button><button type="button" class="zb" data-view="height" id="zFitH"><svg viewBox="0 0 16 16" width="15" height="15"><rect x="4" y="1.5" width="8" height="13" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 4v8M6.3 5.7 8 4l1.7 1.7M6.3 10.3 8 12l1.7-1.7" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="zb" data-view="width" id="zFitW"><svg viewBox="0 0 16 16" width="15" height="15"><rect x="1.5" y="3" width="13" height="10" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M4 8h8M5.7 6.3 4 8l1.7 1.7M10.3 6.3 12 8l-1.7 1.7" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><input type="range" id="zSlider" min="0" max="1000" step="1" aria-label="Zoom"><span class="zval" id="zVal">100%</span></div>
+  </div>
+    <span class="hint" id="hint"></span>
+    <span class="vertag" id="verTag" title="STQ (Supertitle Cuer) version">v@@VERSION@@</span>
+  </div>
 </header>
 <main>
   <section id="score">
-    <div class="zoom" id="zoomCtl" hidden>
-      <button class="lockbtn" id="lockCues" data-lock="lockCues"></button>
-      <button class="lockbtn" id="partsBtn" title="Add PDFs to the score, or change their order">PDFs</button>
-      <div class="zbox"><button type="button" class="zb" data-view="pct" id="z100">100%</button><button type="button" class="zb" data-view="height" id="zFitH"><svg viewBox="0 0 16 16" width="15" height="15"><rect x="4" y="1.5" width="8" height="13" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 4v8M6.3 5.7 8 4l1.7 1.7M6.3 10.3 8 12l1.7-1.7" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="zb" data-view="width" id="zFitW"><svg viewBox="0 0 16 16" width="15" height="15"><rect x="1.5" y="3" width="13" height="10" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M4 8h8M5.7 6.3 4 8l1.7 1.7M10.3 6.3 12 8l-1.7 1.7" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><input type="range" id="zSlider" min="0" max="1000" step="1" aria-label="Zoom"><span class="zval" id="zVal">100%</span></div>
-    </div>
     <div id="pages"></div>
     <div class="empty" id="scoreEmpty">
       <div class="big">Open a score PDF — or a project you saved</div>
@@ -1170,7 +1190,7 @@ function focusSlide(i){ const ta=document.querySelector(`.slide[data-i="${i}"] t
 
 /* ---------- locks ---------- */
 document.addEventListener('keydown', e=>{ const t=e.target; if(mode!=='edit' || !state.settings.lockOrder || !t.matches || !t.matches('#slides textarea') || e.metaKey || e.ctrlKey || e.altKey) return; if(e.key.length===1 || e.key==='Backspace' || e.key==='Delete' || e.key==='Enter'){ e.preventDefault(); lockedNote('order'); } }, true);
-function lockedNote(what){ toast(what==='cues' ? 'Cues are locked — click “🔒 Cues locked” above the score to change them' : 'Slides are locked — click “🔒 Slides locked” to edit, move, add or delete slides'); }
+function lockedNote(what){ toast(what==='cues' ? 'Cues are locked — click the red “🔒 Cues locked” button over the score to change them' : 'Slides are locked — click “🔒 Slides locked” to edit, move, add or delete slides'); }
 function updateLocks(){
   const st=state.settings;
   document.body.classList.toggle('cues-locked', !!st.lockCues); document.body.classList.toggle('order-locked', !!st.lockOrder);
@@ -1408,6 +1428,7 @@ document.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b
 
 /* ---------- mode / hint / counts ---------- */
 function setMode(m){
+  if(m!==mode){ const lk = m==='show'; state.settings.lockCues=lk; state.settings.lockOrder=lk; save(); mode=m; updateLocks(); }   // Show locks cues and slides, Edit unlocks them
   mode=m; if(NATIVE) window.stc.keepAwake(m==='show');
   document.body.classList.toggle('edit', m==='edit'); document.body.classList.toggle('show', m==='show');
   pseg($('#modeSeg'), b=>b.dataset.mode===m);
@@ -1420,7 +1441,7 @@ function updateHint(){
   const h=$('#hint');
   if(mode==='show'){ h.innerHTML=`<span class="kbd">→</span>/<span class="kbd">Space</span> next · <span class="kbd">←</span> back · <span class="kbd">B</span> blackout · Cue <b>${cur+1}</b> of ${lastIndex()+1}`; return; }
   if(!state.pdfName){ h.textContent='Open a score PDF to start placing cues'; return; }
-  if(state.settings.lockCues){ h.innerHTML='🔒 Cues are locked — clicking the score just highlights a cue · unlock above the score to add, move or delete'; return; }
+  if(state.settings.lockCues){ h.innerHTML='🔒 Cues are locked — clicking the score just highlights a cue · unlock with the red button to add, move or delete'; return; }
   const n=state.markers.length, tgt = anchor!=null ? anchor : cur, hasT = tgt>=0 && tgt<n;
   const del = hasT ? ` · <span class="kbd">Del</span> removes cue ${tgt+1}` : '';
   const nudge = nudgeTarget()>=0 ? ` · <span class="kbd">← ↑ → ↓</span> nudge cue ${nudgeTarget()+1} (<span class="kbd">⇧</span> for bigger steps)` : '';
@@ -1975,7 +1996,7 @@ $('#partsGrid').addEventListener('drop', e=>{ const c=e.target.closest('.pcard')
   const r=c.getBoundingClientRect(); let to=+c.dataset.i + (e.clientX>r.left+r.width/2 ? 1 : 0); if(to>dragPart) to--;
   const from=dragPart; dragPart=-1; movePart(from,to); });
 $('#partsBrowse').onclick=()=>addPartAt((state.parts||[]).length);
-$('#partsUnlock').onclick=()=>{ state.settings.lockCues=false; updateLocks(); save(); renderParts(); toast('Cues unlocked — lock them again with the button above the score'); };
+$('#partsUnlock').onclick=()=>{ state.settings.lockCues=false; updateLocks(); save(); renderParts(); toast('Cues unlocked — lock them again with the button over the score'); };
 $('#partsBtn').onclick=()=>{ if(!pdfBytes) return toast('Open a score PDF first'); renderParts(); $('#partsDlg').showModal(); };
 
 /* ---------- desktop app hooks ---------- */
@@ -2330,6 +2351,8 @@ window.__stcMenu = (cmd) => {
   document.addEventListener('mouseout', e=>{ if(el && !el.contains(e.relatedTarget)) hide(); });
   document.addEventListener('pointerdown', hide, true); addEventListener('blur', hide); document.addEventListener('scroll', hide, true);
 })();
+
+{ const z=$('#zoomCtl'), row=$('#hrow2'); const upd=()=>row.style.setProperty('--zw', (z.hidden ? 0 : z.offsetWidth)+'px'); new ResizeObserver(upd).observe(z); new MutationObserver(upd).observe(z, {attributes:true, attributeFilter:['hidden']}); upd(); }
 
 /* ---------- start ---------- */
 (async function init(){
