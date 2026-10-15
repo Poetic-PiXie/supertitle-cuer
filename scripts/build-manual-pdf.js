@@ -63,6 +63,13 @@ table.keys { border-collapse: collapse; margin: 2mm 0; }
 table.keys td, table.keys th { padding: 1.3mm 5mm 1.3mm 0; vertical-align: top; text-align: left; border-bottom: .2mm solid #eee; }
 table.keys th { padding-top: 4mm; color: #888; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .07em; }
 tr { page-break-inside: avoid; }
+.keybox { background: #eef4ff; border: .3mm solid #9dbbe8; border-radius: 2mm; padding: 2mm 3.5mm; margin: 3mm 0 4mm; page-break-inside: avoid; }
+.keybox .kbt { font-size: 8pt; font-weight: 700; color: #2a5bb0; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 1mm; }
+.keybox .kbr { display: grid; grid-template-columns: 52mm 1fr; gap: 3mm; padding: .9mm 0; border-top: .2mm solid #d3e0f5; font-size: 9.5pt; }
+.keybox .kbr:first-of-type { border-top: 0; }
+.lockbox { background: #fdf3df; border: .3mm solid #e2b85c; border-radius: 2mm; padding: 2.5mm 3.5mm; margin: 3mm 0; page-break-inside: avoid; }
+figure.logo img { max-width: 62mm; border: 0; border-radius: 4mm; }
+
 table.exports { border-collapse: collapse; margin: 3mm 0; font-size: 9.5pt; }
 table.exports th, table.exports td { border: .25mm solid #ccc; padding: 1.5mm 2.5mm; text-align: left; vertical-align: top; }
 table.exports th { background: #f3f4f6; }

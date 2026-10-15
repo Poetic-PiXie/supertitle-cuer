@@ -5,6 +5,7 @@
 <section data-id="welcome" data-part="Welcome">
 <h2>Supertitle Cuer</h2>
 <p class="byline">by <b>poetic PiXie</b></p>
+<figure class="logo"><img src="shots/poetic-pixie.webp" alt="poetic PiXie — the singing pixie"></figure>
 <p class="lead">Supertitle Cuer runs opera supertitles from the score. You mark numbered cues on the score PDF where each title should appear, pair them with your titles, and during the performance one key — or a clicker — puts the next title on the projector, in time with the music. Version 2 can also listen to the performance and count down to every cue.</p>
 <p>This guide starts with a <a href="#quick-start">Quick start</a> that walks through a real project, the Anvil Chorus from Verdi's <i>Il trovatore</i>, from an empty window to titles on the screen. The chapters after it explain every button and panel in detail.</p>
 </section>
@@ -20,12 +21,23 @@
 <figure class="shot"><img src="shots/qs-2-import.webp" alt="The titles pasted into the Import window"></figure>
 <p>Each title becomes a numbered slide. Titles too long for the screen are split for you (<a href="#import">Importing titles</a>).</p>
 <figure class="shot"><img src="shots/qs-3-slides.webp" alt="Eleven slides in the list"></figure>
+<h3>2b. Or: paste plain text into Flow mode</h3>
+<p>No commas or quotation marks needed: one title per line (or simply the libretto as it is) works too.</p>
+<ol class="steps">
+<li>Before placing any cues, click <span class="ui">¶ Flow</span> above the slides.</li>
+<li>Click <span class="ui">＋ Add slide</span> (or into the first slide) and paste the text.</li>
+<li>The text fills the slides by itself: sentences stay together, each fits the screen, and a long sentence continues on the next slide with “…”.</li>
+</ol>
+<figure class="shot"><img src="shots/qs-2b-flow.webp" alt="Plain text pasted in Flow mode, filling the slides by itself"></figure>
+<div class="keybox"><div class="kbt">⌨ In Flow mode</div><div class="kbr"><span class="k"><kbd>Return</kbd></span><span>start a new slide here</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>+<kbd>Return</kbd></span><span>line break inside a slide</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd> at the start</span><span>join with the slide before</span></div></div>
+<p>Flow mode switches off by itself once you place the first cue, so the titles never move afterwards. Plain text also works through <span class="ui">Import…</span> with <span class="ui">Format: Text</span> — then every line becomes exactly one slide.</p>
 <h3>3. Add the score</h3>
 <p>Click <span class="ui">File ▾ → Open…</span> and choose the score PDF, or drop it onto the window. The slides turn striped and say “no cue” — they are waiting for their cues.</p>
 <figure class="shot"><img src="shots/qs-4-score.webp" alt="The score next to the uncued slides"></figure>
 <h3>4. Click the cues onto the score</h3>
 <p>With <span class="ui">Edit</span> selected, click the score wherever a title should change. Each click adds a numbered red circle, and the slide with the same number is now cued.</p>
 <figure class="shot"><img src="shots/qs-5-cues.webp" alt="The first three cues on the score"></figure>
+<div class="keybox"><div class="kbt">⌨ Cues on the score (Edit mode)</div><div class="kbr"><span class="k">click</span><span>add a cue</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></span><span>nudge the selected cue (<kbd>Shift</kbd>: bigger steps)</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd> or right-click</span><span>delete the selected cue</span></div><div class="kbr"><span class="k"><kbd>⌘Z</kbd></span><span>undo</span></div></div>
 <p>Cues are numbered by their place in the score — page, then top to bottom, then left to right — so you can add them in any order. Drag one to move it; right-click one to delete it.</p>
 <figure class="shot"><img src="shots/overview.webp" alt="All eleven cues placed"></figure>
 <h3>5. Choose the look, and save</h3>
@@ -33,6 +45,7 @@
 <h3>6. Run the show</h3>
 <p>Connect the projector as an <em>extended</em> screen (<a href="#connect">Connecting a projector</a>) and click <span class="ui">📽 Projector</span>. Click <span class="ui">Show</span> and press <kbd>→</kbd> or <kbd>Space</kbd> — or a presentation clicker — for each title. <kbd>←</kbd> goes back and <kbd>B</kbd> blanks the screen.</p>
 <figure class="shot"><img src="shots/show.webp" alt="Show mode with the projector live"></figure>
+<div class="keybox"><div class="kbt">⌨ Running the show (Show mode)</div><div class="kbr"><span class="k"><kbd>→</kbd> <kbd>Space</kbd> <kbd>Page Down</kbd></span><span>next title</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>Page Up</kbd></span><span>previous title</span></div><div class="kbr"><span class="k"><kbd>B</kbd></span><span>blackout on / off</span></div><div class="kbr"><span class="k"><kbd>Home</kbd></span><span>back to before cue 1</span></div></div>
 <p class="tip">Want a countdown to every cue? Record a rehearsal with <span class="ui">● Record</span> and switch on <a href="#follow">Follow the music</a>.</p>
 </section>
 
@@ -82,6 +95,7 @@
 <li>The <b>slides</b> (supertitles), with spelling, flow mode, order lock and import.</li>
 </ol>
 <p>The <span class="ui">↔</span> button above the preview swaps the two sides, so the score can be on the right and the slides on the left. Each computer remembers its choice.</p>
+<div class="keybox"><div class="kbt">⌨ Anywhere</div><div class="kbr"><span class="k"><kbd>F1</kbd> or <kbd>⌘?</kbd></span><span>open this Help</span></div><div class="kbr"><span class="k"><kbd>⌘,</kbd></span><span>Settings (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘1</kbd> / <kbd>⌘2</kbd></span><span>Edit / Show mode (desktop app)</span></div></div>
 </section>
 
 <section data-id="toolbar" data-part="Guide">
@@ -116,6 +130,7 @@
 <li><b>Delete</b> it with a right-click, or select it and press <kbd>Delete</kbd>. Deleting a cue never deletes a slide: the slides keep their order, so from there on each slide pairs with the next remaining cue.</li>
 <li><b>Deselect</b> (in Edit mode) by clicking any empty space outside the score pages and slides, or with <kbd>Esc</kbd>.</li>
 </ul>
+<div class="keybox"><div class="kbt">⌨ Cues</div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></span><span>nudge the selected cue 5 px — Edit mode, cues unlocked, after clicking the score</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd> + arrows</span><span>nudge 25 px</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>→</kbd></span><span>previous / next cue — in Show mode, or while the cues are locked</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd></span><span>delete the selected cue</span></div><div class="kbr"><span class="k"><kbd>Esc</kbd></span><span>deselect</span></div></div>
 <h3>Locking the cues</h3>
 <p><span class="ui">🔓 Cues unlocked</span> above the score turns into <span class="ui">🔒 Cues locked</span> with a click. When locked, clicking the score only selects cues, and nothing can add, move or delete them by accident. Opening a saved project locks both the cues and the slide order — unlock them when you want to make changes.</p>
 <figure class="shot small"><img src="shots/score-toolbar.webp" alt="The score toolbar: cue lock, PDFs and zoom"></figure>
@@ -168,6 +183,7 @@
 <li class="fig"><figure class="shot"><img src="shots/slides-range.webp" alt="Three slides selected as a block, with the selection bar"></figure></li>
 <li><b>Lock the order</b> with <span class="ui">🔓 Order unlocked</span> above the list, so slides can't be moved, inserted or deleted by accident. Text can still be corrected.</li>
 </ul>
+<div class="keybox"><div class="kbt">⌨ Slides</div><div class="kbr"><span class="k"><kbd>↑</kbd> <kbd>↓</kbd></span><span>previous / next slide — after clicking in the slide list</span></div><div class="kbr"><span class="k"><kbd>↑</kbd> on the first line, <kbd>↓</kbd> on the last</span><span>while typing: carry on into the neighbouring slide</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>-click</span><span>select a range of slides</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd></span><span>delete the selected range (asks first)</span></div><div class="kbr"><span class="k"><kbd>Esc</kbd></span><span>stop typing / clear the selection</span></div><div class="kbr"><span class="k">right-click a word</span><span>spelling suggestions, synonyms</span></div></div>
 <figure class="shot"><img src="shots/slides-states.webp" alt="A slide that is too long, and slides without cues"></figure>
 <h3>What the colours mean</h3>
 <ul>
@@ -199,10 +215,11 @@
 <p><span class="ui">¶ Flow</span> above the slides turns the slide list into one continuous text: type or paste the libretto and it fills the slides by itself, re-fitting as you pause.</p>
 <figure class="shot"><img src="shots/flow.webp" alt="Flow mode"></figure>
 <ul>
-<li><kbd>Return</kbd> starts a new slide at the cursor; <kbd>Shift</kbd>+<kbd>Return</kbd> is a line break inside a slide.</li>
-<li><kbd>Delete</kbd> at the very start of a slide joins it to the one before.</li>
-<li>Flow mode switches off — and locks — once the first cue is placed on the score, so titles that already have cues never move. Remove all cues to use it again.</li>
+<li>Paste plain text — one title per line, or the libretto as it is; no commas or quotation marks needed.</li>
+<li>Sentences stay together, every slide fits the screen, and a sentence that runs over continues on the next slide with “…”.</li>
 </ul>
+<div class="keybox"><div class="kbt">⌨ In Flow mode</div><div class="kbr"><span class="k"><kbd>Return</kbd></span><span>start a new slide at the cursor</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>+<kbd>Return</kbd></span><span>line break inside a slide</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd> at the very start of a slide</span><span>join it to the slide before</span></div></div>
+<div class="lockbox"><b>🔒 Flow mode locks once cues are on the score.</b> As soon as the first cue is placed, Flow mode switches off and its <span class="ui">¶ Flow</span> button is greyed out, so titles that already belong to cues can never move. To use Flow mode again, remove all cues (<span class="ui">File ▾ → Remove all cue markers…</span>) — or keep editing the slides one by one, which always works.</div>
 </section>
 
 <section data-id="settings" data-part="Guide">
@@ -235,6 +252,9 @@
 <li>Click <span class="ui">📽 Projector</span>. The desktop app opens it full screen on the projector; if it lands on your own screen, choose <span class="ui">View → Move Projector to Second Screen</span> (<kbd>⇧⌘P</kbd>). In the browser version, drag the window onto the projector and press <kbd>F</kbd> (or double-click it).</li>
 <li>Test: click back in the main window, choose <span class="ui">Show</span> and press <kbd>→</kbd>.</li>
 </ol>
+<figure class="shot small"><img src="shots/modes-projector.webp" alt="The Edit / Show switch and the Projector button"><figcaption><span class="ui">Edit</span> / <span class="ui">Show</span> switches the mode; <span class="ui">📽 Projector</span> opens the audience window (it then reads <span class="ui">■ Close projector</span>).</figcaption></figure>
+<div class="keybox"><div class="kbt">⌨ Projector and modes</div><div class="kbr"><span class="k"><kbd>⌘1</kbd> / <kbd>⌘2</kbd></span><span>Edit / Show mode (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘P</kbd></span><span>open the projector (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⇧⌘P</kbd></span><span>move the projector to the second screen (desktop app)</span></div><div class="kbr"><span class="k"><kbd>F</kbd></span><span>full screen on / off, in the projector window</span></div></div>
+
 <h3>Windows</h3>
 <ol class="steps">
 <li>Plug in the projector and turn it on.</li>
@@ -249,12 +269,7 @@
 <h2>Running the show</h2>
 <figure class="shot"><img src="shots/show.webp" alt="Show mode with the projector live"></figure>
 <p>Click <span class="ui">Show</span>. The slide text can no longer be changed, and the keyboard runs the titles:</p>
-<table class="keys">
-<tr><td><kbd>→</kbd> <kbd>Space</kbd> <kbd>Page Down</kbd></td><td>Next title (a presentation clicker works too)</td></tr>
-<tr><td><kbd>←</kbd> <kbd>Page Up</kbd></td><td>Previous title</td></tr>
-<tr><td><kbd>B</kbd> or <kbd>.</kbd></td><td>Blackout: the screen goes empty; press again to bring the title back</td></tr>
-<tr><td><kbd>Home</kbd></td><td>Back to the start, before cue 1 (empty screen)</td></tr>
-</table>
+<div class="keybox"><div class="kbt">⌨ Running the show (Show mode)</div><div class="kbr"><span class="k"><kbd>→</kbd> <kbd>Space</kbd> <kbd>Page Down</kbd></span><span>next title (a presentation clicker works too)</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>Page Up</kbd></span><span>previous title</span></div><div class="kbr"><span class="k"><kbd>B</kbd> or <kbd>.</kbd></span><span>blackout: the screen goes empty; press again to bring the title back</span></div><div class="kbr"><span class="k"><kbd>Home</kbd></span><span>back to the start, before cue 1 (empty screen)</span></div></div>
 <ul>
 <li>The current cue glows gold on the score and the next one pulses; the score scrolls along by itself.</li>
 <li><b>Next →</b> under the preview shows the coming title.</li>
@@ -303,6 +318,7 @@
 <li>The desktop app asks before closing with unsaved changes; “• not saved” next to the project name shows there are some.</li>
 <li><span class="ui">File ▾ → New project…</span> starts empty. <span class="ui">Remove all cue markers…</span> and <span class="ui">Remove all slides…</span> clear one side only.</li>
 </ul>
+<div class="keybox"><div class="kbt">⌨ Files</div><div class="kbr"><span class="k"><kbd>⌘S</kbd></span><span>save</span></div><div class="kbr"><span class="k"><kbd>⇧⌘S</kbd></span><span>save as</span></div><div class="kbr"><span class="k"><kbd>⌥⇧⌘S</kbd></span><span>save as PDF (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘O</kbd></span><span>open</span></div><div class="kbr"><span class="k"><kbd>⌘E</kbd></span><span>export printable score (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd></span><span>undo / redo</span></div></div>
 <p>The different files Supertitle Cuer can write are explained in the next chapter, <a href="#exports">Exports</a>.</p>
 </section>
 
@@ -320,7 +336,7 @@
 <h3>The project file (.supertitles)</h3>
 <p>Everything about the production, in one file: the score PDF (all its parts, merged), the cues, every title, the display settings, and the reference runs for Follow — including recordings made in the app. This is the file to keep, back up and take to the theatre. A <code>.supertitles</code> file is a PDF inside, but it is meant to be opened with Supertitle Cuer.</p>
 <h3>Save As PDF</h3>
-<p>The same complete project, saved with a <code>.pdf</code> ending so that anyone can open it in any PDF viewer — Preview, Acrobat, a browser, a tablet. In a viewer it shows the score with the numbered red cues on its pages, followed by the cue sheet. Opened in Supertitle Cuer, it is the full, editable project again. Use it to share a production with a conductor, stage manager or translator who doesn't have the app, without keeping two files.</p>
+<p>The same complete project — including the cue times, Follow's reference runs and recordings made in the app — saved with a <code>.pdf</code> ending so that anyone can open it in any PDF viewer — Preview, Acrobat, a browser, a tablet. In a viewer it shows the score with the numbered red cues on its pages, followed by the cue sheet. Opened in Supertitle Cuer, it is the full, editable project again. Use it to share a production with a conductor, stage manager or translator who doesn't have the app, without keeping two files.</p>
 <h3>Export printable score</h3>
 <p>A plain PDF made for printing: the score pages with the numbered cues drawn on them (at the <span class="ui">Cue circle size</span> from Settings), and at the end a <b>cue sheet</b> listing every title next to its number — red numbers for cued titles, grey for titles that have no cue yet. It contains no project data, so it is small and safe to send anywhere; opened in Supertitle Cuer it is just a score. Use it for the booth binder, the conductor's or stage manager's copy, or to proofread the titles on paper.</p>
 <figure class="shot"><img src="shots/exports.webp" alt="A page of the printable score with numbered cues, and the cue sheet"><figcaption>The printable score: a page with its numbered cues, and the cue sheet at the end.</figcaption></figure>

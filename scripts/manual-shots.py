@@ -63,6 +63,14 @@ async def main():
         save(await shot(clip=await clip('#importDlg')), 'import', 1100)
         await pg.click('#impGo'); await pg.wait_for_timeout(500); await toast_off()
         save(await shot(), 'qs-3-slides', 1600)
+        # 2b. the other way: plain text pasted in Flow mode
+        plain = '\n'.join(s_['text'].replace('\n', ' ') for s_ in proj['slides'])
+        await pg.evaluate("state.slides=[]; changed(true); setFlow(true)"); await pg.wait_for_timeout(200)
+        await pg.click('[data-a="append"]'); await pg.wait_for_timeout(200)
+        await pg.evaluate("(t)=>{ const ta=document.querySelector('.slide textarea'); ta.focus(); document.execCommand('insertText', false, t); }", plain)
+        await pg.wait_for_timeout(1500); await pg.evaluate("document.activeElement.blur(); document.getElementById('slides').scrollTop=0"); await toast_off()
+        save(await shot(), 'qs-2b-flow', 1600)
+        await pg.evaluate("(sl)=>{ setFlow(false); state.slides=sl.map(x=>({text:x.text})); changed(true); }", proj['slides']); await toast_off()
         # 4. add the score
         await pg.set_input_files('#fPdf', files=[{'name': proj.get('pdfName') or os.path.basename(SCORE), 'mimeType': 'application/pdf', 'buffer': open(SCORE, 'rb').read()}]); await pg.wait_for_selector('.page'); await pg.wait_for_timeout(1500)
         await pg.evaluate("document.querySelector('.page[data-page=\"2\"]').scrollIntoView({block:'start'})"); await pg.wait_for_timeout(700); await toast_off()
@@ -83,6 +91,8 @@ async def main():
                       ['#settingsBtn', 7, 'b'], ['#counts', 8, 'b'], ['#hint', 9, 'l'], ['#lockCues', 10, 'l'], ['.pvhead', 11, 'l'], ['.slidehead', 12, 'l']])
         save(await shot(), 'overview-callouts', 1600); await nobadges()
         save(await shot(clip={'x': 0, 'y': 0, 'width': W, 'height': 80}), 'toolbar', 1600)
+        r = await pg.evaluate("(()=>{ const a=document.getElementById('modeSeg').getBoundingClientRect(), b=document.getElementById('projBtn').getBoundingClientRect(); return [a.left-10,a.top-8,b.right-a.left+20,a.height+16]; })()")
+        save(await shot(clip={'x': r[0], 'y': r[1], 'width': r[2], 'height': r[3]}), 'modes-projector', 700)
         save(await shot(clip=await clip('.scorebar' if await pg.query_selector('.scorebar') else '#lockCues', 6)), 'score-toolbar-x', 700)
         # score toolbar (the buttons above the score)
         r = await pg.evaluate("(()=>{ const a=document.getElementById('lockCues').getBoundingClientRect(), b=[...document.querySelectorAll('#zoomCtl button')].pop().getBoundingClientRect(); return [a.left-8,a.top-8,b.right-a.left+16,a.height+16]; })()")
