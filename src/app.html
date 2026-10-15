@@ -282,6 +282,8 @@ body.swapped .swapbtn{order:3;margin-left:auto}
 .pvhead.live .pvlbl{max-width:calc(50% - 170px)}
 @container (max-width:560px){ .pvhead.live .pvlbl{display:none} }
 .pvctl .projsw{width:148px;justify-content:space-between}
+.pvctl{flex-direction:row}
+.pvctl .connhelp{position:absolute;left:calc(100% + 8px);top:0;width:32px;height:32px;padding:0;border-radius:50%;display:inline-grid;place-items:center;font:800 15px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;letter-spacing:0;text-transform:none;color:var(--soft)}
 /* blackout: gray pill, red glow while the screen is blacked out */
 .bobtn{width:148px;height:32px;border-radius:999px;padding:0 14px;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--soft)}
 .bobtn.on{border-color:#e5484d;color:#ff8a85;background:linear-gradient(180deg,var(--lk-a),var(--lk-b));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 12px rgba(229,72,77,.5),0 1px 2px rgba(0,0,0,.4)}
@@ -359,6 +361,7 @@ body.flow.edit .flowhelp{display:block}
 .slide textarea, .slide .mirror{grid-column:3;grid-row:1}
 .slide .mirror{display:none;pointer-events:none;font:15px/1.35 Georgia,serif;text-align:var(--talign,left);padding:3px 0;white-space:pre-wrap;overflow-wrap:break-word;color:var(--strong);min-width:0}
 .slide .mirror .ovf{opacity:.5}
+.slide textarea, .slide .mirror{font-family:var(--cardff,Georgia,serif);font-size:var(--cardfs,15px);font-style:var(--cardfst,normal);font-weight:var(--cardfw,400);width:var(--cardw,100%);justify-self:start}
 .slide.over .mirror{display:block}
 .slide.over textarea{color:transparent;caret-color:var(--strong);position:relative;z-index:1}
 .slide textarea::placeholder{color:#555;font-style:italic}
@@ -640,7 +643,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   </section>
   <aside>
     <div class="pvwrap">
-      <div class="pvhead"><button type="button" class="swapbtn" id="swapBtn" aria-label="Swap sides" data-tip=""><svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h14M5.5 2.5 2 6l3.5 3.5M12.5 2.5 16 6l-3.5 3.5"/></svg></button><span class="pvlbl">Audience sees</span><div class="pvctl"><button type="button" id="boBtn" class="bobtn" hidden aria-pressed="false" title="Blackout: empty the projector screen right now (key B). Click again to bring the title back.">Blackout</button><button type="button" id="projBtn" class="projsw" role="switch" aria-checked="false" title="Open the audience window — the one that goes on the projector"><span class="pjl">Projector</span><span class="pjt"><span class="pjk"></span></span></button></div></div>
+      <div class="pvhead"><button type="button" class="swapbtn" id="swapBtn" aria-label="Swap sides" data-tip=""><svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h14M5.5 2.5 2 6l3.5 3.5M12.5 2.5 16 6l-3.5 3.5"/></svg></button><span class="pvlbl">Audience sees</span><div class="pvctl"><button type="button" id="boBtn" class="bobtn" hidden aria-pressed="false" title="Blackout: empty the projector screen right now (key B). Click again to bring the title back.">Blackout</button><button type="button" id="connHelp" class="connhelp" title="How to connect your projector" aria-label="How to connect your projector">?</button><button type="button" id="projBtn" class="projsw" role="switch" aria-checked="false" title="Open the audience window — the one that goes on the projector"><span class="pjl">Projector</span><span class="pjt"><span class="pjk"></span></span></button></div></div>
       <div class="screen" id="pv"><div class="stage"><div class="stext" id="pvText"></div></div><div class="pvguide" id="pvGuide" hidden></div><div class="bo">BLACKOUT</div></div>
       <div class="nextline" id="nextLine"></div>
       <div class="followbar" id="followBar" hidden><div class="fbtext" id="fbText"></div><div class="fbtrack"><div class="fbfill" id="fbFill"></div></div></div>
@@ -977,9 +980,16 @@ function renderSlides(){
   const add=document.createElement('div'); add.className='addrow';
   add.innerHTML = state.slides.length ? `<button data-a="append">＋ Add slide</button>` : `<div class="empty" style="height:auto;padding:24px 8px"><div>No slides yet.</div><div style="font-size:13px">Import a CSV (each comma-separated value becomes a numbered slide), or add them one at a time.</div><div style="display:flex;gap:8px"><button class="primary" data-act="importSlides">Import slides…</button><button data-a="append">＋ Add slide</button></div></div>`;
   if(mode==='edit' || !state.slides.length) list.append(add);
-  list.querySelectorAll('textarea').forEach(grow);
+  cardFont(false); list.querySelectorAll('textarea').forEach(grow);
   updateSlideClasses(); markOverflow();
 }
+// The slide boxes break their lines exactly like the screen: same font and style, and the same text width measured in font sizes.
+function cardFont(regrow=true){ const L=titleLayout(), r=L.availW/L.fsOfWidth, st=state.settings, el=slidesEl;
+  el.style.setProperty('--cardff', st.font); el.style.setProperty('--cardfst', st.italic?'italic':'normal'); el.style.setProperty('--cardfw', st.bold?'700':'400');
+  el.style.setProperty('--cardw','100%'); const ta=el.querySelector('.slide textarea'); if(!ta) return; const cw=ta.getBoundingClientRect().width; if(!cw) return;
+  let fs=cw/r, w='100%'; if(fs>19){ fs=19; w=(fs*r)+'px'; } else if(fs<11){ fs=11; w=(fs*r)+'px'; }
+  el.style.setProperty('--cardfs', fs+'px'); el.style.setProperty('--cardw', w);
+  if(regrow) el.querySelectorAll('.slide textarea').forEach(grow); }
 function grow(ta){ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; }
 function updateSlideClasses(){
   document.querySelectorAll('.slide').forEach(c=>{ const i=+c.dataset.i;
@@ -1007,6 +1017,7 @@ function placeAddBelow(){
   card.after(row);
 }
 const slidesEl=$('#slides');
+{ let raf=0; new ResizeObserver(()=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>cardFont()); }).observe(slidesEl); }
 slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; grow(e.target);
   showOverflow(e.target.closest('.slide'), e.target.value);
   if(state.settings.flow && mode==='edit' && i>=state.markers.length){ clearTimeout(flowT); flowT=setTimeout(()=>flowRefit(i, e.target.selectionStart), 450); } if(i===cur||i===cur+1) updateOutput(); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); });
@@ -1286,7 +1297,7 @@ function normShape(sh){ return sh==='576/93' ? '6/1' : (['6/1','16/9','4/3'].inc
 // Lines are whole pixels: T = round(Tmax·size), gap = round(Gmax). Any height left over — from a smaller
 // Text size or from rounding — is shared evenly by the top margin, the bottom margin and every gap.
 function titleFrame(W, H, lines, Tmax, Gmax, Mmax, k){
-  const T=Math.round(Tmax*k), G0=Math.round(Gmax);
+  const T=Tmax*k, G0=Gmax;   // no rounding: every screen (projector, preview, slide boxes) then breaks its lines alike
   const extra=Math.max(0, H - lines*T - (lines-1)*G0 - 2*Mmax)/(lines+1);
   const G=G0+extra, M=Mmax+extra;
   return {font:T, lh:(T+G)/T, padY:M - G/2, padX:(state.settings.sideMargin||0.02)*W};     // CSS puts half a gap above the first and below the last line
@@ -1870,7 +1881,7 @@ $('#sAlign').addEventListener('click', e=>{ const b=e.target.closest('[data-al]'
 $('#setDlg').addEventListener('input', ()=>{
   const s=state.settings; s.textScale=(+$('#sFs').value)/100; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.vpos=+$('#sVpos').value; s.sideMargin=(+$('#sSide').value)/100; s.shape=$('#sShape').value;
   const mk=+$('#sMk').value; if(mk!==s.markerSize){ s.markerSize=mk; layoutPages(); if(state.markers.length){ sortMarkers(); changed(false); } }
-  setVals(); updateOutput(); setDirty(true); save();
+  setVals(); updateOutput(); cardFont(); setDirty(true); save();
   clearTimeout(flowT); flowT=setTimeout(()=>{ if(state.settings.flow) flowRefitAll(); markOverflow(); }, 300);
 });
 $('#sScreens').onclick=async ()=>{
@@ -1911,6 +1922,7 @@ addEventListener('drop', async e=>{ e.preventDefault(); dragN=0; $('#drop').clas
   else if(/\.pdf$/i.test(f.name)) openAny(f, hp ? await hp : null);
 });
 $('#boBtn').onclick=()=>toggleBlackout();
+$('#connHelp').onclick=()=>openHelp('connect');
 $('#projBtn').onclick=()=> projOpen() ? closeProjector() : openProjector();
 function closeProjector(){
   if(!projOpen()) return;
