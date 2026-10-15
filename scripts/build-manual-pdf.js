@@ -69,6 +69,7 @@ tr { page-break-inside: avoid; }
 .keybox .kbr:first-of-type { border-top: 0; }
 .lockbox { background: #fdf3df; border: .3mm solid #e2b85c; border-radius: 2mm; padding: 2.5mm 3.5mm; margin: 3mm 0; page-break-inside: avoid; }
 figure.logo img { max-width: 62mm; border: 0; border-radius: 4mm; }
+.keep { page-break-inside: avoid; }
 .tipsbox { background: #eef8f0; border: .3mm solid #8fcf9f; border-radius: 2mm; padding: 2.5mm 4mm; margin: 4mm 0; page-break-inside: avoid; }
 .tipsbox .tbt { font-size: 8pt; font-weight: 700; color: #2a7a45; text-transform: uppercase; letter-spacing: .07em; }
 .tipsbox ul { margin: 1.5mm 0 0; padding-left: 5mm; }

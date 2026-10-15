@@ -138,6 +138,18 @@ async def main():
         comp.paste(pa, (14, 20)); comp.paste(pb, (pa.width + 26, 20))
         b = io.BytesIO(); comp.save(b, 'PNG'); save(b.getvalue(), 'exports', 1400)
 
+        print('spreadsheet')
+        sp = await ctx.new_page()
+        rows = ''.join(f'<tr><th>{i+1}</th><td>{x["text"].replace(chr(10), "<br>")}</td></tr>' for i, x in enumerate(proj['slides'][:7]))
+        await sp.set_content('''<html><body style="margin:0;background:#fff;font:14px Calibri,Carlito,Arial,sans-serif">
+<div style="background:#1e7145;color:#fff;padding:6px 10px;font:600 13px Arial">Anvil Chorus titles.xlsx</div>
+<table style="border-collapse:collapse;margin:0"><tr><th style="width:34px"></th><th style="width:560px">A</th></tr>''' + rows + '''</table>
+<style>th{background:#f3f3f3;color:#555;font-weight:400;border:1px solid #d4d4d4;padding:3px 6px;font-size:12px}
+td{border:1px solid #d4d4d4;padding:4px 8px;vertical-align:top;line-height:1.35}
+tr:nth-child(4) td{outline:2px solid #1e7145;outline-offset:-2px}</style></body></html>''')
+        await sp.set_viewport_size({'width': 620, 'height': 400})
+        save(await sp.locator('body').screenshot(), 'spreadsheet', 760); await sp.close()
+
         print('dialogs')
         await pg.click('#settingsBtn'); await pg.wait_for_timeout(300)
         save(await shot(clip=await clip('#setDlg')), 'settings', 1100); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
