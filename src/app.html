@@ -154,11 +154,10 @@ body:not(.native) .native-only{display:none}
 .padd:hover{border-color:var(--accent);color:var(--accent)}
 .padd .plus{font-size:34px;line-height:1}
 #partsDlg.busy .partsGrid{opacity:.5;pointer-events:none}
-#projBtn.live{border-color:var(--ok);color:var(--ok);background:rgba(79,191,127,.1)}
 .vertag{margin-left:auto;font-size:11px;color:#7d808b;letter-spacing:.02em;user-select:none;padding:3px 2px}
 .rlab{font-size:12px;color:var(--dim)}
 .sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
-.docname{font-size:13px;color:var(--dim);max-width:160px;display:inline-flex;white-space:nowrap;min-width:0}
+.docname{font-size:13px;color:var(--dim);max-width:210px;display:inline-flex;white-space:nowrap;min-width:0}
 .docname .dn{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .docname.dirty::after{content:" • not saved";color:var(--warn);flex-shrink:0;white-space:pre}
 .hint{color:var(--dim);flex-basis:100%;text-align:right;font-size:13px}
@@ -209,17 +208,19 @@ body.edit .mk{cursor:grab}
 /* side */
 aside{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
 .pvwrap{padding:12px;border-bottom:1px solid var(--line)}
-.pvhead{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.pvhead{display:flex;position:relative;min-height:34px;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
 body.swapped main{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
 body.swapped aside{order:-1;border-right:1px solid var(--line)}
 body.swapped #score{border-right:0}
 .swapbtn{position:relative;display:inline-flex;align-items:center;padding:3px 7px;text-transform:none;letter-spacing:0}
 .swapbtn svg{width:18px;height:12px;display:block}
 .swapbtn::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 8px);width:240px;padding:9px 11px;border-radius:8px;background:#000;border:1px solid var(--line);color:var(--text);font-weight:400;font-size:12.5px;line-height:1.4;text-align:left;text-transform:none;letter-spacing:0;white-space:normal;box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px);transition:opacity .15s,transform .15s;pointer-events:none;z-index:50}
-body.swapped .swapbtn{order:3;margin-left:4px}
+body.swapped .swapbtn{order:3;margin-left:auto}
+.pvhead .pvlbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(50% - 120px)}
+.pvhead #projBtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.pvhead #projBtn:active:not(:disabled){transform:translate(-50%,calc(-50% + .5px))}
 body.swapped .swapbtn::after{left:auto;right:0}
 .swapbtn:hover::after{opacity:1;transform:none;transition-delay:.35s}
-.pvhead .live{margin-left:auto;display:flex;align-items:center;gap:6px}
 .dot{width:8px;height:8px;border-radius:50%;background:#555}
 .dot.on{background:var(--ok);box-shadow:0 0 6px var(--ok)}
 .screen{container-type:size;position:relative;width:100%;aspect-ratio:16/9;background:var(--sbg,#000);border-radius:4px;overflow:hidden;outline:1px solid var(--line)}
@@ -431,8 +432,18 @@ header .modeSeg button.on{color:#1a1a1a}
 body.show header .modeSeg::before{background:linear-gradient(180deg,#5ee39a,#23a35e)}
 body.show header .modeSeg:hover::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 14px rgba(70,210,130,.5),0 2px 5px rgba(0,0,0,.4)}
 body.show header .modeSeg button.on{color:#06210f}
-/* the six header buttons share one size */
-header :is(#saveBtn,#projBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96px;height:34px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+/* the projector switch: a pill that glows and breathes softly while the audience window is open */
+.projsw{display:inline-flex;align-items:center;gap:10px;height:32px;padding:0 5px 0 15px;text-transform:none;letter-spacing:0;font-size:13px;font-weight:600;color:#c9ccd3}
+.projsw .pjt{position:relative;width:40px;height:22px;border-radius:999px;background:linear-gradient(180deg,#141519,#1d1f24);box-shadow:inset 0 1px 3px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.05);transition:background .2s}
+.projsw .pjk{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:linear-gradient(180deg,#fff,#cfd2da);box-shadow:0 1px 3px rgba(0,0,0,.6);transition:transform .22s cubic-bezier(.4,0,.2,1)}
+.projsw.live{color:#c8f7da;border-color:#2f8f5a;background:linear-gradient(180deg,#24493a,#1a372b);animation:projGlow 2.6s ease-in-out infinite}
+.projsw.live .pjt{background:linear-gradient(180deg,#5ee39a,#23a35e);box-shadow:inset 0 1px 2px rgba(0,0,0,.35),0 0 8px rgba(80,220,140,.6)}
+.projsw.live .pjk{transform:translateX(18px)}
+.projsw.live:hover:not(:disabled){border-color:#5ee39a;background:linear-gradient(180deg,#2b5745,#1f4133);color:#fff}
+@keyframes projGlow{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 4px rgba(80,220,140,.25),0 1px 2px rgba(0,0,0,.45)}50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 0 16px rgba(80,220,140,.55),0 1px 2px rgba(0,0,0,.45)}}
+@media (prefers-reduced-motion:reduce){.projsw.live{animation:none;box-shadow:0 0 12px rgba(80,220,140,.45)}}
+/* the header buttons share one size */
+header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96px;height:34px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 /* one tooltip for the whole app: anything with a title gets a soft pill-shaped tip */
 #ttip{position:fixed;z-index:1000;max-width:300px;padding:7px 11px;border-radius:10px;background:#30333c;border:1px solid #444855;color:#e6e8ee;font-size:12.5px;line-height:1.4;box-shadow:0 10px 28px rgba(0,0,0,.55);pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity .14s,transform .14s;white-space:normal}
 #ttip.on{opacity:1;transform:none}
@@ -471,7 +482,6 @@ header :is(#saveBtn,#projBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu])
     <button data-mode="edit" class="on" title="Click the score to place cues; edit slide text">Edit</button>
     <button data-mode="show" title="Run the show: arrow keys advance">Show</button>
   </div>
-  <button id="projBtn" title="Open the audience window — the one that goes on the projector">📽 Projector</button>
   <button id="followBtn" title="Follow the music: a countdown to the next cue (beta)">🎧 Follow</button>
   <button id="helpBtn" title="Help: a searchable guide to every button and panel (⌘?)">❔ Help</button>
   <button id="settingsBtn" title="Settings: screen shape, font, colours, text size and position (⌘,)">⚙︎ Settings</button>
@@ -495,7 +505,7 @@ header :is(#saveBtn,#projBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu])
   </section>
   <aside>
     <div class="pvwrap">
-      <div class="pvhead"><button type="button" class="swapbtn" id="swapBtn" aria-label="Swap sides" data-tip=""><svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h14M5.5 2.5 2 6l3.5 3.5M12.5 2.5 16 6l-3.5 3.5"/></svg></button>Audience sees<span class="live"><span class="dot" id="projDot"></span><span id="projLbl">Projector off</span></span></div>
+      <div class="pvhead"><button type="button" class="swapbtn" id="swapBtn" aria-label="Swap sides" data-tip=""><svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h14M5.5 2.5 2 6l3.5 3.5M12.5 2.5 16 6l-3.5 3.5"/></svg></button><span class="pvlbl">Audience sees</span><button type="button" id="projBtn" class="projsw" role="switch" aria-checked="false" title="Open the audience window — the one that goes on the projector"><span class="pjl">Projector</span><span class="pjt"><span class="pjk"></span></span></button></div>
       <div class="screen" id="pv"><div class="stage"><div class="stext" id="pvText"></div></div><div class="pvguide" id="pvGuide" hidden></div><div class="bo">BLACKOUT</div></div>
       <div class="nextline" id="nextLine"></div>
       <div class="followbar" id="followBar" hidden><div class="fbtext" id="fbText"></div><div class="fbtrack"><div class="fbfill" id="fbFill"></div></div></div>
@@ -1192,10 +1202,8 @@ function updateOutput(){
   const n = state.slides[cur+1];
   $('#nextLine').innerHTML = cur+1<=lastIndex() ? `Next <span class="kbd">→</span> <b>${cur+2}</b>: ${n? esc(n.text.replace(/[|\n]+/g,' / ')) || '<i>(blank)</i>' : '<i>(no slide)</i>'}` : (cur>=0? 'End of cues' : '');
   if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; placeProjStage(d); const pt=d.getElementById('t'); pt.textContent=t; fit(d.getElementById('stage'), pt); }catch(e){} }
-  $('#projDot').classList.toggle('on', projOpen()); $('#projLbl').textContent = projOpen()? 'Projector live' : 'Projector off';
-  const pb=$('#projBtn'); pb.classList.toggle('live', projOpen());
-  pb.textContent = projOpen() ? '■ Close projector' : '📽 Projector';
-  pb.title = projOpen() ? 'Close the audience window (the projector goes dark)' : 'Open the audience window — the one that goes on the projector';
+  const pb=$('#projBtn'); pb.classList.toggle('live', projOpen()); pb.setAttribute('aria-checked', projOpen()); pb.querySelector('.pjl').textContent = projOpen() ? 'Projector on' : 'Projector off';
+  { const tt=projOpen() ? 'Close the audience window (the projector goes dark)' : 'Open the audience window — the one that goes on the projector'; if(pb.dataset.ttl!=null) pb.dataset.ttl=tt; else pb.title=tt; }
 }
 // On the projector, 6:1 is a full-width band of height width/6 at the top, middle or bottom of the screen;
 // 4:3 is the centred 4:3 area; 16:9 fills the screen.
