@@ -6,20 +6,20 @@
 <h2>Supertitle Cuer</h2>
 <p class="byline">by <b>poetic PiXie</b></p>
 <figure class="logo"><img src="shots/poetic-pixie.webp" alt="poetic PiXie — the singing pixie"></figure>
-<p class="lead">Supertitle Cuer runs opera supertitles from the score. You mark numbered cues on the score PDF where each title should appear, pair them with your titles, and during the performance one key — or a clicker — puts the next title on the projector, in time with the music. Version 2 can also listen to the performance and count down to every cue.</p>
-<p>This guide starts with a <a href="#quick-start">Quick start</a> that walks through a real project, the Anvil Chorus from Verdi's <i>Il trovatore</i>, from an empty window to titles on the screen. The chapters after it explain every button and panel in detail.</p>
+<p class="lead">Supertitle Cuer — <b>STQ</b> for short — makes running opera supertitles calm and simple. It works right from the score: you mark numbered cues on the score PDF where each title should appear, pair them with your titles, and during the performance one key — or a clicker — puts the next title on the projector, in time with the music. Version 2 can also listen to the performance and count down to every cue.</p>
+<p>This guide starts with a <a href="#quick-start">Quick start</a> that walks through a real project, the Anvil Chorus from Verdi's <i>Il trovatore</i>, from an empty window to titles on the screen. The chapters after it explain every button and panel in detail — dip in whenever you want to know more. Enjoy the show!</p>
 </section>
 
 <section data-id="quick-start" data-part="Quick start">
-<h2>Quick start</h2>
-<p class="lead">From nothing to titles on a projector, in the order most people work: titles first, then the score, then the cues. (Any order works — the cues and titles pair up by number.)</p>
+<h2>Quick start: titles on the screen in ten minutes</h2>
+<p class="lead">From an empty window to titles on the projector — easier than it sounds, and done in the order most people work: titles first, then the score, then the cues. (Any order works — the cues and titles pair up by number.)</p>
 <h3>1. Start</h3>
 <p>Open Supertitle Cuer. The score area on the left is empty; the slides — the titles — will go on the right.</p>
 <figure class="shot"><img src="shots/qs-1-empty.webp" alt="Supertitle Cuer with nothing open yet"></figure>
 <h3>2. Paste in all the titles</h3>
 <p>Click <span class="ui">Import…</span> above the slides. Paste the titles into the box, separated by commas (put each one in <code>"double quotes"</code> if it contains a comma, and use <code>|</code> for a line break inside a title) — or choose a <code>.csv</code> or <code>.txt</code> file. Click <span class="ui">Import</span>.</p>
 <figure class="shot"><img src="shots/qs-2-import.webp" alt="The titles pasted into the Import window"></figure>
-<p>Each title becomes a numbered slide. Titles too long for the screen are split for you (<a href="#import">Importing titles</a>).</p>
+<p>Each title becomes a numbered slide. Titles too long for the screen are split for you (see <a href="#import">Bringing in titles</a>).</p>
 <figure class="shot"><img src="shots/qs-3-slides.webp" alt="Eleven slides in the list"></figure>
 <h3>2b. Or: paste plain text into Flow mode</h3>
 <p>No commas or quotation marks needed: one title per line (or simply the libretto as it is) works too.</p>
@@ -43,21 +43,23 @@
 <h3>5. Choose the look, and save</h3>
 <p>Click <span class="ui">⚙︎ Settings</span> and pick the <span class="ui">Screen shape</span> of your projector (16:9, 4:3 or the 6:1 strip), the font, size and colours; the <span class="ui">Audience sees</span> preview shows the result. Then press <kbd>⌘S</kbd>: score, cues, titles and settings are saved in one <code>.supertitles</code> file.</p>
 <h3>6. Run the show</h3>
-<p>Connect the projector as an <em>extended</em> screen (<a href="#connect">Connecting a projector</a>) and click <span class="ui">📽 Projector</span>. Click <span class="ui">Show</span> and press <kbd>→</kbd> or <kbd>Space</kbd> — or a presentation clicker — for each title. <kbd>←</kbd> goes back and <kbd>B</kbd> blanks the screen.</p>
+<p>Connect the projector as an <em>extended</em> screen (see <a href="#connect">The quickest way to connect your projector</a>) and click <span class="ui">📽 Projector</span>. Click <span class="ui">Show</span> and press <kbd>→</kbd> or <kbd>Space</kbd> — or a presentation clicker — for each title. <kbd>←</kbd> goes back and <kbd>B</kbd> blanks the screen.</p>
 <figure class="shot"><img src="shots/show.webp" alt="Show mode with the projector live"></figure>
 <div class="keybox"><div class="kbt">⌨ Running the show (Show mode)</div><div class="kbr"><span class="k"><kbd>→</kbd> <kbd>Space</kbd> <kbd>Page Down</kbd></span><span>next title</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>Page Up</kbd></span><span>previous title</span></div><div class="kbr"><span class="k"><kbd>B</kbd></span><span>blackout on / off</span></div><div class="kbr"><span class="k"><kbd>Home</kbd></span><span>back to before cue 1</span></div></div>
 <p class="tip">Want a countdown to every cue? Record a rehearsal with <span class="ui">● Record</span> and switch on <a href="#follow">Follow the music</a>.</p>
 </section>
 
 <section data-id="about" data-part="Guide">
-<h2>What Supertitle Cuer does</h2>
+<h2>How it works (it's simpler than it sounds)</h2>
+<p class="lead">If you can follow a score, you can run supertitles with STQ. Here's the whole idea in one minute.</p>
 <p>Supertitle Cuer pairs two things: <b>cues</b> — numbered circles you place on the score where each title should change — and <b>slides</b> — the titles themselves. Slide 1 goes up at cue 1, slide 2 at cue 2, and so on. During the performance you follow the score, and when the music reaches the next circle you press one key; the projector shows the next title.</p>
 <p>Cues are always numbered by where they are in the score, never by the order you placed them: first by page, then from the top of the page down, then left to right along a line of music. Add a cue anywhere and the ones after it renumber by themselves, and the slides move with them.</p>
 <p>The whole production — the score (even several PDFs), the cues, the titles, the display settings and any reference recordings — is saved in one <code>.supertitles</code> file.</p>
 </section>
 
 <section data-id="install" data-part="Guide">
-<h2>Installing and opening</h2>
+<h2>Getting Supertitle Cuer onto your computer</h2>
+<p class="lead">A couple of minutes, once — then it's just there whenever you need it.</p>
 <h3>Mac</h3>
 <p>The easiest way is Homebrew, in the Terminal app:</p>
 <pre>brew install --cask poetic-pixie/tap/supertitle-cuer</pre>
@@ -78,10 +80,11 @@
 </section>
 
 <section data-id="window" data-part="Guide">
-<h2>The window at a glance</h2>
+<h2>A quick tour of the window</h2>
+<p class="lead">Everything you need sits on one screen: the score on one side, your titles on the other, and the audience's view right above them.</p>
 <figure class="shot"><img src="shots/overview-callouts.webp" alt="The main window with numbered callouts"></figure>
 <ol class="callouts">
-<li><b>File menu</b> — new, open, save, export and import (<a href="#files">Saving and files</a>).</li>
+<li><b>File menu</b> — new, open, save, export and import (see <a href="#files">Saving your work</a>).</li>
 <li><b>💾 Save</b> and the project's name. “• not saved” means there are unsaved changes.</li>
 <li><b>Edit / Show</b> — Edit to place cues and write titles, Show to run the performance.</li>
 <li><b>📽 Projector</b> — opens or closes the audience window.</li>
@@ -99,7 +102,8 @@
 </section>
 
 <section data-id="toolbar" data-part="Guide">
-<h2>The toolbar</h2>
+<h2>Everything in the toolbar</h2>
+<p class="lead">A handful of buttons, each with one clear job.</p>
 <figure class="shot"><img src="shots/toolbar.webp" alt="The toolbar across the top of the window"></figure>
 <dl>
 <dt>File ▾</dt><dd>New project, Open, Save, Save As, Save As PDF, Export printable score, Import and Export slides, and two clean-up commands: Remove all cue markers and Remove all slides. In the desktop app the same commands are in the menu bar.</dd>
@@ -108,13 +112,14 @@
 <dt>📽 Projector</dt><dd>Opens the audience window (<kbd>⌘P</kbd> in the desktop app). While it is open the button reads <span class="ui">■ Close projector</span>; closing it during Show mode asks first.</dd>
 <dt>🎧 Follow</dt><dd>Reference recordings and the live countdown. While following it reads <span class="ui">🎧 Following</span>; while recording, <span class="ui">● Recording</span>.</dd>
 <dt>❔ Help</dt><dd>This guide. Type in its search box to find any topic.</dd>
-<dt>⚙︎ Settings</dt><dd>Text size, font, style, colours, alignment, vertical position, side margins, screen shape and cue circle size (<a href="#settings">Settings</a>).</dd>
+<dt>⚙︎ Settings</dt><dd>Text size, font, style, colours, alignment, vertical position, side margins, screen shape and cue circle size (see <a href="#settings">Making the titles look just right</a>).</dd>
 </dl>
 <p>Under the toolbar, the <b>hint line</b> always says what a click or a key will do at this moment — for example which cue the arrow keys would nudge, or the Show-mode keys and the current cue number.</p>
 </section>
 
 <section data-id="score" data-part="Guide">
-<h2>The score and its cues</h2>
+<h2>Cues: one click on the score</h2>
+<p class="lead">This is the heart of it. Click where a title should change — that's a cue. STQ numbers and orders them for you, so you never have to.</p>
 <h3>Opening a score</h3>
 <p>Open a PDF with <span class="ui">File ▾ → Open…</span>, by dropping it on the window, or with the button in the empty score area. A score opened into an existing project replaces the old score but keeps the slides. Several PDFs (for example one per act) can be combined — see <a href="#pdfs">Several PDFs</a>.</p>
 <p>The zoom buttons above the score (<span class="ui">−</span>, <span class="ui">Fit</span>, <span class="ui">+</span>) change the page size; <span class="ui">Fit</span> fits the page width to the panel.</p>
@@ -139,7 +144,8 @@
 </section>
 
 <section data-id="pdfs" data-part="Guide">
-<h2>Several PDFs (acts, numbers, inserts)</h2>
+<h2>Several acts? Several PDFs — no problem</h2>
+<p class="lead">Keep each act, number or insert as its own PDF and put them in order like cards on a table. Your cues and titles follow along.</p>
 <p>A score can be made of several PDFs — Act 1, Act 2, an inserted aria. Click <span class="ui">PDFs</span> above the score to see them as cards.</p>
 <figure class="shot"><img src="shots/pdfs.webp" alt="The PDFs panel with one card per PDF"></figure>
 <ul>
@@ -166,7 +172,8 @@
 </section>
 
 <section data-id="slides" data-part="Guide">
-<h2>Writing the supertitles</h2>
+<h2>Writing and polishing your titles</h2>
+<p class="lead">Your titles live on the right, one card per title. Typing, reordering and fixing them is as easy as in any notes app.</p>
 <figure class="shot"><img src="shots/slide-card.webp" alt="One slide card with its controls"></figure>
 <ol class="callouts">
 <li><b>Grip</b> — drag to move the slide.</li>
@@ -196,7 +203,8 @@
 </section>
 
 <section data-id="import" data-part="Guide">
-<h2>Importing titles</h2>
+<h2>Bringing in titles you already have</h2>
+<p class="lead">Already have the translation in a document or spreadsheet? Bring it all in at once — no retyping.</p>
 <p>Click <span class="ui">Import…</span> above the slides (or <span class="ui">File ▾ → Import slides</span>).</p>
 <figure class="shot"><img src="shots/import.webp" alt="The Import slides window"></figure>
 <ul>
@@ -211,7 +219,8 @@
 </section>
 
 <section data-id="flow" data-part="Guide">
-<h2>Flow mode: writing the libretto as one text</h2>
+<h2>Flow mode: paste the libretto, get the slides</h2>
+<p class="lead">The fastest way from a libretto to finished slides: paste the text and watch it lay itself out, slide by slide.</p>
 <p><span class="ui">¶ Flow</span> above the slides turns the slide list into one continuous text: type or paste the libretto and it fills the slides by itself, re-fitting as you pause.</p>
 <figure class="shot"><img src="shots/flow.webp" alt="Flow mode"></figure>
 <ul>
@@ -223,7 +232,8 @@
 </section>
 
 <section data-id="settings" data-part="Guide">
-<h2>Settings: how the titles look</h2>
+<h2>Making the titles look just right</h2>
+<p class="lead">A few sliders and menus, and the preview shows every change instantly — no guessing what the audience will see.</p>
 <figure class="shot"><img src="shots/settings.webp" alt="The Settings window"></figure>
 <dl>
 <dt>Text size</dt><dd>75 % to 100 %. 100 % is the built-in layout (titles about 137 pixels high on an HD projector); at smaller sizes the space gained is shared evenly between the margins and the line gaps. The size never changes with the amount of text.</dd>
@@ -240,7 +250,8 @@
 </section>
 
 <section data-id="connect" data-part="Guide">
-<h2>Connecting a projector</h2>
+<h2>The quickest way to connect your projector</h2>
+<p class="lead">One cable and one setting, and you're ready — here's how, step by step.</p>
 <p>The projector (or TV) must be a <b>second, extended screen</b> — not a mirror of yours, or the audience would see the whole app. A cable is the reliable way: HDMI, or USB-C to HDMI on laptops with only USB-C. Wireless casting lags and can drop out.</p>
 <h3>Mac</h3>
 <ol class="steps">
@@ -266,7 +277,8 @@
 </section>
 
 <section data-id="show" data-part="Guide">
-<h2>Running the show</h2>
+<h2>Show time! Running the titles live</h2>
+<p class="lead">The fun part: follow the score and press one key at each cue. STQ takes care of everything else.</p>
 <figure class="shot"><img src="shots/show.webp" alt="Show mode with the projector live"></figure>
 <p>Click <span class="ui">Show</span>. The slide text can no longer be changed, and the keyboard runs the titles:</p>
 <div class="keybox"><div class="kbt">⌨ Running the show (Show mode)</div><div class="kbr"><span class="k"><kbd>→</kbd> <kbd>Space</kbd> <kbd>Page Down</kbd></span><span>next title (a presentation clicker works too)</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>Page Up</kbd></span><span>previous title</span></div><div class="kbr"><span class="k"><kbd>B</kbd> or <kbd>.</kbd></span><span>blackout: the screen goes empty; press again to bring the title back</span></div><div class="kbr"><span class="k"><kbd>Home</kbd></span><span>back to the start, before cue 1 (empty screen)</span></div></div>
@@ -281,7 +293,8 @@
 </section>
 
 <section data-id="follow" data-part="Guide">
-<h2>Follow the music</h2>
+<h2>Let STQ follow the music with you</h2>
+<p class="lead">A friendly co-pilot for the booth: it listens along and tells you how many seconds until the next cue — you stay in charge.</p>
 <p>Follow listens through a microphone during the performance and counts down to the next cue — “Next cue 7 in 4.2 s”. It never changes a title by itself: cuing stays yours. It learns the music from a <b>reference run</b>, a recording of this production in which every cue has its moment. Each PDF of the score has its own reference run, so Act 1 and Act 2 can be recorded separately.</p>
 <figure class="shot"><img src="shots/follow-dialog.webp" alt="The Follow window"></figure>
 <h3>Making a reference run</h3>
@@ -310,7 +323,8 @@
 </section>
 
 <section data-id="files" data-part="Guide">
-<h2>Saving and opening</h2>
+<h2>Saving your work (and finding it again)</h2>
+<p class="lead">One file holds the whole production, so there is nothing to lose track of.</p>
 <p><span class="ui">💾 Save</span> (<kbd>⌘S</kbd>) and <span class="ui">File ▾ → Save As…</span> (<kbd>⇧⌘S</kbd>) write the project as one <code>.supertitles</code> file. Double-click it to open it in the desktop app, or open it with <span class="ui">File ▾ → Open…</span> (<kbd>⌘O</kbd>) or by dropping it on the window. Opening a project locks its cues and slide order, so nothing moves by accident.</p>
 <ul>
 <li>The app remembers your work between sessions (“Picked up where you left off”), but only a saved file can be moved to another computer or backed up.</li>
@@ -319,11 +333,12 @@
 <li><span class="ui">File ▾ → New project…</span> starts empty. <span class="ui">Remove all cue markers…</span> and <span class="ui">Remove all slides…</span> clear one side only.</li>
 </ul>
 <div class="keybox"><div class="kbt">⌨ Files</div><div class="kbr"><span class="k"><kbd>⌘S</kbd></span><span>save</span></div><div class="kbr"><span class="k"><kbd>⇧⌘S</kbd></span><span>save as</span></div><div class="kbr"><span class="k"><kbd>⌥⇧⌘S</kbd></span><span>save as PDF (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘O</kbd></span><span>open</span></div><div class="kbr"><span class="k"><kbd>⌘E</kbd></span><span>export printable score (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd></span><span>undo / redo</span></div></div>
-<p>The different files Supertitle Cuer can write are explained in the next chapter, <a href="#exports">Exports</a>.</p>
+<p>The different files Supertitle Cuer can write are explained in the next chapter, <a href="#exports">Sharing and printing</a>.</p>
 </section>
 
 <section data-id="exports" data-part="Guide">
-<h2>Exports: what each one gives you</h2>
+<h2>Sharing and printing: what each export gives you</h2>
+<p class="lead">Need a copy for the conductor, a printout for the booth, or a list for the translator? There's a one-click export for each.</p>
 <figure class="shot small"><img src="shots/file-menu.webp" alt="The File menu"></figure>
 <p>Everything is in the <span class="ui">File ▾</span> menu (and the desktop app's <span class="ui">File</span> menu). There are four kinds of file:</p>
 <table class="exports">
@@ -343,10 +358,14 @@
 <h3>Export slides (CSV)</h3>
 <p>All the titles as a CSV file: one title per line, each in double quotes, numbered by their order; line breaks inside a title are kept. It opens in Excel, Numbers or Google Sheets (with accents intact), so a translator can work on the titles. Bring it back with <span class="ui">Import…</span> (Format: CSV) — choose <span class="ui">Replace</span> to swap in the new version. The cues are not affected.</p>
 <p class="note">Recordings linked with <span class="ui">🔗 Link…</span> stay where they are on your computer; only the cue times and Follow's analysis of the music are saved with the project.</p>
+<h3>What if a linked recording moves?</h3>
+<p>Nothing is lost — Supertitle Cuer never relies on where a linked recording is stored. When you link a recording and cue along, two things are saved inside the project: the moment of each cue in that recording, and Follow's analysis of the music (a compact “fingerprint” taken while it played). Follow only ever uses those two, never the audio file itself; the project doesn't even keep the file's location, just its name. So you can move, rename or delete the recording, or open the project on another computer, and Follow works exactly the same.</p>
+<p>You only need the file again to cue along with it a second time — say, to fix a few cue times. Open it with <span class="ui">🔗 Link another recording…</span> from wherever it is now, jump to the passage, press the cue at the right moment and click <span class="ui">✓ Done</span>. Everything you don't replay keeps its timing and its analysis.</p>
 </section>
 
 <section data-id="keys" data-part="Reference">
-<h2>Keyboard shortcuts</h2>
+<h2>Handy keyboard shortcuts</h2>
+<p class="lead">All the shortcuts in one place — keep this page handy in the booth.</p>
 <p class="note">On Windows, use <kbd>Ctrl</kbd> where the Mac uses <kbd>⌘</kbd>.</p>
 <table class="keys">
 <tr><th colspan="2">Show mode</th></tr>
@@ -378,9 +397,10 @@
 </section>
 
 <section data-id="trouble" data-part="Reference">
-<h2>Troubleshooting</h2>
+<h2>Something not quite right? Quick fixes</h2>
+<p class="lead">Most hiccups have a one-click fix — STQ is rarely more than a click away from working again. Find yours below.</p>
 <dl>
-<dt>The projector shows my whole screen</dt><dd>The display is mirrored. Set it to extended (<a href="#connect">Connecting a projector</a>).</dd>
+<dt>The projector shows my whole screen</dt><dd>The display is mirrored. Set it to extended (see <a href="#connect">The quickest way to connect your projector</a>).</dd>
 <dt>The projector window opened on my own screen</dt><dd>Desktop app: <span class="ui">View → Move Projector to Second Screen</span>. Browser: drag it to the projector and press <kbd>F</kbd>.</dd>
 <dt>The arrow keys don't change the title</dt><dd>Make sure <span class="ui">Show</span> is selected and click once in the main window so it has the keyboard. In Edit mode the arrow keys nudge cues or step through slides instead.</dd>
 <dt>Clicking the score does nothing</dt><dd>The cues are locked (opening a project locks them). Click <span class="ui">🔒 Cues locked</span> above the score. In Show mode clicks select cues instead of adding them.</dd>
@@ -389,6 +409,6 @@
 <dt>A cue circle is dashed, or a slide says “no cue”</dt><dd>There are more cues than slides, or more slides than cues. Add the missing titles or cues.</dd>
 <dt>Flow mode is greyed out</dt><dd>It switches off once cues are on the score, so cued titles never move.</dd>
 <dt>Follow says “Waiting for the music…” all the time</dt><dd>The microphone hears nothing: check the meter in <span class="ui">🎧 Follow</span> and, on a Mac, <span class="ui">System Settings → Privacy &amp; Security → Microphone</span>.</dd>
-<dt>macOS says the app is damaged or can't be opened</dt><dd>Run the <code>xattr</code> command from <a href="#install">Installing</a>, or install with Homebrew.</dd>
+<dt>macOS says the app is damaged or can't be opened</dt><dd>Run the <code>xattr</code> command from <a href="#install">the install chapter</a>, or install with Homebrew.</dd>
 </dl>
 </section>

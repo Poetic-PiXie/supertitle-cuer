@@ -1,4 +1,4 @@
-# Supertitle Cuer
+# Supertitle Cuer (STQ)
 
 Cue opera supertitles from the score: number the cues on your PDF score, pair them with slides, and run them to a projector with one key.
 
