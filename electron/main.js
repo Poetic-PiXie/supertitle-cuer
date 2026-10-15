@@ -286,7 +286,7 @@ async function openGuidePdf() {
   return !err;
 }
 ipcMain.handle('save-guide-pdf', () => saveGuidePdf());
-ipcMain.on('set-theme', (_e, t) => { nativeTheme.themeSource = t === 'day' ? 'light' : t === 'auto' ? 'system' : 'dark'; });
+ipcMain.on('set-theme', (_e, t) => { nativeTheme.themeSource = t === 'day' ? 'light' : 'dark'; });
 ipcMain.handle('open-guide-pdf', () => openGuidePdf());
 // Follow: macOS asks the user once for the microphone (Windows uses its own privacy settings)
 ipcMain.handle('ask-mic', async () => {

@@ -24,7 +24,7 @@ def save(png, name, max_w=None):
     print('  ', name, im.size)
 
 BADGES_JS = """(list)=>{ document.querySelectorAll('.__badge').forEach(b=>b.remove());
-  for(const [sel, n, side] of list){ const el=document.querySelector(sel); if(!el) { console.log('no '+sel); continue; } const r=el.getBoundingClientRect();
+  for(let [sel, n, side] of list){ const el=document.querySelector(sel); if(!el) { console.log('no '+sel); continue; } let r=el.getBoundingClientRect(); if(side==='txt'){ const rg=document.createRange(); rg.selectNodeContents(el); r=rg.getBoundingClientRect(); side='l'; }
     const b=document.createElement('div'); b.className='__badge'; b.textContent=n;
     Object.assign(b.style,{position:'fixed', zIndex:99999, width:'26px', height:'26px', borderRadius:'50%', background:'#e5484d', color:'#fff',
       font:'700 14px/26px system-ui', textAlign:'center', boxShadow:'0 0 0 2px #fff, 0 2px 8px rgba(0,0,0,.6)', pointerEvents:'none'});
@@ -44,7 +44,7 @@ async def main():
         pg.on('dialog', lambda d: asyncio.ensure_future(d.accept()))
         pg.on('pageerror', lambda e: print('PAGE ERROR', e))
         await pg.goto(APP); await pg.evaluate("localStorage.clear(); indexedDB.deleteDatabase('supertitle-cuer')"); await pg.reload(); await pg.wait_for_timeout(600)
-        await pg.evaluate("(s)=>{ Object.assign(state.settings, s, {lockCues:false, lockOrder:false, flow:false, zoom:1}); applyAlign(); updateLocks(); updateOutput(); save(); }", proj['settings'])
+        await pg.evaluate("(s)=>{ Object.assign(state.settings, s, {lockCues:false, lockOrder:false, flow:false, view:'width', zoomPct:100}); applyAlign(); updateLocks(); updateOutput(); save(); }", proj['settings'])
         shot = lambda **kw: pg.screenshot(**kw)
         async def clip(sel, pad=0):
             r = await pg.evaluate("(s)=>{ const r=document.querySelector(s).getBoundingClientRect(); return [r.left,r.top,r.width,r.height]; }", sel)
@@ -82,20 +82,23 @@ async def main():
         for m in proj['markers'][:3]:
             await click_cue(m); await pg.wait_for_timeout(150)
         await toast_off(); save(await shot(), 'qs-5-cues', 1600)
-        await pg.evaluate("(ms)=>{ state.markers=ms.map(m=>({page:m.page,x:m.x,y:m.y})); sortMarkers(); changed(true); goTo(2,false); docName='Verdi Anvil Chorus.supertitles'; setDirty(false); state.settings.zoom=0.8; layoutPages(); }", proj['markers'])
+        await pg.evaluate("(ms)=>{ state.markers=ms.map(m=>({page:m.page,x:m.x,y:m.y})); sortMarkers(); changed(true); goTo(2,false); docName='Verdi Anvil Chorus.supertitles'; setDirty(false); state.settings.view='width'; layoutPages(); const z=curZoomPct(); state.settings.view='pct'; state.settings.zoomPct=Math.round(z*0.8); layoutPages(); }", proj['markers'])
         await pg.evaluate("document.querySelector('.page[data-page=\"2\"]').scrollIntoView({block:'start'})"); await pg.wait_for_timeout(700); await toast_off()
 
         print('overview')
         save(await shot(), 'overview', 1600)
-        await badges([['#fileMenu', 1, 'b'], ['#saveBtn', 2, 'b'], ['#modeSeg', 3, 'b'], ['#projBtn', 4, 'b'], ['#followBtn', 5, 'b'], ['#helpBtn', 6, 'b'],
-                      ['#settingsBtn', 7, 'b'], ['#counts', 8, 'b'], ['#hint', 9, 'l'], ['#lockCues', 10, 'l'], ['.pvhead', 11, 'l'], ['.slidehead', 12, 'l']])
+        await badges([['#fileMenu', 1, 'b'], ['#saveBtn', 2, 'b'], ['#modeSeg', 3, 'b'], ['#followBtn', 4, 'b'], ['#helpBtn', 5, 'b'],
+                      ['#settingsBtn', 6, 'b'], ['#themeSw', 7, 'b'], ['#counts', 8, 'b'], ['#hint', 9, 'txt'], ['#lockCues', 10, 'l'], ['#projBtn', 11, 'r'], ['.slidehead', 12, 'l']])
         save(await shot(), 'overview-callouts', 1600); await nobadges()
         save(await shot(clip={'x': 0, 'y': 0, 'width': W, 'height': 80}), 'toolbar', 1600)
-        r = await pg.evaluate("(()=>{ const a=document.getElementById('modeSeg').getBoundingClientRect(), b=document.getElementById('projBtn').getBoundingClientRect(); return [a.left-10,a.top-8,b.right-a.left+20,a.height+16]; })()")
-        save(await shot(clip={'x': r[0], 'y': r[1], 'width': r[2], 'height': r[3]}), 'modes-projector', 700)
+        # the Edit/Show switch and the Projector switch, side by side (they live in different places now)
+        ims = [Image.open(io.BytesIO(await shot(clip=await clip(sel, 5)))).convert('RGB') for sel in ('#modeSeg', '#projBtn')]
+        gap = 30; comp = Image.new('RGB', (ims[0].width + gap + ims[1].width, max(i.height for i in ims)), ims[0].getpixel((2, 2)))
+        comp.paste(ims[0], (0, (comp.height - ims[0].height)//2)); comp.paste(ims[1], (ims[0].width + gap, (comp.height - ims[1].height)//2))
+        b = io.BytesIO(); comp.save(b, 'PNG'); save(b.getvalue(), 'modes-projector', 700)
         save(await shot(clip=await clip('.scorebar' if await pg.query_selector('.scorebar') else '#lockCues', 6)), 'score-toolbar-x', 700)
         # score toolbar (the buttons above the score)
-        r = await pg.evaluate("(()=>{ const a=document.getElementById('lockCues').getBoundingClientRect(), b=[...document.querySelectorAll('#zoomCtl button')].pop().getBoundingClientRect(); return [a.left-8,a.top-8,b.right-a.left+16,a.height+16]; })()")
+        r = await pg.evaluate("(()=>{ const a=document.getElementById('lockCues').getBoundingClientRect(), b=document.querySelector('#zoomCtl .zbox').getBoundingClientRect(); return [a.left-8,a.top-8,b.right-a.left+16,a.height+16]; })()")
         save(await shot(clip={'x': r[0], 'y': r[1], 'width': r[2], 'height': r[3]}), 'score-toolbar', 800)
         os.remove(os.path.join(OUT, 'score-toolbar-x.webp'))
         # cues: current (gold), next (pulsing), a new one (blue ring), and a dashed one without a slide
@@ -153,6 +156,8 @@ tr:nth-child(4) td{outline:2px solid #1e7145;outline-offset:-2px}</style></body>
         print('dialogs')
         await pg.click('#settingsBtn'); await pg.wait_for_timeout(300)
         save(await shot(clip=await clip('#setDlg')), 'settings', 1100); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
+        await pg.evaluate("applyTheme('day'); goTo(5,false); document.activeElement && document.activeElement.blur(); document.querySelector('.slide[data-i=\"5\"]').scrollIntoView({block:'center'})"); await pg.mouse.move(5, H-5); await pg.wait_for_timeout(300); save(await shot(), 'theme-day', 1600)
+        await pg.evaluate("applyTheme('night')"); await pg.wait_for_timeout(200)
         await pg.click('#partsBtn'); await pg.wait_for_timeout(1200)
         save(await shot(clip=await clip('#partsDlg')), 'pdfs', 1300)
         await pg.hover('#tkLink'); await pg.wait_for_timeout(700)
