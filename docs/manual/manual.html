@@ -61,11 +61,24 @@
 <h2>Getting Supertitle Cuer onto your computer</h2>
 <p class="lead">A couple of minutes, once — then it's just there whenever you need it.</p>
 <h3>Mac</h3>
-<p>The easiest way is Homebrew, in the Terminal app:</p>
-<pre>brew install --cask poetic-pixie/tap/supertitle-cuer</pre>
-<p>Update later with <code>brew update &amp;&amp; brew upgrade --cask supertitle-cuer</code>. You can also download the <code>.dmg</code> from the Releases page of <b>github.com/Poetic-PiXie/supertitle-cuer</b> (<code>arm64</code> for Apple Silicon Macs, <code>x64</code> for Intel), drag the app to Applications and run once in Terminal:</p>
+<p>Installing on a Mac takes one line in the <b>Terminal</b> app. To open it, press <kbd>⌘Space</kbd>, type <code>Terminal</code> and press <kbd>Return</kbd>. Then follow the branch that fits you. Not sure if you have Homebrew? Type <code>brew --version</code> and press <kbd>Return</kbd>: a version number means yes, “command not found” means no.</p>
+<div class="fork">
+<div class="branch"><div class="bt">Ⓐ You already have Homebrew</div>
+<p>Copy this line into Terminal and press <kbd>Return</kbd>:</p>
+<pre>brew install --cask poetic-pixie/tap/supertitle-cuer &amp;&amp; xattr -dr com.apple.quarantine "/Applications/Supertitle Cuer.app"</pre>
+<p>It installs STQ and then clears the macOS quarantine flag, so the app opens straight away.</p>
+</div>
+<div class="branch"><div class="bt">Ⓑ You don't have Homebrew yet</div>
+<p>This one line installs Homebrew, then STQ, then clears the quarantine flag:</p>
+<pre>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" &amp;&amp; eval "$(/opt/homebrew/bin/brew shellenv 2&gt;/dev/null || /usr/local/bin/brew shellenv)" &amp;&amp; brew install --cask poetic-pixie/tap/supertitle-cuer &amp;&amp; xattr -dr com.apple.quarantine "/Applications/Supertitle Cuer.app"</pre>
+<p>It asks for your Mac's password (nothing appears as you type — that's normal) and may take a few minutes the first time. When Homebrew finishes it shows “Next steps”: do them too, so that <code>brew</code> also works in new Terminal windows later.</p>
+<p>Rather not install Homebrew? Download the <code>.dmg</code> from the Releases page of <b>github.com/Poetic-PiXie/supertitle-cuer</b> (<code>arm64</code> for Apple Silicon Macs — M1 and later — or <code>x64</code> for Intel), drag the app to Applications, and run just the last part in Terminal:</p>
 <pre>xattr -dr com.apple.quarantine "/Applications/Supertitle Cuer.app"</pre>
-<p class="note">The app isn't signed with an Apple Developer ID, so macOS blocks it until that quarantine flag is removed. Homebrew does it for you.</p>
+</div>
+</div>
+<p class="note">Why the <code>xattr</code> part? STQ isn't signed with an Apple Developer ID, so macOS blocks it as “damaged” or “can't be opened” until that quarantine flag is removed. Running it when it isn't needed does no harm.</p>
+<p><b>Updating later</b> (Homebrew):</p>
+<pre>brew update &amp;&amp; brew upgrade --cask supertitle-cuer</pre>
 <h3>Windows</h3>
 <p>Download <code>Supertitle_Cuer-Setup-….exe</code> from the Releases page and run it. If Windows shows “Windows protected your PC”, click <span class="ui">More info → Run anyway</span>.</p>
 <h3>No installation: the single HTML file</h3>

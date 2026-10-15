@@ -45,7 +45,7 @@ a { color: #b4740b; text-decoration: none; }
 .ui { font-weight: 700; white-space: nowrap; }
 kbd { display: inline-block; min-width: 1.3em; text-align: center; font: 8.5pt/1.5 Menlo, Consolas, monospace; background: #f2f3f5; border: .25mm solid #c8cbd2; border-bottom-width: .6mm; border-radius: 1.2mm; padding: 0 1.2mm; }
 code, pre { font: 9pt Menlo, Consolas, monospace; background: #f4f5f7; border: .2mm solid #dcdfe4; border-radius: 1mm; }
-code { padding: 0 1mm; }
+code { padding: 0 1mm; white-space: nowrap; }
 pre { padding: 2mm 3mm; white-space: pre-wrap; }
 figure { margin: 3mm 0 4mm; page-break-inside: avoid; }
 figure img { max-width: 100%; max-height: 120mm; border-radius: 1.5mm; border: .2mm solid #bbb; display: block; }
@@ -70,6 +70,9 @@ tr { page-break-inside: avoid; }
 .lockbox { background: #fdf3df; border: .3mm solid #e2b85c; border-radius: 2mm; padding: 2.5mm 3.5mm; margin: 3mm 0; page-break-inside: avoid; }
 figure.logo img { max-width: 62mm; border: 0; border-radius: 4mm; }
 .keep { page-break-inside: avoid; }
+.branch { border: .3mm solid #ccc; border-left: 1.2mm solid #f2b134; border-radius: 2mm; padding: 2mm 4mm; margin: 3mm 0; page-break-inside: avoid; }
+.branch .bt { font-weight: 700; font-size: 11pt; }
+pre { word-break: break-all; }
 .tipsbox { background: #eef8f0; border: .3mm solid #8fcf9f; border-radius: 2mm; padding: 2.5mm 4mm; margin: 4mm 0; page-break-inside: avoid; }
 .tipsbox .tbt { font-size: 8pt; font-weight: 700; color: #2a7a45; text-transform: uppercase; letter-spacing: .07em; }
 .tipsbox ul { margin: 1.5mm 0 0; padding-left: 5mm; }

@@ -22,13 +22,21 @@ Cue opera supertitles from the score: number the cues on your PDF score, pair th
 
 ## Install
 
-**Mac (Homebrew)**
+**Mac** — one line in Terminal.
+
+*If you already have Homebrew:*
 
 ```
-brew install --cask poetic-pixie/tap/supertitle-cuer
+brew install --cask poetic-pixie/tap/supertitle-cuer && xattr -dr com.apple.quarantine "/Applications/Supertitle Cuer.app"
 ```
 
-Updates: `brew upgrade --cask supertitle-cuer`
+*If you don't have Homebrew yet* (installs Homebrew, then the app):
+
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)" && brew install --cask poetic-pixie/tap/supertitle-cuer && xattr -dr com.apple.quarantine "/Applications/Supertitle Cuer.app"
+```
+
+Updates: `brew update && brew upgrade --cask supertitle-cuer`
 
 Or download the `.dmg` from [Releases](https://github.com/poetic-pixie/supertitle-cuer/releases) (`arm64` for Apple Silicon, `x64` for Intel Macs), drag the app to Applications, and run once in Terminal:
 
@@ -36,7 +44,7 @@ Or download the `.dmg` from [Releases](https://github.com/poetic-pixie/supertitl
 xattr -dr com.apple.quarantine "/Applications/Supertitle Cuer.app"
 ```
 
-(The app isn't signed with an Apple Developer ID, so macOS blocks it until that quarantine flag is removed. The Homebrew cask does this for you.)
+(The app isn't signed with an Apple Developer ID, so macOS blocks it until that quarantine flag is removed.)
 
 **Windows**
 
