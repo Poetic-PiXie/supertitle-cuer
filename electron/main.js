@@ -296,6 +296,7 @@ async function openGuidePdf() {
 ipcMain.handle('save-guide-pdf', () => saveGuidePdf());
 // Printing through the system's own print dialog (page range, copies, printer, preview, Save as PDF) —
 // the page (a printable score or the guide) is laid out in a hidden window first.
+ipcMain.handle('guide-pdf-bytes', () => fs.readFileSync(GUIDE_PDF));
 ipcMain.handle('print-html', async (_e, html, title) => {
   const f = path.join(app.getPath('temp'), `stq-print-${Date.now()}.html`);
   fs.writeFileSync(f, html);

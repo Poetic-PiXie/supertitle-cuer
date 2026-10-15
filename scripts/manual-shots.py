@@ -147,6 +147,10 @@ async def main():
         hh = max(pa.height, pb.height); comp = Image.new('RGB', (pa.width + pb.width + 40, hh + 40), (60, 62, 68))
         comp.paste(pa, (14, 20)); comp.paste(pb, (pa.width + 26, 20))
         b = io.BytesIO(); comp.save(b, 'PNG'); save(b.getvalue(), 'exports', 1400)
+        await pg.evaluate("buildPrintablePdf().then(b=>openPrintPreview(b, 'score with cues', 'Verdi Anvil Chorus - printable'))"); await pg.wait_for_timeout(1500)
+        await pg.fill('#ppRange', '2–4, 8'); await pg.click('#ppThumbs .ppth[data-n="3"]'); await pg.wait_for_timeout(1500)
+        save(await shot(clip=await clip('#printDlg')), 'print-preview', 1300)
+        await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
 
         print('spreadsheet')
         sp = await ctx.new_page()
