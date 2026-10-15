@@ -60,7 +60,7 @@ li.fig { list-style: none; margin-left: -5mm; }
 .tip, .note { background: #fbf6ea; border-left: .9mm solid #f2b134; padding: 2mm 3.5mm; border-radius: 0 1.5mm 1.5mm 0; page-break-inside: avoid; }
 .note { background: #f3f4f6; border-left-color: #9aa0aa; }
 table.keys { border-collapse: collapse; margin: 2mm 0; }
-table.keys td, table.keys th { padding: 1.3mm 5mm 1.3mm 0; vertical-align: top; text-align: left; border-bottom: .2mm solid #eee; }
+table.keys td, table.keys th { padding: 0.95mm 5mm 0.95mm 0; vertical-align: top; text-align: left; border-bottom: .2mm solid #eee; }
 table.keys th { padding-top: 4mm; color: #888; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .07em; }
 tr { page-break-inside: avoid; }
 .keybox { background: #eef4ff; border: .3mm solid #9dbbe8; border-radius: 2mm; padding: 2mm 3.5mm; margin: 3mm 0 4mm; page-break-inside: avoid; }
@@ -69,6 +69,10 @@ tr { page-break-inside: avoid; }
 .keybox .kbr:first-of-type { border-top: 0; }
 .lockbox { background: #fdf3df; border: .3mm solid #e2b85c; border-radius: 2mm; padding: 2.5mm 3.5mm; margin: 3mm 0; page-break-inside: avoid; }
 figure.logo img { max-width: 62mm; border: 0; border-radius: 4mm; }
+.tipsbox { background: #eef8f0; border: .3mm solid #8fcf9f; border-radius: 2mm; padding: 2.5mm 4mm; margin: 4mm 0; page-break-inside: avoid; }
+.tipsbox .tbt { font-size: 8pt; font-weight: 700; color: #2a7a45; text-transform: uppercase; letter-spacing: .07em; }
+.tipsbox ul { margin: 1.5mm 0 0; padding-left: 5mm; }
+.tipsbox li { margin: 1.2mm 0; }
 
 table.exports { border-collapse: collapse; margin: 3mm 0; font-size: 9.5pt; }
 table.exports th, table.exports td { border: .25mm solid #ccc; padding: 1.5mm 2.5mm; text-align: left; vertical-align: top; }
