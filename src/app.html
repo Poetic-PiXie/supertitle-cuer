@@ -312,7 +312,7 @@ body.swapped .swapbtn::after{left:auto;right:0}
 #slides{position:relative}
 .slide .grip{white-space:nowrap;letter-spacing:-3px;text-indent:-2px;cursor:grab;color:#5b5f6b;font-size:13px;line-height:1;padding-top:5px;user-select:none;text-align:center;touch-action:none}
 .slide .grip:hover{color:var(--text)}
-body.order-locked .slide .grip, body.show .slide .grip{visibility:hidden}
+body.order-locked .slide .grip, body.show .slide .grip{display:none}
 body.order-locked .slide .tools [data-a=up], body.order-locked .slide .tools [data-a=down], body.order-locked .slide .tools [data-a=add], body.order-locked .slide .tools [data-a=del]{display:none}
 .slide.dragging{z-index:10;box-shadow:0 10px 30px rgba(0,0,0,.6);opacity:.95;border-color:var(--accent)}
 .dropline{position:absolute;left:12px;right:12px;height:3px;border-radius:2px;background:var(--accent);pointer-events:none;z-index:11}
@@ -375,7 +375,8 @@ body.flow.edit .flowhelp{display:block}
 .slide.nocue .num{color:#6a6d78}
 .slide.nocue.cur{border-style:solid}
 body.show .slide .tools{display:none}
-body.show .slide, body.order-locked .slide{grid-template-columns:14px 34px 1fr auto}
+body.show .slide, body.order-locked .slide{grid-template-columns:34px 1fr auto}
+body.show .slide textarea, body.show .slide .mirror, body.order-locked .slide textarea, body.order-locked .slide .mirror{grid-column:2}
 .addrow{display:flex;gap:6px;margin-top:4px}
 .addrow button{flex:1;border-style:dashed;background:transparent;color:var(--dim)}
 /* dialogs */
