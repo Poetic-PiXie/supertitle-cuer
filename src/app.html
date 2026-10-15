@@ -276,9 +276,22 @@ body.swapped #score{border-right:0}
 .swapbtn svg{width:18px;height:12px;display:block}
 .swapbtn::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 8px);width:240px;padding:9px 11px;border-radius:8px;background:#000;border:1px solid var(--line);color:var(--text);font-weight:400;font-size:12.5px;line-height:1.4;text-align:left;text-transform:none;letter-spacing:0;white-space:normal;box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px);transition:opacity .15s,transform .15s;pointer-events:none;z-index:50}
 body.swapped .swapbtn{order:3;margin-left:auto}
-.pvhead .pvlbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(50% - 120px)}
-.pvhead #projBtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
-.pvhead #projBtn:active:not(:disabled){transform:translate(-50%,calc(-50% + .5px))}
+.pvhead{container-type:inline-size}
+.pvhead .pvlbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(50% - 100px)}
+.pvhead .pvctl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:8px;align-items:center}
+.pvhead.live .pvlbl{max-width:calc(50% - 170px)}
+@container (max-width:560px){ .pvhead.live .pvlbl{display:none} }
+.pvctl .projsw{width:148px;justify-content:space-between}
+/* blackout: grey pill, red glow while the screen is blacked out */
+.bobtn{width:148px;height:32px;border-radius:999px;padding:0 14px;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--soft)}
+.bobtn.on{border-color:#e5484d;color:#ff8a85;background:linear-gradient(180deg,var(--lk-a),var(--lk-b));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 12px rgba(229,72,77,.5),0 1px 2px rgba(0,0,0,.4)}
+.bobtn.on:hover:not(:disabled){border-color:#ff6b66;color:#ffb0ac;background:linear-gradient(180deg,var(--lk-a),var(--lk-b));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 20px rgba(229,72,77,.7),0 1px 2px rgba(0,0,0,.4)}
+body.day .bobtn.on{color:#c42b23}
+/* spell check on: purple glow */
+#spellBtn.on{border-color:#8b5cf6;color:#c9b6ff;background:linear-gradient(180deg,rgba(62,42,104,.96),rgba(44,30,76,.96));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 12px rgba(139,92,246,.5),0 1px 2px rgba(0,0,0,.4)}
+#spellBtn.on:hover:not(:disabled){border-color:#a78bfa;color:#e0d4ff;background:linear-gradient(180deg,rgba(72,50,120,.96),rgba(50,34,86,.96));box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 0 20px rgba(139,92,246,.7),0 1px 2px rgba(0,0,0,.4)}
+body.day #spellBtn.on{color:#6d3ae0;border-color:#8b5cf6;background:linear-gradient(180deg,#f7f2ff,#ece3ff)}
+body.day #spellBtn.on:hover:not(:disabled){color:#5b2bc9;background:linear-gradient(180deg,#faf7ff,#f1e9ff)}
 body.swapped .swapbtn::after{left:auto;right:0}
 .swapbtn:hover::after{opacity:1;transform:none;transition-delay:.35s}
 .dot{width:8px;height:8px;border-radius:50%;background:#555}
@@ -608,7 +621,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   </section>
   <aside>
     <div class="pvwrap">
-      <div class="pvhead"><button type="button" class="swapbtn" id="swapBtn" aria-label="Swap sides" data-tip=""><svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h14M5.5 2.5 2 6l3.5 3.5M12.5 2.5 16 6l-3.5 3.5"/></svg></button><span class="pvlbl">Audience sees</span><button type="button" id="projBtn" class="projsw" role="switch" aria-checked="false" title="Open the audience window — the one that goes on the projector"><span class="pjl">Projector</span><span class="pjt"><span class="pjk"></span></span></button></div>
+      <div class="pvhead"><button type="button" class="swapbtn" id="swapBtn" aria-label="Swap sides" data-tip=""><svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h14M5.5 2.5 2 6l3.5 3.5M12.5 2.5 16 6l-3.5 3.5"/></svg></button><span class="pvlbl">Audience sees</span><div class="pvctl"><button type="button" id="boBtn" class="bobtn" hidden aria-pressed="false" title="Blackout: empty the projector screen right now (key B). Click again to bring the title back.">Blackout</button><button type="button" id="projBtn" class="projsw" role="switch" aria-checked="false" title="Open the audience window — the one that goes on the projector"><span class="pjl">Projector</span><span class="pjt"><span class="pjk"></span></span></button></div></div>
       <div class="screen" id="pv"><div class="stage"><div class="stext" id="pvText"></div></div><div class="pvguide" id="pvGuide" hidden></div><div class="bo">BLACKOUT</div></div>
       <div class="nextline" id="nextLine"></div>
       <div class="followbar" id="followBar" hidden><div class="fbtext" id="fbText"></div><div class="fbtrack"><div class="fbfill" id="fbFill"></div></div></div>
@@ -985,6 +998,7 @@ slidesEl.addEventListener('focusin', e=>{ if(e.target.tagName==='TEXTAREA' && mo
 slidesEl.addEventListener('focusout', e=>{ const t=e.target; if(t.tagName==='TEXTAREA' && t._before!==undefined && t._before!==t.value){ const i=+t.closest('.slide').dataset.i; undoStack.push(snapState(state.slides.map((s,j)=>j===i?{...s, text:t._before}:s))); redoStack=[]; } });
 slidesEl.addEventListener('click', e=>{
   if(e.shiftKey) return; // handled in mousedown (range selection)
+  if(mode==='show' && !e.target.closest('button')){ const card=e.target.closest('.slide'); if(card){ const i=+card.dataset.i; if(i!==cur) goTo(i); return; } }   // Show: a click jumps to that title
   const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
   const b=e.target.closest('button[data-a]'); if(!b) return;
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : (b.dataset.i!=null ? +b.dataset.i : -1);
@@ -1150,7 +1164,7 @@ function caretLine(ta){ // which visual line the caret is on, and how many lines
 }
 slidesEl.addEventListener('keydown', e=>{
   if(e.target.tagName!=='TEXTAREA' || mode!=='edit' || (e.key!=='ArrowUp' && e.key!=='ArrowDown') || e.shiftKey || e.altKey || e.metaKey || e.ctrlKey) return;
-  const ta=e.target, i=+ta.closest('.slide').dataset.i; if(ta.selectionStart!==ta.selectionEnd) return;
+  const ta=e.target, i=+ta.closest('.slide').dataset.i; if(ta.readOnly || ta.selectionStart!==ta.selectionEnd) return;   // locked slides: the list-wide ↑ ↓ below takes over
   const {line, lines}=caretLine(ta), up=e.key==='ArrowUp';
   if(up ? line>0 : line<lines-1) return;               // not on the edge line: normal caret movement
   const j=i+(up?-1:1), nt=document.querySelector(`.slide[data-i="${j}"] textarea`); if(!nt) return;
@@ -1307,6 +1321,9 @@ function updateOutput(){
   const n = state.slides[cur+1];
   $('#nextLine').innerHTML = cur+1<=lastIndex() ? `Next <span class="kbd">→</span> <b>${cur+2}</b>: ${n? esc(n.text.replace(/[|\n]+/g,' / ')) || '<i>(blank)</i>' : '<i>(no slide)</i>'}` : (cur>=0? 'End of cues' : '');
   if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; placeProjStage(d); const pt=d.getElementById('t'); pt.textContent=t; fit(d.getElementById('stage'), pt); }catch(e){} }
+  { const bo=$('#boBtn'), on=projOpen(); bo.hidden=!on; bo.classList.toggle('on', !!blackout); bo.setAttribute('aria-pressed', !!blackout); bo.textContent = blackout ? 'Blackout on' : 'Blackout';
+    const tt = blackout ? 'The screen is blacked out — click (or press B) to bring the title back' : 'Blackout: empty the projector screen right now (key B). Click again to bring the title back'; if(bo.dataset.ttl!=null) bo.dataset.ttl=tt; else bo.title=tt;
+    document.querySelector('.pvhead').classList.toggle('live', on); }
   const pb=$('#projBtn'); pb.classList.toggle('live', projOpen()); pb.setAttribute('aria-checked', projOpen()); pb.querySelector('.pjl').textContent = projOpen() ? 'Projector on' : 'Projector off';
   { const tt=projOpen() ? 'Close the audience window (the projector goes dark)' : 'Open the audience window — the one that goes on the projector'; if(pb.dataset.ttl!=null) pb.dataset.ttl=tt; else pb.title=tt; }
 }
@@ -1412,7 +1429,7 @@ let kbZone='score';
 document.addEventListener('pointerdown', e=>{ if(e.target.closest('aside')) kbZone='slides'; else if(e.target.closest('#score')) kbZone='score'; }, true);
 function handleKey(k, e){
   const stop=()=>e && e.preventDefault();
-  if(e && mode==='edit' && kbZone==='slides' && (k==='ArrowUp'||k==='ArrowDown') && !e.shiftKey){
+  if(e && kbZone==='slides' && (k==='ArrowUp'||k==='ArrowDown') && !e.shiftKey){
     stop(); const n=lastIndex()+1; if(!n) return;
     const to = cur<0 ? (k==='ArrowDown' ? 0 : n-1) : Math.max(0, Math.min(n-1, cur+(k==='ArrowDown'?1:-1)));
     clearPicks(); pickAnchor=to; goTo(to);
@@ -1868,6 +1885,7 @@ addEventListener('drop', async e=>{ e.preventDefault(); dragN=0; $('#drop').clas
   else if(/\.(csv|txt|tsv)$/i.test(f.name)) { if(openImport()) loadImportFile(f); }
   else if(/\.pdf$/i.test(f.name)) openAny(f, hp ? await hp : null);
 });
+$('#boBtn').onclick=()=>toggleBlackout();
 $('#projBtn').onclick=()=> projOpen() ? closeProjector() : openProjector();
 function closeProjector(){
   if(!projOpen()) return;

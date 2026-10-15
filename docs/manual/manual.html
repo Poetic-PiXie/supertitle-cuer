@@ -237,7 +237,7 @@
 <li><b>Select</b> a slide by clicking it; the projector and the score follow. After clicking in the list, <kbd>↑</kbd> <kbd>↓</kbd> step through the slides. While typing, <kbd>↑</kbd> on a slide's first line and <kbd>↓</kbd> on its last line carry on into the neighbouring slide.</li>
 <li><b>Several at once:</b> click one slide, then <kbd>Shift</kbd>-click another to select the range. <span class="ui">▲</span> / <span class="ui">▼</span> (on a selected card or in the selection bar) or dragging one of them moves the whole block; <span class="ui">🗑 Delete…</span> deletes them together. Any other click ends the selection.</li>
 <li class="fig"><figure class="shot"><img src="shots/slides-range.webp" alt="Three slides selected as a block, with the selection bar"></figure></li>
-<li><b>Lock the slides</b> with <span class="ui">🔓 Slides unlocked</span> above the list. While it is red and reads <span class="ui">🔒 Slides locked</span>, nothing can change by accident: no typing, no moving, adding, deleting or importing. You can still click a slide to select it. Click the button again to unlock.</li>
+<li><b>Lock the slides</b> with <span class="ui">🔓 Slides unlocked</span> above the list. While it is red and reads <span class="ui">🔒 Slides locked</span>, nothing can change by accident: no typing, no moving, adding, deleting or importing. You can still look through them: click a slide to see its text in <span class="ui">Audience sees</span>, and use <kbd>↑</kbd> <kbd>↓</kbd> to step through the list. Click the button again to unlock.</li>
 </ul>
 <div class="keybox"><div class="kbt">⌨ Slides</div><div class="kbr"><span class="k"><kbd>↑</kbd> <kbd>↓</kbd></span><span>previous / next slide — after clicking in the slide list</span></div><div class="kbr"><span class="k"><kbd>↑</kbd> on the first line, <kbd>↓</kbd> on the last</span><span>while typing: carry on into the neighbouring slide</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>-click</span><span>select a range of slides</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd></span><span>delete the selected range (asks first)</span></div><div class="kbr"><span class="k"><kbd>Esc</kbd></span><span>stop typing / clear the selection</span></div><div class="kbr"><span class="k">right-click a word</span><span>spelling suggestions, synonyms</span></div></div>
 <figure class="shot"><img src="shots/slides-states.webp" alt="A slide that is too long, and slides without cues"></figure>
@@ -248,7 +248,7 @@
 <li><b>Striped, “no cue”</b> — there are more slides than cues; place a cue on the score for it.</li>
 </ul>
 <h3>Spelling and synonyms</h3>
-<p>Misspelled words get a red underline while you edit. Right-click one for suggested corrections, <span class="ui">Learn</span> (add it to your dictionary) or <span class="ui">Ignore Spelling</span>. In the desktop app, right-clicking a selected word also offers English <span class="ui">Synonyms</span>, and on a Mac <span class="ui">Look Up</span> opens the system dictionary and thesaurus. <span class="ui">✓abc</span> above the slides (or <span class="ui">Edit → Check Spelling While Typing</span>) switches checking off and on. On Windows, choose the language in <span class="ui">Settings → Spelling language</span>; a Mac uses its own languages.</p>
+<p>Misspelled words get a red underline while you edit. Right-click one for suggested corrections, <span class="ui">Learn</span> (add it to your dictionary) or <span class="ui">Ignore Spelling</span>. In the desktop app, right-clicking a selected word also offers English <span class="ui">Synonyms</span>, and on a Mac <span class="ui">Look Up</span> opens the system dictionary and thesaurus. <span class="ui">✓abc</span> above the slides (or <span class="ui">Edit → Check Spelling While Typing</span>) switches checking off and on; while it is on, the button glows purple. On Windows, choose the language in <span class="ui">Settings → Spelling language</span>; a Mac uses its own languages.</p>
 </section>
 
 <section data-id="import" data-part="Guide">
@@ -351,7 +351,9 @@
 <h2>Show time! Running the titles live</h2>
 <p class="lead">The fun part: follow the score and press one key at each cue. STQ takes care of everything else.</p>
 <figure class="shot"><img src="shots/show.webp" alt="Show mode with the projector live"></figure>
-<p>Click <span class="ui">Show</span>. The slide text can no longer be changed, and the keyboard runs the titles:</p>
+<p>Click <span class="ui">Show</span>. The slide text can no longer be changed, and the keyboard runs the titles. To jump somewhere else, click a slide in the list, or use <kbd>↑</kbd> <kbd>↓</kbd> after clicking in the list.</p>
+<p>While the projector is on, a <span class="ui">Blackout</span> button sits next to the Projector switch. Click it (or press <kbd>B</kbd>) and the audience screen goes empty at once; it glows red until you click it again to bring the title back.</p>
+<figure class="shot small"><img src="shots/blackout.webp" alt="The Blackout button next to the Projector switch, glowing red"><figcaption>With the projector on, <span class="ui">Blackout</span> and the <span class="ui">Projector</span> switch sit side by side above the preview. Here the blackout is on: it glows red, and the preview shows what the audience sees — nothing.</figcaption></figure>
 <div class="keybox"><div class="kbt">⌨ Running the show (Show mode)</div><div class="kbr"><span class="k"><kbd>→</kbd> <kbd>Space</kbd> <kbd>Page Down</kbd></span><span>next title (a presentation clicker works too)</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>Page Up</kbd></span><span>previous title</span></div><div class="kbr"><span class="k"><kbd>B</kbd> or <kbd>.</kbd></span><span>blackout: the screen goes empty; press again to bring the title back</span></div><div class="kbr"><span class="k"><kbd>Home</kbd></span><span>back to the start, before cue 1 (empty screen)</span></div></div>
 <ul>
 <li>The current cue glows orange on the score and the next one pulses; the score scrolls along by itself.</li>
@@ -454,6 +456,7 @@
 <p class="note">On Windows, use <kbd>Ctrl</kbd> where the Mac uses <kbd>⌘</kbd>.</p>
 <table class="keys">
 <tr><th colspan="2">Show mode</th></tr>
+<tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Previous / next slide (after clicking the slide list)</td></tr>
 <tr><td><kbd>→</kbd> <kbd>Space</kbd> <kbd>Page Down</kbd></td><td>Next title</td></tr>
 <tr><td><kbd>←</kbd> <kbd>Page Up</kbd></td><td>Previous title</td></tr>
 <tr><td><kbd>B</kbd> <kbd>.</kbd></td><td>Blackout on / off</td></tr>

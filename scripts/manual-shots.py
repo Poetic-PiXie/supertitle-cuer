@@ -170,6 +170,10 @@ tr:nth-child(4) td{outline:2px solid #1e7145;outline-offset:-2px}</style></body>
         pj = await pi.value; await pj.set_viewport_size({'width': 1280, 'height': 720}); await pg.wait_for_timeout(500)
         await pg.evaluate("setMode('show'); goTo(5,false); scrollToCue()"); await pg.wait_for_timeout(1500); await toast_off()
         save(await shot(), 'show', 1600)
+        await pg.evaluate("toggleBlackout()"); await pg.mouse.move(5, H-5); await pg.wait_for_timeout(400); await toast_off()
+        r = await pg.evaluate("(()=>{ const a=document.querySelector('.pvwrap').getBoundingClientRect(); return [a.left, a.top, a.width, Math.min(a.height, 200)]; })()")
+        save(await shot(clip={'x': r[0], 'y': r[1], 'width': r[2], 'height': r[3]}), 'blackout', 800)
+        await pg.evaluate("toggleBlackout()"); await pg.wait_for_timeout(300); await toast_off()
         await pj.evaluate("document.getElementById('hint').style.display='none'")
         save(await pj.screenshot(), 'projector', 1280)
         # the three screen shapes, as the preview shows them with the projector on
