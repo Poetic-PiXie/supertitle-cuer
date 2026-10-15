@@ -4,7 +4,7 @@
 // opening .supertitles files from Finder/Explorer, saving without prompts,
 // putting the projector window on the second screen, and keeping the
 // computer awake during a show.
-const { app, BrowserWindow, Menu, dialog, ipcMain, powerSaveBlocker, screen, shell, systemPreferences } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, powerSaveBlocker, screen, shell, systemPreferences, nativeTheme } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
@@ -286,6 +286,7 @@ async function openGuidePdf() {
   return !err;
 }
 ipcMain.handle('save-guide-pdf', () => saveGuidePdf());
+ipcMain.on('set-theme', (_e, t) => { nativeTheme.themeSource = t === 'day' ? 'light' : t === 'auto' ? 'system' : 'dark'; });
 ipcMain.handle('open-guide-pdf', () => openGuidePdf());
 // Follow: macOS asks the user once for the microphone (Windows uses its own privacy settings)
 ipcMain.handle('ask-mic', async () => {

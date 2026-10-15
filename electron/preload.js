@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('stc', {
   askMic: () => ipcRenderer.invoke('ask-mic'),
   saveGuidePdf: () => ipcRenderer.invoke('save-guide-pdf'),
   openGuidePdf: () => ipcRenderer.invoke('open-guide-pdf'),
+  setTheme: (t) => ipcRenderer.send('set-theme', t),
   spellState: (on) => ipcRenderer.send('spell-state', !!on),
   spellLanguages: () => ipcRenderer.invoke('spell-languages'),
   setSpellLanguage: (lang) => ipcRenderer.invoke('set-spell-language', lang),
