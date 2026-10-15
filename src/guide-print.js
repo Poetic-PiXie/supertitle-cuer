@@ -6,7 +6,7 @@ const STCGuide = (() => {
 * { box-sizing: border-box; }
 body { font: 10.5pt/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif; color: #1d1f24; margin: 0; }
 .cover { height: 250mm; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; page-break-after: always; }
-.cover img.icon { width: 34mm; height: 34mm; border-radius: 7mm; margin-bottom: 10mm; }
+.cover img.icon { width: 42mm; height: 42mm; margin: 0 0 6mm -4mm; }
 .cover h1 { font-size: 34pt; margin: 0; letter-spacing: -.01em; }
 .cover .sub { font-size: 16pt; color: #555; margin: 3mm 0 14mm; }
 .cover .by { font-size: 13pt; }
