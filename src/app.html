@@ -47,7 +47,6 @@ body.day .slide.picked .num{color:#2f5fb3}
 body.day .flowhelp{background:#eef1fd;border-color:#b8c3ef;color:#2c3a6e}
 body.day #flowBtn.on{color:#3b54b8;border-color:#7f9cf5;background:#eef1fd}
 body.day .addBelowRow button{border-color:#f0a072;color:#b8520e}
-body.day .lockbtn.unlocked,body.day .zoom .lockbtn.unlocked{color:#b0500c}
 body.day .docname.dirty::after{color:#c4600c}
 body.day .manual .keybox{background:#eef3fd;border-color:#b9cdf0}
 body.day .manual .keybox .kbt{color:#2f5fb3}
@@ -83,7 +82,7 @@ header .brand{position:relative;display:inline-flex;align-items:baseline;gap:7px
 header .brand .bn{font-size:21px;font-weight:800;letter-spacing:.03em;color:var(--strong);white-space:nowrap}
 header .brand .bnf{font-size:14px;font-weight:600;letter-spacing:0;color:var(--soft)}
 header .brand .by{font-size:13px;color:var(--dim);font-style:italic;white-space:nowrap}
-header .brand .by b{font-style:normal;font-weight:700;background:linear-gradient(90deg,#ff5f6d,#ffc371,#7bed9f,#70a1ff,#c56cf0);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .brand .by b{font-style:normal;font-weight:700;background:linear-gradient(90deg,#ff5f6d,#ffc371,#7bed9f,#70a1ff,#c56cf0);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 .6px rgba(0,0,0,.95)) drop-shadow(0 0 .4px rgba(0,0,0,.7))}
 .pixiePop{position:absolute;top:calc(100% + 12px);left:0;width:340px;height:340px;border-radius:16px;overflow:hidden;background:#000;
   box-shadow:0 18px 50px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.08),0 0 40px rgba(197,108,240,.25);
   opacity:0;transform:translateY(-8px) scale(.94);transform-origin:top left;transition:opacity .18s ease,transform .22s ease;pointer-events:none;z-index:300}
@@ -248,7 +247,6 @@ body.edit .mk{cursor:grab}
 .zoom{position:sticky;top:10px;height:0;z-index:5;display:flex;justify-content:flex-end;gap:4px;padding-right:14px}
 .zoom button{height:28px}
 .zoom .lockbtn{height:30px;border-radius:999px;padding:0 12px;border-color:var(--btn-line);background:linear-gradient(180deg,var(--float-a),var(--float-b));box-shadow:var(--float-sh)}
-.zoom .lockbtn.unlocked{border-color:var(--accent);background:linear-gradient(180deg,var(--unl-a),var(--unl-b))}
 .zoom button{padding:3px 9px;background:rgba(30,32,38,.9)}
 .zoom .zbox{display:flex;align-items:center;gap:2px;height:30px;padding:2px 10px 2px 2px;border-radius:999px;background:linear-gradient(180deg,var(--float-a),var(--float-b));box-shadow:var(--float-sh);border:1px solid var(--btn-line)}
 .zoom .zb{height:26px;min-width:26px;padding:0 8px;border:0;border-radius:999px;background:none;color:var(--soft);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
@@ -293,7 +291,6 @@ body.swapped .swapbtn::after{left:auto;right:0}
 #slides{flex:1;overflow:auto;padding:4px 12px 40px;display:flex;flex-direction:column;gap:6px}
 .slide{display:grid;grid-template-columns:14px 34px 1fr auto auto;gap:8px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-sh);transition:border-color .15s,box-shadow .15s;padding:7px 8px;position:relative}
 .lockbtn{font-size:12px;padding:3px 9px}
-.lockbtn.unlocked{border-color:var(--accent);color:var(--accent);background:rgba(245,122,48,.1)}
 #slides{position:relative}
 .slide .grip{cursor:grab;color:#5b5f6b;font-size:13px;line-height:1;padding-top:5px;user-select:none;text-align:center;touch-action:none}
 .slide .grip:hover{color:var(--text)}
@@ -512,7 +509,9 @@ button:focus:not(:focus-visible){outline:none}
 /* the Night / Day switch in the header: a pill with a moon and a sun, the knob slides onto the one in use */
 .themesw{position:relative;display:inline-flex;align-items:center;justify-content:space-between;width:68px;height:34px;padding:0 10px;border-radius:999px;border:1px solid var(--btn-line);
   background:linear-gradient(180deg,#141a2e,#232b48);box-shadow:inset 0 1px 3px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.06);color:#9fb0e8;flex:none}
-.themesw svg{position:relative;z-index:1;transition:color .2s,opacity .2s}
+.themesw svg{position:absolute;z-index:1;top:50%;transform:translate(-50%,-50%);transition:color .2s,opacity .2s}
+.themesw .moon{left:16px}
+.themesw .sun{left:50px}
 .themesw .knob{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#8ea2ff,#5a6fe0);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 1px 4px rgba(0,0,0,.5),0 0 10px rgba(120,140,255,.45);transition:transform .25s cubic-bezier(.4,0,.2,1),background .25s,box-shadow .25s}
 .themesw .moon{color:#fff}
 .themesw .sun{color:#7d88ad}
@@ -535,15 +534,13 @@ body.swapped header .hrow2 .vertag{left:auto;right:0}
 .lockbtn[data-lock]:not(.unlocked):hover:not(:disabled){border-color:#ff6b66;color:#ffb0ac;background:linear-gradient(180deg,var(--lk-a),var(--lk-b));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 18px rgba(229,72,77,.6),0 1px 2px rgba(0,0,0,.4)}
 body.day .lockbtn[data-lock]:not(.unlocked){color:#c42b23}
 body.day .lockbtn[data-lock]:not(.unlocked):hover:not(:disabled){color:#a81f18}
-.lockbtn[data-lock].unlocked{border-color:var(--accent);color:var(--accent)}
-.lockbtn[data-lock].unlocked:hover:not(:disabled){border-color:#ffa45e;box-shadow:0 0 14px rgba(245,122,48,.45)}
 @media (max-width:1420px){ .docname{max-width:110px} header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:88px !important} }
 @media (max-width:1300px){ header .brand .bnf, header .brand .by{display:none} }
 @media (max-width:1180px){ .counts{display:none} }
 /* the header buttons share one size */
 header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96px;height:34px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 /* one tooltip for the whole app: anything with a title gets a soft pill-shaped tip */
-#ttip{position:fixed;z-index:1000;max-width:300px;padding:7px 11px;border-radius:10px;background:var(--tip-bg);border:1px solid var(--tip-line);color:var(--tip-ink);font-size:12.5px;line-height:1.4;box-shadow:0 10px 28px rgba(0,0,0,.55);pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity .14s,transform .14s;white-space:normal}
+#ttip{position:fixed;inset:auto;margin:0;overflow:visible;z-index:1000;max-width:300px;padding:7px 11px;border-radius:10px;background:var(--tip-bg);border:1px solid var(--tip-line);color:var(--tip-ink);font-size:12.5px;line-height:1.4;box-shadow:0 10px 28px rgba(0,0,0,.55);pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity .14s,transform .14s;white-space:normal}
 #ttip.on{opacity:1;transform:none}
 </style>
 <script>/*@@PDFJS@@*/</script>
@@ -644,23 +641,23 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
 <dialog id="setDlg"><form method="dialog">
   <div class="dhead" title="Drag to move · double-click to put it back in the middle"><span class="grip" aria-hidden="true"></span><h2>Settings</h2><span class="ver">STQ v@@VERSION@@</span></div>
   <div class="sgrid">
-    <div class="srow"><span class="lbl">Screen shape</span><div class="pseg" id="sShapeSeg" style="--n:3"><button type="button" data-v="4/3">4:3</button><button type="button" data-v="16/9">16:9</button><button type="button" data-v="6/1">6:1 Strip</button></div><select id="sShape" hidden><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select><span></span></div>
-    <div class="srow"><span class="lbl">Font</span><select id="sFont" class="pill">
+    <div class="srow"><span class="lbl">Screen shape</span><div class="pseg" id="sShapeSeg" style="--n:3"><button type="button" data-v="4/3" title="A classic 4:3 projector: the titles use a centred 4:3 area">4:3</button><button type="button" data-v="16/9" title="A widescreen projector: the titles use the whole screen">16:9</button><button type="button" data-v="6/1" title="A wide band of two lines, e.g. above the proscenium">6:1 Strip</button></div><select id="sShape" hidden><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select><span></span></div>
+    <div class="srow"><span class="lbl">Font</span><select id="sFont" class="pill" title="The typeface of the titles">
       <option value='Georgia, "Times New Roman", serif'>Georgia (serif)</option>
       <option value='"Palatino Linotype", Palatino, "Book Antiqua", serif'>Palatino (serif)</option>
       <option value='Garamond, "EB Garamond", "Times New Roman", serif'>Garamond (serif)</option>
       <option value='"Helvetica Neue", Helvetica, Arial, sans-serif'>Helvetica (sans)</option>
       <option value='Verdana, Geneva, sans-serif'>Verdana (sans)</option>
     </select><span></span></div>
-    <div class="srow"><span class="lbl">Text style</span><div class="ppair"><label class="ptog"><input type="checkbox" id="sItal"><i>Italic</i></label><label class="ptog"><input type="checkbox" id="sBold"><b>Bold</b></label></div><span></span></div>
-    <div class="srow"><span class="lbl">Colours</span><div class="ppair"><label class="pcol">Text<input type="color" id="sFg"></label><label class="pcol">Background<input type="color" id="sBg"></label></div><span></span></div>
-    <div class="srow"><span class="lbl">Alignment</span><div class="pseg" id="sAlign" style="--n:3"><button type="button" data-al="left">Left</button><button type="button" data-al="center">Center</button><button type="button" data-al="right">Right</button></div><span></span></div>
+    <div class="srow"><span class="lbl">Text style</span><div class="ppair"><label class="ptog" title="Italic titles on or off"><input type="checkbox" id="sItal"><i>Italic</i></label><label class="ptog" title="Bold titles on or off"><input type="checkbox" id="sBold"><b>Bold</b></label></div><span></span></div>
+    <div class="srow"><span class="lbl">Colours</span><div class="ppair"><label class="pcol" title="Colour of the title text">Text<input type="color" id="sFg"></label><label class="pcol" title="Colour of the screen behind the titles">Background<input type="color" id="sBg"></label></div><span></span></div>
+    <div class="srow"><span class="lbl">Alignment</span><div class="pseg" id="sAlign" style="--n:3"><button type="button" data-al="left" title="Lines start at the left margin">Left</button><button type="button" data-al="center" title="Lines are centred">Center</button><button type="button" data-al="right" title="Lines end at the right margin">Right</button></div><span></span></div>
     <div class="srow" id="spellLangRow" hidden><span class="lbl">Spelling language</span><select id="sSpellLang" class="pill"></select><span></span></div>
     <div class="srow web-only"><span class="lbl">Second screen</span><button type="button" id="sScreens" class="pbtn" title="Let the projector window open on the 2nd screen automatically">Open the projector on screen 2</button><span></span></div>
-    <div class="srow"><span class="lbl">Text size <span class="info" id="sFsNote" tabindex="0">i</span></span><input type="range" id="sFs" min="75" max="100" step="1"><span class="val" id="sFsV"></span></div>
+    <div class="srow"><span class="lbl">Text size <span class="info" id="sFsNote" tabindex="0">i</span></span><input type="range" id="sFs" min="75" max="100" step="1" title="Size of the titles (75–100 %)"><span class="val" id="sFsV"></span></div>
     <div class="srow"><span class="lbl">Vertical position</span><input type="range" id="sVpos" min="-100" max="100" step="1" title="Left = higher on the screen · right = lower"><button type="button" id="sMid" class="val pbtn" title="Put the titles back in the middle">Middle</button></div>
     <div class="srow"><span class="lbl">Side margins</span><input type="range" id="sSide" min="2" max="6" step="0.25" title="Space kept clear at each side"><span class="val" id="sSideV"></span></div>
-    <div class="srow"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="6" step="0.25"><span class="val" id="sMkV"></span></div>
+    <div class="srow"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="6" step="0.25" title="Size of the cue circles on the score and in the printable score"><span class="val" id="sMkV"></span></div>
   </div>
   <div class="actions"><button class="primary pbtn" value="ok" title="Close Settings — every change is already applied">Done</button></div>
 </form></dialog>
@@ -2345,11 +2342,13 @@ window.__stcMenu = (cmd) => {
 };
 
 /* ---------- tooltips: the native title is borrowed while hovering, shown in our own tip ---------- */
-(()=>{ const tip=document.createElement('div'); tip.id='ttip'; tip.setAttribute('role','tooltip'); document.body.append(tip); let el=null, tm=null;
-  const hide=()=>{ clearTimeout(tm); tip.classList.remove('on'); if(el){ if(!el.hasAttribute('title') && el.dataset.ttl!=null) el.setAttribute('title', el.dataset.ttl); delete el.dataset.ttl; el=null; } };
+(()=>{ const tip=document.createElement('div'); tip.id='ttip'; tip.setAttribute('role','tooltip'); tip.setAttribute('popover','manual'); document.body.append(tip);
+  const top=()=>{ try{ if(tip.matches(':popover-open')) tip.hidePopover(); tip.showPopover(); }catch(_){} };   // the top layer: above open dialogs too
+  let el=null, tm=null;
+  const hide=()=>{ clearTimeout(tm); tip.classList.remove('on'); try{ if(tip.matches(':popover-open')) setTimeout(()=>{ if(!tip.classList.contains('on')) tip.hidePopover(); },160); }catch(_){} if(el){ if(!el.hasAttribute('title') && el.dataset.ttl!=null) el.setAttribute('title', el.dataset.ttl); delete el.dataset.ttl; el=null; } };
   document.addEventListener('mouseover', e=>{ const t=e.target.closest && e.target.closest('[title]'); if(!t || t===el) return; if(t.closest('#setDlg .info')) return; hide();
     const txt=t.getAttribute('title'); if(!txt) return; el=t; t.dataset.ttl=txt; t.removeAttribute('title');
-    tm=setTimeout(()=>{ if(el!==t) return; tip.textContent=txt; const r=t.getBoundingClientRect(); tip.style.left='0px'; tip.style.top='0px'; tip.classList.add('on');
+    tm=setTimeout(()=>{ if(el!==t) return; tip.textContent=txt; const r=t.getBoundingClientRect(); tip.style.left='0px'; tip.style.top='0px'; top(); tip.classList.add('on');
       const w=tip.offsetWidth, h=tip.offsetHeight; let x=Math.min(Math.max(8, r.left+r.width/2-w/2), innerWidth-w-8), y=r.bottom+8; if(y+h>innerHeight-8) y=r.top-h-8;
       tip.style.left=x+'px'; tip.style.top=y+'px'; }, 450); });
   document.addEventListener('mouseout', e=>{ if(el && !el.contains(e.relatedTarget)) hide(); });
