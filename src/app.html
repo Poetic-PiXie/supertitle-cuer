@@ -310,7 +310,7 @@ body.swapped .swapbtn::after{left:auto;right:0}
 .slide{display:grid;grid-template-columns:14px 34px 1fr auto auto;gap:8px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-sh);transition:border-color .15s,box-shadow .15s;padding:7px 8px;position:relative}
 .lockbtn{font-size:12px;padding:3px 9px}
 #slides{position:relative}
-.slide .grip{cursor:grab;color:#5b5f6b;font-size:13px;line-height:1;padding-top:5px;user-select:none;text-align:center;touch-action:none}
+.slide .grip{white-space:nowrap;letter-spacing:-3px;text-indent:-2px;cursor:grab;color:#5b5f6b;font-size:13px;line-height:1;padding-top:5px;user-select:none;text-align:center;touch-action:none}
 .slide .grip:hover{color:var(--text)}
 body.order-locked .slide .grip, body.show .slide .grip{visibility:hidden}
 body.order-locked .slide .tools [data-a=up], body.order-locked .slide .tools [data-a=down], body.order-locked .slide .tools [data-a=add], body.order-locked .slide .tools [data-a=del]{display:none}
@@ -556,7 +556,7 @@ body.day .lockbtn[data-lock]:not(.unlocked):hover:not(:disabled){color:#a81f18}
 @media (max-width:1300px){ header .brand .bnf, header .brand .by{display:none} }
 @media (max-width:1180px){ .counts{display:none} }
 /* color rings (slides) and the palette */
-.slide .sring{position:absolute;left:9px;top:max(calc(50% - 7px), 28px);width:14px;height:14px;padding:0;border-radius:50%;border:1.5px solid var(--dim);background:var(--sc,transparent);box-shadow:none;z-index:2}
+.slide .sring{position:absolute;left:10px;top:max(calc(50% - 7px), 28px);width:14px;height:14px;padding:0;border-radius:50%;border:1.5px solid var(--dim);background:var(--sc,transparent);box-shadow:none;z-index:2}
 .slide .sring:hover:not(:disabled){border-color:var(--text);background:var(--sc,var(--hover-wash));box-shadow:0 0 6px var(--sc,rgba(255,255,255,.25))}
 .slide.tinted .sring{border-color:color-mix(in srgb,var(--sc) 55%,#fff)}
 .slide.tinted{border-color:color-mix(in srgb,var(--sc) 70%,#fff 10%);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 0 10px color-mix(in srgb,var(--sc) 70%,transparent),0 0 2px color-mix(in srgb,var(--sc) 80%,transparent)}
@@ -570,8 +570,8 @@ body.day .palette button{border-color:rgba(0,0,0,.12)}
 .palette .clear{grid-column:1/-1;width:auto;height:28px;border-radius:999px;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:7px;background:linear-gradient(180deg,var(--btn-a),var(--btn-b));border:1px solid var(--btn-line)}
 .palette .clear:hover:not(:disabled){transform:none}
 .palette .clear i{width:12px;height:12px;border-radius:50%;display:inline-block}
-#setDlg button.pcol{cursor:pointer;width:100%}
-#setDlg .pcol .swatch{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.75);box-shadow:0 1px 3px rgba(0,0,0,.5);flex:none}
+.palette .pcheck{grid-column:1/-1;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--soft);cursor:pointer;padding:2px 2px 0}
+.palette .pcheck input{margin:0;width:15px;height:15px}
 /* the header buttons share one size */
 header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96px;height:34px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 /* one tooltip for the whole app: anything with a title gets a soft pill-shaped tip */
@@ -693,7 +693,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
     <div class="srow"><span class="lbl">Vertical position</span><input type="range" id="sVpos" min="-100" max="100" step="1" title="Left = higher on the screen · right = lower"><button type="button" id="sMid" class="val pbtn" title="Put the titles back in the middle">Middle</button></div>
     <div class="srow"><span class="lbl">Side margins</span><input type="range" id="sSide" min="2" max="6" step="0.25" title="Space kept clear at each side"><span class="val" id="sSideV"></span></div>
     <div class="srow"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="6" step="0.25" title="Size of the cue circles on the score and in the printable score"><span class="val" id="sMkV"></span></div>
-    <div class="srow"><span class="lbl">Cue color</span><div class="ppair"><button type="button" class="pcol" id="sCueCol" title="Color of the cue circles on the score — click for the palette">Cues<span class="swatch"></span></button></div><span></span></div>
+    <div class="srow"><span class="lbl">Cue color</span><div class="ppair"><label class="pcol" title="Color of all the cue circles on the score (and in the printable score)">Cues<input type="color" id="sCue"></label></div><span></span></div>
   </div>
   <div class="actions"><button class="primary pbtn" value="ok" title="Close Settings — every change is already applied">Done</button></div>
 </form></dialog>
@@ -1022,7 +1022,7 @@ slidesEl.addEventListener('click', e=>{
   const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
   const b=e.target.closest('button[data-a]'); if(!b) return;
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : (b.dataset.i!=null ? +b.dataset.i : -1);
-  if(a==='color') return openPalette(b, state.slides[i] && state.slides[i].color, {clear:'No color', onPick:c=>setSlideColor(i,c)});
+  if(a==='color') return openPalette(b, state.slides[i] && state.slides[i].color, {clear:'No color', cueBox:i<state.markers.length, onPick:(c,also)=>setSlideColor(i,c,also)});
   if(state.settings.lockOrder) return lockedNote('order');
   if(a==='trash') return (pickA!=null && pickB>pickA && i>=pickA && i<=pickB) ? askDeleteRange(pickA,pickB) : askDeleteSlide(i);
   if((a==='up'||a==='down') && inPick(i)) return nudgePick(a==='up'?-1:1);
@@ -1829,7 +1829,7 @@ function openSettings(){
   const s=state.settings;
   applyAlign(); $('#sFs').value=Math.round((s.textScale||1)*100); $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVpos').value=s.vpos||0; $('#sSide').value=((s.sideMargin||0.02)*100); $('#sShape').value=normShape(s.shape); $('#sMk').value=s.markerSize;
   if(![...$('#sFont').options].some(o=>o.value===s.font)) $('#sFont').selectedIndex=0;
-  paintCueSwatch(); setVals(); $('#setDlg').showModal(); placeSetDlg();
+  $('#sCue').value=state.settings.cueColor||CUE_RED; setVals(); $('#setDlg').showModal(); placeSetDlg();
 }
 function setVals(){ $('#sSideV').textContent=(+$('#sSide').value).toFixed(2)+'%'; const vp=+$('#sVpos').value; $('#sMid').classList.toggle('on', vp===0); $('#sMid').textContent = vp===0 ? 'Middle' : (vp<0 ? '↑ ' : '↓ ')+Math.abs(vp)+'%'; $('#sFsV').textContent=$('#sFs').value+'%'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%';
   $('#sFsNote').dataset.tip = ($('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = six lines on the screen: lines 137/1080 of its height, 137/10800 apart, 47/540 top/bottom and 2% side margins.') + ' Smaller sizes share the freed height evenly between the margins and the line gaps.';
@@ -2412,15 +2412,21 @@ window.__stcMenu = (cmd) => {
 const PALETTE=["#000000","#C12715","#6E2C1C","#C16B15","#6E551C","#9C8E11","#4D6E1C","#579C11","#15C115","#15C15A","#2BAB78","#1C6E5E","#15B0C1","#158DC1","#1C556E","#156BC1","#1C346E","#1515C1","#782BAB","#C115C1","#6E1C66","#C1157C","#7C0E3A","#C11549"];
 const hexRgb=h=>{ const n=parseInt(String(h).replace('#',''),16); return PDFLib.rgb(((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255); };
 // A slide and its cue share one color: the slide's own, or else the Cue color from Settings (when it isn't the standard red).
-function slideColor(i){ const s=state.slides[i]; return (s && s.color) || state.settings.cueColor || ''; }
-function cueColor(i){ return slideColor(i); }
-function setSlideColor(i, c){ const s=state.slides[i]; if(!s) return; snap(); if(c) s.color=c; else delete s.color; renderSlides(); renderMarkers(); setDirty(true); save(); }
-function paintCueSwatch(){ const sw=$('#sCueCol .swatch'); if(sw) sw.style.background = state.settings.cueColor || 'var(--cue-default)'; }
-$('#sCueCol').onclick=e=>openPalette(e.currentTarget, state.settings.cueColor, {clear:'Standard red', clearColor:'var(--cue-default)', onPick:c=>{ if(c) state.settings.cueColor=c; else delete state.settings.cueColor; paintCueSwatch(); renderSlides(); renderMarkers(); setDirty(true); save(); }});
+const CUE_RED='#e0352b';
+function slideColor(i){ const s=state.slides[i]; return (s && s.color) || ''; }
+// A cue's own color (given through its slide) beats the Cue color from Settings, which beats the standard red.
+function cueColor(i){ const m=state.markers[i]; return (m && m.color) || state.settings.cueColor || ''; }
+function setSlideColor(i, c, alsoCue){ const s=state.slides[i]; if(!s) return; snap(); if(c) s.color=c; else delete s.color;
+  const m=state.markers[i]; if(alsoCue && m){ if(c) m.color=c; else delete m.color; }
+  renderSlides(); renderMarkers(); setDirty(true); save(); }
+$('#sCue').addEventListener('input', e=>{ const v=e.target.value.toLowerCase(); if(v===CUE_RED) delete state.settings.cueColor; else state.settings.cueColor=v; renderMarkers(); setDirty(true); save(); });
+const colorCueToo=()=>{ try{ return localStorage.getItem('stq-colorcue')!=='0'; }catch(_){ return true; } };
 function openPalette(anchor, current, opts){
   closePalette(); const pop=document.createElement('div'); pop.className='palette'; pop.id='palette'; pop.setAttribute('popover','manual');
-  PALETTE.forEach(c=>{ const b=document.createElement('button'); b.type='button'; b.style.background=c; b.title=c; if(current && current.toLowerCase()===c.toLowerCase()) b.className='on'; b.onclick=()=>{ closePalette(); opts.onPick(c); }; pop.append(b); });
-  const cl=document.createElement('button'); cl.type='button'; cl.className='clear'+(current?'':' on'); cl.textContent=opts.clear||'No color'; if(opts.clearColor) cl.innerHTML=`<i style="background:${opts.clearColor}"></i>${opts.clear}`; cl.onclick=()=>{ closePalette(); opts.onPick(''); }; pop.append(cl);
+  PALETTE.forEach(c=>{ const b=document.createElement('button'); b.type='button'; b.style.background=c; b.title=c; if(current && current.toLowerCase()===c.toLowerCase()) b.className='on'; b.onclick=()=>{ const also=boxOn(); closePalette(); opts.onPick(c, also); }; pop.append(b); });
+  const cl=document.createElement('button'); cl.type='button'; cl.className='clear'+(current?'':' on'); cl.textContent=opts.clear||'No color'; if(opts.clearColor) cl.innerHTML=`<i style="background:${opts.clearColor}"></i>${opts.clear}`; cl.onclick=()=>{ const also=boxOn(); closePalette(); opts.onPick('', also); }; pop.append(cl);
+  let cb=null; if(opts.cueBox){ const l=document.createElement('label'); l.className='pcheck'; l.innerHTML='<input type="checkbox"> Also color its cue'; cb=l.firstChild; cb.checked=colorCueToo(); cb.onchange=()=>{ try{ localStorage.setItem('stq-colorcue', cb.checked?'1':'0'); }catch(_){} }; pop.append(l); }
+  function boxOn(){ return cb ? cb.checked : false; }
   (anchor.closest('dialog[open]') || document.body).append(pop); try{ pop.showPopover(); }catch(_){}   // inside an open dialog, so it stays clickable
   const r=anchor.getBoundingClientRect(), w=pop.offsetWidth, h=pop.offsetHeight;
   pop.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'; pop.style.top=Math.max(8, r.bottom+6+h>innerHeight-8 ? r.top-h-6 : r.bottom+6)+'px';
@@ -2429,7 +2435,6 @@ function openPalette(anchor, current, opts){
 function closeOnOut(e){ const p=$('#palette'); if(p && !p.contains(e.target)) closePalette(); }
 function closePalette(){ document.removeEventListener('pointerdown', closeOnOut, true); const p=$('#palette'); if(p){ try{ p.hidePopover(); }catch(_){} p.remove(); } }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#palette')){ e.preventDefault(); e.stopPropagation(); closePalette(); } }, true);
-paintCueSwatch();
 
 /* ---------- start ---------- */
 (async function init(){
