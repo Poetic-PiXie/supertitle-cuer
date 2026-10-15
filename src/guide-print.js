@@ -20,7 +20,7 @@ section[data-id="welcome"] { page-break-before: auto; }
 h2 { font-size: 20pt; margin: 0 0 4mm; color: #111; }
 h3 { font-size: 13pt; margin: 6mm 0 2mm; color: #111; page-break-after: avoid; }
 p, li, dd { orphans: 3; widows: 3; }
-a { color: #b4740b; text-decoration: none; }
+a { color: #c0561a; text-decoration: none; }
 .lead { font-size: 12pt; }
 .byline { font-size: 12pt; color: #555; margin-top: -2mm; }
 .ui { font-weight: 700; white-space: nowrap; }
@@ -38,7 +38,7 @@ ol.callouts { counter-reset: co; list-style: none; padding-left: 0; }
 ol.callouts > li { counter-increment: co; position: relative; padding-left: 9mm; margin: 1.6mm 0; }
 ol.callouts > li::before { content: counter(co); position: absolute; left: 0; top: .2mm; width: 5.6mm; height: 5.6mm; border-radius: 50%; background: #e5484d; color: #fff; font: 700 8.5pt/5.6mm Helvetica, Arial; text-align: center; }
 li.fig { list-style: none; margin-left: -5mm; }
-.tip, .note { background: #fbf6ea; border-left: .9mm solid #f2b134; padding: 2mm 3.5mm; border-radius: 0 1.5mm 1.5mm 0; page-break-inside: avoid; }
+.tip, .note { background: #fdf1e8; border-left: .9mm solid #f57a30; padding: 2mm 3.5mm; border-radius: 0 1.5mm 1.5mm 0; page-break-inside: avoid; }
 .note { background: #f3f4f6; border-left-color: #9aa0aa; }
 table.keys { border-collapse: collapse; margin: 2mm 0; }
 table.keys td, table.keys th { padding: 0.95mm 5mm 0.95mm 0; vertical-align: top; text-align: left; border-bottom: .2mm solid #eee; }
@@ -48,14 +48,14 @@ tr { page-break-inside: avoid; }
 .keybox .kbt { font-size: 8pt; font-weight: 700; color: #2a5bb0; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 1mm; }
 .keybox .kbr { display: grid; grid-template-columns: 52mm 1fr; gap: 3mm; padding: .9mm 0; border-top: .2mm solid #d3e0f5; font-size: 9.5pt; }
 .keybox .kbr:first-of-type { border-top: 0; }
-.lockbox { background: #fdf3df; border: .3mm solid #e2b85c; border-radius: 2mm; padding: 2.5mm 3.5mm; margin: 3mm 0; page-break-inside: avoid; }
+.lockbox { background: #fdeee3; border: .3mm solid #f0a072; border-radius: 2mm; padding: 2.5mm 3.5mm; margin: 3mm 0; page-break-inside: avoid; }
 figure.logo img { max-width: 62mm; border: 0; border-radius: 4mm; }
 .keep { page-break-inside: avoid; }
-.branch { border: .3mm solid #ccc; border-left: 1.2mm solid #f2b134; border-radius: 2mm; padding: 2mm 4mm; margin: 3mm 0; page-break-inside: avoid; }
+.branch { border: .3mm solid #ccc; border-left: 1.2mm solid #f57a30; border-radius: 2mm; padding: 2mm 4mm; margin: 3mm 0; page-break-inside: avoid; }
 .branch .bt { font-weight: 700; font-size: 11pt; }
 pre { word-break: break-all; }
-.tipsbox { background: #eef8f0; border: .3mm solid #8fcf9f; border-radius: 2mm; padding: 2.5mm 4mm; margin: 4mm 0; page-break-inside: avoid; }
-.tipsbox .tbt { font-size: 8pt; font-weight: 700; color: #2a7a45; text-transform: uppercase; letter-spacing: .07em; }
+.tipsbox { background: #e8f7f6; border: .3mm solid #8fd3cf; border-radius: 2mm; padding: 2.5mm 4mm; margin: 4mm 0; page-break-inside: avoid; }
+.tipsbox .tbt { font-size: 8pt; font-weight: 700; color: #0e7a75; text-transform: uppercase; letter-spacing: .07em; }
 .tipsbox ul { margin: 1.5mm 0 0; padding-left: 5mm; }
 .tipsbox li { margin: 1.2mm 0; }
 

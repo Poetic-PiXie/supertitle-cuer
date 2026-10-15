@@ -87,7 +87,7 @@ async def main():
 
         print('overview')
         save(await shot(), 'overview', 1600)
-        await badges([['#fileMenu', 1, 'b'], ['#saveBtn', 2, 'b'], ['#modeSeg', 3, 'b'], ['#followBtn', 4, 'b'], ['#helpBtn', 5, 'b'],
+        await badges([['#fileMenu', 1, 'b'], ['#helpBtn', 2, 'b'], ['#saveBtn', 3, 'b'], ['#modeSeg', 4, 'b'], ['#followBtn', 5, 'b'],
                       ['#settingsBtn', 6, 'b'], ['#themeSw', 7, 'b'], ['#counts', 8, 'b'], ['#hint', 9, 'txt'], ['#lockCues', 10, 'l'], ['#projBtn', 11, 'r'], ['.slidehead', 12, 'l']])
         save(await shot(), 'overview-callouts', 1600); await nobadges()
         save(await shot(clip={'x': 0, 'y': 0, 'width': W, 'height': 80}), 'toolbar', 1600)
@@ -219,6 +219,56 @@ tr:nth-child(4) td{outline:2px solid #1e7145;outline-offset:-2px}</style></body>
         await pg.evaluate("(()=>{ setMode('edit'); state.markers=[]; state.slides=state.slides.slice(0,5).map(s=>({...s, b:'soft'})); changed(true); setFlow(true); goTo(1,false); })()")
         await pg.wait_for_timeout(600); await toast_off()
         save(await shot(clip=await clip('aside')), 'flow', 900)
+
+        print('example: several PDFs, one printable score')
+        import subprocess, tempfile, glob as _g
+        from PIL import ImageDraw, ImageFont
+        def font(sz, bold=False):
+            for f in (['/usr/share/fonts/opentype/inter/Inter-SemiBold.otf'] if bold else []) + ['/usr/share/fonts/opentype/inter/Inter-Regular.otf', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf']:
+                if os.path.exists(f): return ImageFont.truetype(f, sz)
+            return ImageFont.load_default()
+        ex = await ctx.new_page(); ex.on('dialog', lambda d: asyncio.ensure_future(d.accept()))
+        await ex.goto(APP); await ex.evaluate("localStorage.clear(); indexedDB.deleteDatabase('supertitle-cuer')"); await ex.reload(); await ex.wait_for_timeout(600)
+        await ex.evaluate("(s)=>{ Object.assign(state.settings, s, {lockCues:false, lockOrder:false, flow:false, view:'width', zoomPct:100}); applyAlign(); updateLocks(); updateOutput(); save(); }", proj['settings'])
+        with tempfile.TemporaryDirectory() as td:
+            n_all = int([l for l in subprocess.run(['pdfinfo', SCORE], capture_output=True, text=True).stdout.splitlines() if l.startswith('Pages')][0].split()[-1])
+            cut = (n_all + 1) // 2 - 1 or 1
+            p1, p2 = td + '/a.pdf', td + '/b.pdf'
+            subprocess.run(['qpdf', SCORE, '--pages', '.', f'1-{cut}', '--', p1], check=True)
+            subprocess.run(['qpdf', SCORE, '--pages', '.', f'{cut+1}-{n_all}', '--', p2], check=True)
+            await ex.set_input_files('#fPdf', files=[{'name': 'Anvil Chorus - part 1.pdf', 'mimeType': 'application/pdf', 'buffer': open(p1, 'rb').read()}]); await ex.wait_for_selector('.page'); await ex.wait_for_timeout(800)
+            await ex.evaluate("partInsertAt=state.parts.length")
+            await ex.set_input_files('#fPart', files=[{'name': 'Anvil Chorus - part 2.pdf', 'mimeType': 'application/pdf', 'buffer': open(p2, 'rb').read()}])
+            await ex.wait_for_function("state.parts && state.parts.length===2"); await ex.wait_for_timeout(1200)
+        await ex.evaluate("(p)=>{ state.slides=p.slides.map(s=>({text:s.text})); state.markers=p.markers.map(m=>({page:m.page,x:m.x,y:m.y})); renderSlides(); sortMarkers(); changed(true); goTo(-1,false); docName='Anvil Chorus.supertitles'; setDirty(false); }", proj)
+        await ex.evaluate("(()=>{ clearTimeout(toastT); const t=document.getElementById('toast'); if(t) t.classList.remove('on'); })()")
+        await ex.click('#partsBtn'); await ex.wait_for_timeout(1500)
+        r = await ex.evaluate("(()=>{ const r=document.querySelector('#partsDlg').getBoundingClientRect(); return {x:r.left,y:r.top,width:r.width,height:r.height}; })()")
+        save(await ex.screenshot(clip=r), 'example-parts', 1300)
+        await ex.keyboard.press('Escape'); await ex.wait_for_timeout(200)
+        pdfb = bytes(await ex.evaluate("buildPrintablePdf().then(b=>Array.from(b))"))
+        with tempfile.TemporaryDirectory() as td:
+            open(td + '/p.pdf', 'wb').write(pdfb)
+            n = int([l for l in subprocess.run(['pdfinfo', td + '/p.pdf'], capture_output=True, text=True).stdout.splitlines() if l.startswith('Pages')][0].split()[-1])
+            subprocess.run(['pdftoppm', '-r', '60', '-png', td + '/p.pdf', td + '/t'], check=True)
+            thumbs = [Image.open(f).convert('RGB') for f in sorted(_g.glob(td + '/t*.png'))]
+        tw = max(i.width for i in thumbs); th = max(i.height for i in thumbs); gap = 26; top = 64; lab_h = 44
+        per = len(thumbs); cols = (per + 1) // 2; rows = 2
+        W2 = cols * tw + (cols + 1) * gap; H2 = top + rows * (th + lab_h) + gap
+        sheet = Image.new('RGB', (W2, H2), (44, 46, 53)); d = ImageDraw.Draw(sheet)
+        fl, fs = font(24, True), font(21)
+        C1, C2, C3 = (143, 182, 255), (126, 214, 160), (242, 177, 52)
+        lx = gap
+        for col, name in ((C1, 'Anvil Chorus - part 1.pdf'), (C2, 'Anvil Chorus - part 2.pdf'), (C3, 'added by STQ: the cue sheet')):
+            d.rounded_rectangle([lx, 20, lx + 22, 42], 5, fill=col); d.text((lx + 32, 31), name, fill=col, font=fl, anchor='lm'); lx += 44 + d.textlength(name, font=fl) + 30
+        for k, im in enumerate(thumbs):
+            r_, c_ = divmod(k, cols); x = gap + c_ * (tw + gap); y = top + r_ * (th + lab_h)
+            col = C1 if k < cut else C2 if k < n_all else C3
+            sheet.paste(im, (x, y)); d.rectangle([x - 3, y - 3, x + im.width + 2, y + im.height + 2], outline=col, width=3)
+            lab = 'cue sheet' if k >= n_all else f'page {k+1}'
+            d.text((x + im.width / 2, y + im.height + 10), lab, fill=col, font=fs, anchor='ma')
+        b = io.BytesIO(); sheet.save(b, 'PNG'); save(b.getvalue(), 'example-printable', 1500)
+        await ex.close()
 
         print('help')
         await pg.evaluate("setFlow(false); openHelp('slides')"); await pg.wait_for_timeout(600)
