@@ -82,7 +82,8 @@ header .brand{position:relative;display:inline-flex;align-items:baseline;gap:7px
 header .brand .bn{font-size:21px;font-weight:800;letter-spacing:.03em;color:var(--strong);white-space:nowrap}
 header .brand .bnf{font-size:14px;font-weight:600;letter-spacing:0;color:var(--soft)}
 header .brand .by{font-size:13px;color:var(--dim);font-style:italic;white-space:nowrap}
-header .brand .by b{font-style:normal;font-weight:700;background:linear-gradient(90deg,#ff5f6d,#ffc371,#7bed9f,#70a1ff,#c56cf0);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 .6px rgba(0,0,0,.95)) drop-shadow(0 0 .4px rgba(0,0,0,.7))}
+header .brand .by b{font-style:normal;font-weight:700;background:linear-gradient(90deg,#ff5f6d,#ffc371,#7bed9f,#70a1ff,#c56cf0);-webkit-background-clip:text;background-clip:text;color:transparent}
+body.day header .brand .by b{background:none;color:#8b5cf6}
 .pixiePop{position:absolute;top:calc(100% + 12px);left:0;width:340px;height:340px;border-radius:16px;overflow:hidden;background:#000;
   box-shadow:0 18px 50px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.08),0 0 40px rgba(197,108,240,.25);
   opacity:0;transform:translateY(-8px) scale(.94);transform-origin:top left;transition:opacity .18s ease,transform .22s ease;pointer-events:none;z-index:300}
@@ -214,7 +215,11 @@ body:not(.native) .native-only{display:none}
 .rlab{font-size:12px;color:var(--dim)}
 .sc{float:right;color:var(--dim);margin-left:18px;font-size:12px}
 .docname{font-size:13px;color:var(--dim);max-width:180px;display:inline-flex;white-space:nowrap;min-width:0}
-.docname .dn{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.docname .dn{overflow:hidden;text-overflow:ellipsis;min-width:0;white-space:nowrap}
+.docname .dnt{display:inline}
+.docname .dn.scrolling{text-overflow:clip}
+.docname .dn.scrolling .dnt{display:inline-block;transform:translateX(var(--sx,0));transition:transform var(--sd,3s) linear .25s}
+.docname .dn.back .dnt{display:inline-block;transition:transform .2s ease-out}
 .docname.dirty::after{content:" • not saved";color:var(--warn);flex-shrink:0;white-space:pre}
 .hint{color:var(--dim);flex-basis:100%;text-align:right;font-size:13px}
 .hint b{color:var(--text)}
@@ -1479,7 +1484,7 @@ $('#fPdf').onchange=e=>{ const f=e.target.files[0]; if(f) openAny(f, null); e.ta
 const PROJ_ATTACH='supertitle-cuer-project.json', ORIG_ATTACH='original-score.pdf';
 function setDirty(d){
   dirty=d; const el=$('#docName'); const has = !!(state.pdfName || state.slides.length || state.markers.length);
-  el.innerHTML = '<span class="dn"></span>'; el.firstChild.textContent = docName || (has ? 'Untitled project' : ''); el.title = docName || ''; el.classList.toggle('dirty', d && has);
+  el.innerHTML = '<span class="dn"><span class="dnt"></span></span>'; el.firstChild.firstChild.textContent = docName || (has ? 'Untitled project' : ''); el.removeAttribute('title'); el.classList.toggle('dirty', d && has);
   document.title = (d&&has?'• ':'') + (docName || 'Supertitle Cuer');
   if(NATIVE) window.stc.docState({path: (fileHandle && fileHandle.nativePath) || '', dirty: !!(d&&has)});
 }
@@ -2356,6 +2361,13 @@ window.__stcMenu = (cmd) => {
 })();
 
 { const z=$('#zoomCtl'), row=$('#hrow2'); const upd=()=>row.style.setProperty('--zw', (z.hidden ? 0 : z.offsetWidth)+'px'); new ResizeObserver(upd).observe(z); new MutationObserver(upd).observe(z, {attributes:true, attributeFilter:['hidden']}); upd(); }
+
+/* a project name too long for its place scrolls sideways while hovered, and snaps back after */
+{ const host=$('#docName');
+  host.addEventListener('mouseenter', ()=>{ const dn=host.querySelector('.dn'); if(!dn) return; const over=dn.scrollWidth-dn.clientWidth; if(over<=1) return;
+    dn.classList.remove('back'); dn.style.setProperty('--sd', Math.max(.8, over/60)+'s'); dn.classList.add('scrolling'); dn.style.setProperty('--sx','0px'); void dn.offsetWidth; dn.style.setProperty('--sx', -(over+6)+'px'); });
+  host.addEventListener('mouseleave', ()=>{ const dn=host.querySelector('.dn'); if(!dn || !dn.classList.contains('scrolling')) return; dn.classList.add('back'); dn.style.setProperty('--sx','0px');
+    setTimeout(()=>{ if(dn.style.getPropertyValue('--sx')==='0px') dn.classList.remove('scrolling','back'); }, 220); }); }
 
 /* ---------- start ---------- */
 (async function init(){
