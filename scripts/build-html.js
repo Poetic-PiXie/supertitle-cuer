@@ -13,6 +13,7 @@ const libs = {
   PDFJSWORKER: nm('pdfjs-dist/build/pdf.worker.min.js'),
   PDFLIB: nm('pdf-lib/dist/pdf-lib.min.js'),
   FOLLOWJS: path.join(root, 'src', 'follow.js'),
+  GUIDEPRINTJS: path.join(root, 'src', 'guide-print.js'),
 };
 for (const [key, file] of Object.entries(libs)) {
   const code = fs.readFileSync(file, 'utf8');
@@ -32,6 +33,7 @@ manual = manual.replace(/src="(shots\/[^"]+)"/g, (m, f) => {
 });
 if (!html.includes('/*@@MANUAL@@*/')) throw new Error('missing /*@@MANUAL@@*/ in src/app.html');
 html = html.split('/*@@MANUAL@@*/').join(manual);
+html = html.split('@@ICON256@@').join('data:image/png;base64,' + fs.readFileSync(path.join(root, 'build', 'icon-256.png')).toString('base64'));
 html = html.split('@@VERSION@@').join(pkg.version);
 
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });

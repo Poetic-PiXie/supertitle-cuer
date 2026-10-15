@@ -31,7 +31,8 @@
     "files": [
       "electron/**",
       "dist/Supertitle_Cuer.html",
-      "package.json"
+      "package.json",
+      "docs/Supertitle_Cuer_Manual.pdf"
     ],
     "afterPack": "build/afterPack.js",
     "publish": null,

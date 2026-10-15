@@ -61,7 +61,8 @@ header .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
 #helpToc a:hover{background:#1e2026}
 #helpToc a.on{background:#2a2210;color:var(--cur)}
 #helpToc a[hidden]{display:none}
-#helpDlg .hpdf{margin:8px 12px 14px;font-size:13px;color:var(--accent);text-decoration:none}
+#helpDlg .hfoot{display:flex;flex-direction:column;gap:6px;padding:10px 12px 14px;border-top:1px solid var(--line)}
+#helpDlg .hfoot button{text-align:left;font-size:13px}
 #helpDlg .hmain{overflow:auto;padding:22px 36px 60px;min-width:0}
 #helpDlg .xclose{position:absolute;top:10px;right:12px}
 .hmain .noresults{color:var(--dim);margin-top:30px}
@@ -337,6 +338,7 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
 <script>/*@@PDFJSWORKER@@*/</script>
 <script>/*@@PDFLIB@@*/</script>
 <script>/*@@FOLLOWJS@@*/</script>
+<script>/*@@GUIDEPRINTJS@@*/</script>
 </head>
 <body class="edit">
 <div class="app">
@@ -471,7 +473,10 @@ select,input[type=text]{background:#111215;border:1px solid var(--line);border-r
   <div class="hside">
     <div class="hsearch"><input type="search" id="helpQ" placeholder="Search the guide" autocomplete="off" spellcheck="false"></div>
     <nav id="helpToc"></nav>
-    <a class="hpdf" href="https://github.com/Poetic-PiXie/supertitle-cuer/releases/latest/download/Supertitle_Cuer_Manual.pdf" target="_blank" rel="noopener">⬇ The guide as a PDF</a>
+    <div class="hfoot">
+      <button type="button" id="helpPrint" title="Print the whole guide — or choose “Save as PDF” in the print window">🖨 Print the guide</button>
+      <button type="button" id="helpPdf" title="Save the whole guide as a PDF file">⬇ Save as PDF</button>
+    </div>
   </div>
   <div class="hmain" id="helpMain"></div>
   <button type="button" class="xclose" id="helpX" aria-label="Close help">×</button>
@@ -2026,6 +2031,20 @@ function openHelp(id){
   if(id) showHelpSection(id); else setTimeout(()=>$('#helpQ').focus(),30);
 }
 $('#helpBtn').onclick=()=>openHelp();
+// the whole guide on paper (or as a PDF from the print window), laid out like the published PDF
+function printGuide(){
+  const w=window.open('', 'stq-guide', 'width=900,height=1000');
+  if(!w) return toast('The browser blocked the window — allow pop-ups for this page and try again');
+  w.document.open(); w.document.write(STCGuide.document($('#helpTpl').innerHTML.replace(/ loading="lazy"/g,''), {version:'@@VERSION@@', icon:'@@ICON256@@'})); w.document.close();
+  Promise.all([...w.document.images].map(i=>i.complete ? 0 : new Promise(r=>{ i.onload=i.onerror=r; }))).then(()=>setTimeout(()=>{ try{ w.focus(); w.print(); }catch(_){} }, 300));
+  toast(NATIVE ? 'Printing the guide…' : 'Printing the guide — to get a PDF, choose “Save as PDF” as the printer');
+}
+async function saveGuidePdf(){
+  if(NATIVE && window.stc.saveGuidePdf){ const p=await window.stc.saveGuidePdf(); if(p) toast('Saved the guide as “'+p.split(/[\\/]/).pop()+'”'); return; }
+  window.open('https://github.com/Poetic-PiXie/supertitle-cuer/releases/latest/download/Supertitle_Cuer_Manual.pdf','_blank','noopener');
+}
+$('#helpPrint').onclick=printGuide;
+$('#helpPdf').onclick=saveGuidePdf;
 $('#helpX').onclick=()=>$('#helpDlg').close();
 $('#helpQ').addEventListener('input', searchHelp);
 $('#helpToc').addEventListener('click', e=>{ const a=e.target.closest('a[data-id]'); if(!a) return; e.preventDefault(); showHelpSection(a.dataset.id); });
@@ -2057,7 +2076,7 @@ window.__stcMenu = (cmd) => {
     new: newProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true,'supertitles'), saveAsPdf: ()=>saveDoc(true,'pdf'), exportPrintable,
     importSlides: openImport, exportCsv: actions.exportCsv,
     undo: ()=> ed ? document.execCommand('undo') : undo(), redo: ()=> ed ? document.execCommand('redo') : redo(),
-    edit: ()=>setMode('edit'), show: ()=>setMode('show'), projector: openProjector, connect: ()=>openHelp('connect'), help: ()=>openHelp(), settings: openSettings,
+    edit: ()=>setMode('edit'), show: ()=>setMode('show'), projector: openProjector, connect: ()=>openHelp('connect'), help: ()=>openHelp(), printGuide: ()=>printGuide(), settings: openSettings,
     spell: ()=>{ const on=!spellOn(); applySpell(on); toast(on?'Spell check on':'Spell check off'); },
   };
   if(map[cmd]) map[cmd]();

@@ -123,6 +123,9 @@ function createWindow() {
   // The page opens the projector with window.open(..., 'supertitles-projector')
   win.webContents.setWindowOpenHandler(({ frameName, url }) => {
     if (/^https?:/i.test(url)) { shell.openExternal(url); return { action: 'deny' }; } // web links open in the regular browser
+    if (frameName === 'stq-guide') {   // the printable guide (Help → Print the guide)
+      return { action: 'allow', overrideBrowserWindowOptions: { title: 'Supertitle Cuer — User Guide', width: 900, height: 1000, autoHideMenuBar: true, backgroundColor: '#ffffff' } };
+    }
     if (frameName !== 'supertitles-projector') return { action: 'deny' };
     const ext = otherDisplay();
     const bounds = ext ? ext.bounds : null;
@@ -139,7 +142,8 @@ function createWindow() {
       },
     };
   });
-  win.webContents.on('did-create-window', (child) => {
+  win.webContents.on('did-create-window', (child, details) => {
+    if (details && details.frameName === 'stq-guide') return;
     projector = child;
     child.setMenuBarVisibility(false);
     if (otherDisplay()) setTimeout(() => !child.isDestroyed() && child.setFullScreen(true), 300);
@@ -266,6 +270,23 @@ ipcMain.on('renderer-ready', () => {
   flushPending();
 });
 ipcMain.on('keep-awake', (_e, on) => setKeepAwake(!!on));
+// the guide as a PDF, shipped inside the app (docs/Supertitle_Cuer_Manual.pdf)
+const GUIDE_PDF = path.join(__dirname, '..', 'docs', 'Supertitle_Cuer_Manual.pdf');
+const GUIDE_NAME = 'Supertitle Cuer User Guide.pdf';
+async function saveGuidePdf() {
+  const r = await dialog.showSaveDialog(win, { defaultPath: path.join(app.getPath('documents'), GUIDE_NAME), filters: [{ name: 'PDF', extensions: ['pdf'] }] });
+  if (r.canceled || !r.filePath) return false;
+  fs.writeFileSync(r.filePath, fs.readFileSync(GUIDE_PDF));
+  return r.filePath;
+}
+async function openGuidePdf() {
+  const p = path.join(app.getPath('temp'), GUIDE_NAME);
+  fs.writeFileSync(p, fs.readFileSync(GUIDE_PDF));
+  const err = await shell.openPath(p);
+  return !err;
+}
+ipcMain.handle('save-guide-pdf', () => saveGuidePdf());
+ipcMain.handle('open-guide-pdf', () => openGuidePdf());
 // Follow: macOS asks the user once for the microphone (Windows uses its own privacy settings)
 ipcMain.handle('ask-mic', async () => {
   if (!isMac) return true;
@@ -383,7 +404,11 @@ function buildMenu() {
       submenu: [
         item('Supertitle Cuer Help', 'help', 'CmdOrCtrl+?'),
         item('How to Connect a Projector', 'connect'),
-        { label: 'The Guide as a PDF', click: () => shell.openExternal(HOMEPAGE + '/releases/latest/download/Supertitle_Cuer_Manual.pdf') },
+        { type: 'separator' },
+        { label: 'Open the Guide as PDF', click: () => openGuidePdf() },
+        { label: 'Save the Guide as PDF…', click: () => saveGuidePdf() },
+        item('Print the Guide…', 'printGuide'),
+        { type: 'separator' },
         { label: 'Supertitle Cuer on GitHub', click: () => shell.openExternal(HOMEPAGE) },
       ],
     },
