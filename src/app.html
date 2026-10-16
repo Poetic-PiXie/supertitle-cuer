@@ -221,7 +221,7 @@ body:not(.native) .native-only{display:none}
 .docname .dn.scrolling .dnt{display:inline-block;transform:translateX(var(--sx,0));transition:transform var(--sd,3s) linear .25s}
 .docname .dn.back .dnt{display:inline-block;transition:transform .2s ease-out}
 .docname.dirty::after{content:" • not saved";color:var(--warn);flex-shrink:0;white-space:pre}
-.hint{color:var(--dim);flex-basis:100%;text-align:right;font-size:13px}
+.hint{color:var(--dim);flex:1 1 0;min-width:0;text-align:right;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hint b{color:var(--text)}
 .counts{font-size:13px;color:var(--dim);padding:4px 12px;border-radius:999px;background:var(--well-bg);box-shadow:var(--field-sh)}
 .counts.mismatch{color:var(--warn)}
@@ -230,6 +230,7 @@ aside{min-width:0}
 /* score */
 #score{overflow:auto;position:relative;background:var(--score-bg);border-right:1px solid var(--line)}
 #pages{display:flex;flex-direction:column;align-items:safe center;gap:18px;padding:20px 24px 60vh}
+#pages:empty{display:none}
 .page{position:relative;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.45)}
 .page canvas{position:absolute;inset:0;width:100%;height:100%}
 .page .overlay{position:absolute;inset:0}
@@ -277,9 +278,9 @@ body.swapped #score{border-right:0}
 .swapbtn::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 8px);width:240px;padding:9px 11px;border-radius:8px;background:#000;border:1px solid var(--line);color:var(--text);font-weight:400;font-size:12.5px;line-height:1.4;text-align:left;text-transform:none;letter-spacing:0;white-space:normal;box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px);transition:opacity .15s,transform .15s;pointer-events:none;z-index:50}
 body.swapped .swapbtn{order:3;margin-left:auto}
 .pvhead{container-type:inline-size}
-.pvhead .pvlbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(50% - 100px)}
+.pvhead .pvlbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:calc(50% - 120px)}
 .pvhead .pvctl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:8px;align-items:center}
-.pvhead.live .pvlbl{max-width:calc(50% - 170px)}
+.pvhead.live .pvlbl{max-width:calc(50% - 190px)}
 @container (max-width:560px){ .pvhead.live .pvlbl{display:none} }
 .pvctl .projsw{width:148px;justify-content:space-between}
 .pvctl{flex-direction:row}
@@ -307,7 +308,7 @@ body.swapped .swapbtn::after{left:auto;right:0}
 .nextline{margin-top:8px;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nextline b{color:var(--text);font-weight:500}
 .slidehead{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr));gap:8px;padding:10px 12px 8px}
-.slidehead button{height:30px;min-width:0;padding:0 8px;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.slidehead button{height:30px;min-width:0;padding:0 12px;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 #slides{flex:1;overflow:auto;padding:4px 12px 40px;display:flex;flex-direction:column;gap:6px}
 .slide{display:grid;grid-template-columns:14px 34px 1fr auto auto;gap:8px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-sh);transition:border-color .15s,box-shadow .15s;padding:7px 8px;position:relative}
 .lockbtn{font-size:12px;padding:3px 9px}
@@ -343,7 +344,17 @@ button.danger:hover:not(:disabled){background:linear-gradient(180deg,#f0594d,#cf
 .slide.over{border-color:#e5484d;background:var(--over-bg)}
 .slide.over.cur{border-color:#e5484d;box-shadow:0 0 0 2px var(--cur);background:var(--over-bg)}
 body.flow #slides{gap:0}
-.pdiv{flex-shrink:0;font-size:11px;line-height:16px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:10px 4px 2px;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden}
+.pdiv{flex-shrink:0;line-height:22px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);padding:12px 4px 2px 3px;display:flex;align-items:center;gap:8px;white-space:nowrap;min-width:0}
+.pdiv .pdn{font-size:16.5px;color:var(--soft);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
+.pdiv[style*="--sc"] .pdn{color:color-mix(in srgb,var(--sc) 70%,var(--text))}
+.pdiv .pdc{font-size:11px;flex:0 0 auto;white-space:nowrap}
+.pdiv .pdc::before{content:"· "}
+.pdiv::after{min-width:12px}
+.gring{flex:0 0 auto;width:16px;height:16px;padding:0;border-radius:50%;border:1.5px solid var(--dim);background:var(--sc,transparent);box-shadow:none}
+.gring:hover:not(:disabled){border-color:var(--text);background:var(--sc,var(--hover-wash));box-shadow:0 0 6px var(--sc,rgba(255,255,255,.25))}
+.gring.on{border-color:color-mix(in srgb,var(--sc) 55%,#fff);box-shadow:0 0 8px color-mix(in srgb,var(--sc) 60%,transparent)}
+body.order-locked .gring, body.show .gring{display:none}
+.slide.tinted.inh .sring{background:transparent;border-color:var(--sc)}
 .pdiv::after{content:'';flex:1;height:1px;background:var(--line)}
 .pdiv:first-child{padding-top:2px}
 .slide.spare{border-style:dashed;background:transparent;box-shadow:none}
@@ -390,7 +401,7 @@ body.show .slide .tools{display:none}
 body.show .slide, body.order-locked .slide{grid-template-columns:34px 1fr auto}
 body.show .slide textarea, body.show .slide .mirror, body.order-locked .slide textarea, body.order-locked .slide .mirror{grid-column:2}
 .addrow{display:flex;gap:6px;margin-top:4px}
-.addrow button{flex:1;border-style:dashed;background:transparent;color:var(--dim)}
+.addrow button{flex:1 0 auto;border-style:dashed;background:transparent;color:var(--dim)}
 /* dialogs */
 dialog{background:linear-gradient(180deg,var(--dlg-a),var(--dlg-b));color:var(--text);border:1px solid var(--btn-line);border-radius:16px;padding:0;width:min(640px,94vw);box-shadow:var(--dlg-sh)}
 dialog::backdrop{background:rgba(0,0,0,.55)}
@@ -537,6 +548,10 @@ body.show header .modeSeg button.on{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,
 @media (prefers-reduced-motion:reduce){.projsw.live{animation:none;box-shadow:0 0 12px rgba(37,174,169,.45)}}
 header .qm{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--text);color:var(--panel);font:800 11.5px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
 button:focus-visible{outline:2px solid rgba(245,122,48,.7);outline-offset:2px}
+/* Text that doesn't fit: an ellipsis at rest (inside the button's own padding), sliding sideways on hover. */
+button:not(.swapbtn):not(.tkbtn):not(.info):not(.sring):not(.gring):not(.trash):not(.slide .tools button){overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.fx{display:block;min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fitscroll{text-overflow:clip !important}
 button:focus:not(:focus-visible){outline:none}
 /* the Night / Day switch in the header: a pill with a moon and a sun, the knob slides onto the one in use */
 .themesw{position:relative;display:inline-flex;align-items:center;justify-content:space-between;width:68px;height:34px;padding:0 10px;border-radius:999px;border:1px solid var(--btn-line);
@@ -1113,11 +1128,15 @@ pagesEl.addEventListener('contextmenu', e=>{ const mk=e.target.closest('.mk'); i
 function renderSlides(){
   const list=$('#slides'); list.replaceChildren();
   const pl=partsList(), many=pl.length>1, ro = mode==='show' || !!state.settings.lockOrder;
-  const head=(txt,tip)=>{ const h=document.createElement('div'); h.className='pdiv'; h.textContent=txt; if(tip) h.title=tip; list.append(h); };
+  const head=(name,cnt,tip,p)=>{ const h=document.createElement('div'); h.className='pdiv'; if(tip) h.title=tip;
+    if(p){ const r=document.createElement('button'); r.type='button'; r.className='gring'; r.dataset.g=p.id; r.title='Color this PDF’s supertitles and cues (a supertitle’s own color wins)'; if(p.color){ r.style.setProperty('--sc', p.color); r.classList.add('on'); } h.append(r); }
+    const a=document.createElement('span'); a.className='pdn'; a.textContent=name; const b=document.createElement('span'); b.className='pdc'; b.textContent=cnt; h.append(a,b);
+    if(p && p.color) h.style.setProperty('--sc', p.color);
+    list.append(h); };
   const card=(s,i)=>{
     const c=document.createElement('div'); c.className='slide'; c.dataset.i=i;
     c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><button type="button" class="sring" data-a="color" title="Color this slide in the list (only here — the projector never shows it)"></button><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
-    { const col=slideColor(i); c.classList.toggle('tinted', !!col); if(col) c.style.setProperty('--sc', col); }
+    { const col=slideColor(i); c.classList.toggle('tinted', !!col); c.classList.toggle('inh', !!col && !s.color); if(col) c.style.setProperty('--sc', col); }
     const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = ro; ta.spellcheck = spellOn() && mode==='edit';
     list.append(c);
   };
@@ -1125,6 +1144,7 @@ function renderSlides(){
   const spareCard=(p,j)=>{
     const c=document.createElement('div'); c.className='slide spare nocue'; c.dataset.sp=p.id+':'+j;
     c.innerHTML=`<div class="grip"></div><div class="num" title="Not cued yet — the next cue you place in this PDF takes this line">–</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-s="unlink" title="Unlink from this PDF (moves to “Not cued yet” at the end)">↩</button></div><button class="trash" data-s="trash" title="Delete this line">🗑</button>`;
+    { const col=p.spare[j].color || p.color; if(col){ c.classList.add('tinted'); c.style.setProperty('--sc', col); } }
     const ta=c.querySelector('textarea'); ta.value=p.spare[j].text; ta.readOnly = ro; ta.spellcheck = spellOn() && mode==='edit';
     list.append(c);
   };
@@ -1134,11 +1154,11 @@ function renderSlides(){
     const ids=state.markers.map(m=>(partOfPage(pl,m.page)||{}).id);
     for(const p of pl){
       const idx=ids.map((id,i)=>id===p.id && i<state.slides.length ? i : -1).filter(i=>i>=0), k=ids.filter(id=>id===p.id).length, w=(p.spare||[]).length;
-      head(`${p.name.replace(/\.pdf$/i,'')} · ${k ? k+' cue'+(k===1?'':'s') : 'no cues yet'}${w ? ' · '+w+' waiting' : ''}`, 'The supertitles for this PDF. Its cues take them in order; ones it has no cue for yet wait here, grayed.');
+      head(p.name.replace(/\.pdf$/i,''), `${k ? k+' cue'+(k===1?'':'s') : 'no cues yet'}${w ? ' · '+w+' waiting' : ''}`, 'The supertitles for this PDF. Its cues take them in order; ones it has no cue for yet wait here, grayed.', p);
       idx.forEach(i=>card(state.slides[i],i));
       (p.spare||[]).forEach((_,j)=>spareCard(p,j));
     }
-    if(state.slides.length>state.markers.length){ const k=state.slides.length-state.markers.length; head(`Not cued yet · ${k} supertitle${k===1?'':'s'}`, 'Select some and choose “Link to PDF…” to give them to a PDF, or place cues: the last PDF with cues takes them in order.');
+    if(state.slides.length>state.markers.length){ const k=state.slides.length-state.markers.length; head('Not cued yet', `${k} supertitle${k===1?'':'s'}`, 'Select some and choose “Link to PDF…” to give them to a PDF, or place cues: the last PDF with cues takes them in order.');
       for(let i=state.markers.length;i<state.slides.length;i++) card(state.slides[i],i); }
   }
   const add=document.createElement('div'); add.className='addrow';
@@ -1220,7 +1240,7 @@ slidesEl.addEventListener('click', e=>{
   const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
   const b=e.target.closest('button[data-a]'); if(!b) return;
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : (b.dataset.i!=null ? +b.dataset.i : -1);
-  if(a==='color'){ if(state.settings.lockOrder || mode==='show') return lockedNote('order'); const sl=state.slides[i]; return openPalette(b, sl && sl.color, {clear:'No color', cueBox:true, cueOn: sl && sl.color ? !!sl.colorCue : null, onPick:(c,also)=>setSlideColor(i,c,also)}); }
+  if(a==='color'){ if(state.settings.lockOrder || mode==='show') return lockedNote('order'); const sl=state.slides[i]; return openPalette(b, sl && sl.color, {clear: groupColor(i) ? 'Same as its PDF' : 'No color', cueBox:true, cueOn: sl && sl.color ? !!sl.colorCue : null, onPick:(c,also)=>setSlideColor(i,c,also)}); }
   if(state.settings.lockOrder) return lockedNote('order');
   if(a==='trash') return (pickA!=null && pickB>pickA && i>=pickA && i<=pickB) ? askDeleteRange(pickA,pickB) : askDeleteSlide(i);
   if((a==='up'||a==='down') && inPick(i)) return nudgePick(a==='up'?-1:1);
@@ -1294,6 +1314,10 @@ async function askDeleteRange(a,b){
 }
 $('#pickDel').onclick=()=>{ if(pickA!=null) askDeleteRange(pickA,pickB); };
 $('#pickClear').onclick=clearPicks;
+slidesEl.addEventListener('click', e=>{ const r=e.target.closest('.gring'); if(!r) return; e.stopPropagation();
+  if(state.settings.lockOrder || mode==='show') return lockedNote('order');
+  const p=partsList().find(q=>q.id===r.dataset.g); if(!p) return;
+  openPalette(r, p.color, {clear:'No color', onPick:c=>setPartColor(p.id, c)}); }, true);
 $('#pickLink').onclick=()=>{ if(pickA!=null) askLink(state.slides.slice(pickA,pickB+1)); };
 $('#pickUp').onclick=()=>nudgePick(-1); $('#pickDown').onclick=()=>nudgePick(1);
 function moveSlide(from,to){ moveBlock(from,from,to); }
@@ -2698,9 +2722,12 @@ const PALETTE=["#F2D21B","#C12715","#6E2C1C","#C16B15","#6E551C","#9C8E11","#4D6
 const hexRgb=h=>{ const n=parseInt(String(h).replace('#',''),16); return PDFLib.rgb(((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255); };
 // A slide and its cue share one color: the slide's own, or else the Cue color from Settings (when it isn't the standard red).
 const CUE_RED='#e0352b';
-function slideColor(i){ const s=state.slides[i]; return (s && s.color) || ''; }
+// A PDF section can have a color too: its supertitles and cues take it unless they have their own.
+function groupColor(i){ if(partsList().length<2 || i>=state.markers.length) return ''; const p=cuePart(i); return (p && p.color) || ''; }
+function slideColor(i){ const s=state.slides[i]; return (s && s.color) || groupColor(i); }
 // The cue linked to a slide (same number) shows the slide's color when the slide asks for it; otherwise the Cue color from Settings, or the standard red.
-function cueColor(i){ const s=state.slides[i]; return (s && s.color && s.colorCue) ? s.color : (state.settings.cueColor || ''); }
+function cueColor(i){ const s=state.slides[i]; return (s && s.color && s.colorCue) ? s.color : (groupColor(i) || state.settings.cueColor || ''); }
+function setPartColor(pid, c){ const p=partsList().find(q=>q.id===pid); if(!p) return; snap(); if(c) p.color=c; else delete p.color; renderSlides(); renderMarkers(); setDirty(true); save(); }
 function setSlideColor(i, c, alsoCue){ const s=state.slides[i]; if(!s) return; snap(); if(c){ s.color=c; if(alsoCue) s.colorCue=true; else delete s.colorCue; } else { delete s.color; delete s.colorCue; }
   renderSlides(); renderMarkers(); setDirty(true); save(); }
 $('#sCue').addEventListener('input', e=>{ const v=e.target.value.toLowerCase(); if(v===CUE_RED) delete state.settings.cueColor; else state.settings.cueColor=v; renderMarkers(); setDirty(true); save(); });
@@ -2720,9 +2747,43 @@ function closeOnOut(e){ const p=$('#palette'); if(p && !p.contains(e.target)) cl
 function closePalette(){ document.removeEventListener('pointerdown', closeOnOut, true); const p=$('#palette'); if(p){ try{ p.hidePopover(); }catch(_){} p.remove(); } }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#palette')){ e.preventDefault(); e.stopPropagation(); closePalette(); } }, true);
 
+/* ---------- text that doesn't fit ----------
+   Labels too long for their space end in "…"; hovering slides the text sideways to show the rest,
+   and it slides back when the pointer leaves. Text directly inside flex buttons is wrapped in a
+   span so the ellipsis can work there too (flex containers can't show one themselves). */
+function wrapFlexText(root=document){
+  root.querySelectorAll('button, label, .pdiv').forEach(el=>{
+    const d=getComputedStyle(el).display; if(!/flex|grid/.test(d)) return;
+    [...el.childNodes].forEach(n=>{ if(n.nodeType===3 && n.textContent.trim()){ const sp=document.createElement('span'); sp.className='fx'; n.replaceWith(sp); sp.append(n); } });
+  });
+}
+{ let raf=0; new MutationObserver(()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; wrapFlexText(); }); }).observe(document.body, {childList:true, subtree:true}); }
+const fitHost = t => t && t.closest && t.closest('button, label, .pdiv, .pvlbl, .hint, .fx, .counts, .pname, .pcard .nm, dt, h2, h3');
+function overflowBox(host){
+  const cands=[host, ...host.querySelectorAll('.fx, .pdn')];
+  return cands.find(c=>{ const cs=getComputedStyle(c); return cs.textOverflow==='ellipsis' && /hidden|clip/.test(cs.overflowX) && c.scrollWidth>c.clientWidth+1; });
+}
+let fitAnim=null;
+function fitStop(back=true){ const a=fitAnim; if(!a) return; fitAnim=null; cancelAnimationFrame(a.raf); clearTimeout(a.t);
+  if(!back){ a.el.scrollLeft=0; a.el.classList.remove('fitscroll'); return; }
+  const from=a.el.scrollLeft, t0=performance.now();
+  const step=now=>{ const k=Math.min(1,(now-t0)/180); a.el.scrollLeft=from*(1-k*(2-k)); if(k<1) requestAnimationFrame(step); else a.el.classList.remove('fitscroll'); };
+  requestAnimationFrame(step);
+}
+document.addEventListener('mouseover', e=>{
+  const host=fitHost(e.target); if(!host || (fitAnim && fitAnim.host===host)) return;
+  fitStop(false);
+  const el=overflowBox(host); if(!el) return;
+  el.classList.add('fitscroll'); const a=fitAnim={host, el, raf:0, t:0};
+  a.t=setTimeout(()=>{ const max=el.scrollWidth-el.clientWidth, t0=performance.now(), dur=Math.max(700, max/55*1000);
+    const step=now=>{ if(fitAnim!==a) return; const k=Math.min(1,(now-t0)/dur); el.scrollLeft=max*k; if(k<1) a.raf=requestAnimationFrame(step); };
+    a.raf=requestAnimationFrame(step); }, 300);
+}, true);
+document.addEventListener('mouseout', e=>{ if(fitAnim && (!e.relatedTarget || !fitAnim.host.contains(e.relatedTarget))) fitStop(true); }, true);
+
 /* ---------- start ---------- */
 (async function init(){
-  localizeKeys(document.body); loadLocal();
+  localizeKeys(document.body); wrapFlexText(); loadLocal();
   // The desktop app always starts on the welcome screen; a project opens only when you open a file (double-click, Open…, or drop).
   // (The browser version has no files to double-click, so it still picks up where you left off.)
   const fresh = NATIVE; if(fresh){ state.markers=[]; state.slides=[]; state.pdfName=null; state.parts=null; docName=null; dirty=false; cur=-1; state.settings.lockCues=false; state.settings.lockOrder=false; save(); idbPut('score',null); idbPut('doc',null); }
