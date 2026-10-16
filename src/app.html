@@ -1266,7 +1266,9 @@ const spareHandler = e=>{
 ['input','focusin','focusout','click','mousedown','keydown','dblclick'].forEach(ev=>slidesEl.addEventListener(ev, spareHandler, true));
 slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; delete state.slides[i].pad; grow(e.target);
   showOverflow(e.target.closest('.slide'), e.target.value);
-  if(state.settings.flow && mode==='edit' && i>=state.markers.length){ clearTimeout(flowT); flowT=setTimeout(()=>flowRefit(i, e.target.selectionStart), 450); } if(i===cur||i===cur+1) updateOutput(); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); });
+  if(state.settings.flow && mode==='edit' && i>=state.markers.length){ setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); if(i===cur||i===cur+1) updateOutput();
+    if(/^insertFrom(Paste|Drop)/.test(e.inputType||'')){ snap(); flowRefit(i, e.target.selectionStart); } else flowTyped(i, e.target.selectionStart);   // a pasted libretto gets laid out by sentences; typing stays exactly as typed
+    return; } if(i===cur||i===cur+1) updateOutput(); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); });
 slidesEl.addEventListener('mousedown', e=>{
   const card=e.target.closest('.slide'); if(!card || e.target.closest('button') || mode!=='edit') return;
   const i=+card.dataset.i;
@@ -1439,6 +1441,35 @@ function flowRefit(i, caret){
   const t=state.slides[k].text; let pos=0, n=0; while(pos<t.length && n<left){ if(!/[\s…]/.test(t[pos])) n++; pos++; }
   const ta=document.querySelector(`.slide[data-i="${k}"] textarea`); if(ta){ ta.focus(); ta.setSelectionRange(pos,pos); }
 }
+// Typing in Flow mode works like a word processor: the text stays exactly as typed (every space and line break).
+// Only when a slide holds more than the screen shows does the part that doesn't fit move to the start of the
+// next slide of the same text (or a new slide), like a new page; the caret follows it there.
+function flowPush(i, caret){
+  let k=i, ck=i, cp=caret, moved=false;
+  while(k<state.slides.length && canFlow(k)){
+    const sl=state.slides[k], cut=overflowCut(sl.text.replace(/\|/g,'\n'));
+    if(cut<0) break;
+    if(!moved){ moved=true; }
+    const keep=sl.text.slice(0,cut).replace(/\s+$/,''), over=sl.text.slice(cut);
+    if(ck===k){ if(cp>=cut){ ck=k+1; cp-=cut; } else if(cp>keep.length) cp=keep.length; }
+    const next=state.slides[k+1];
+    if(next && canFlow(k+1) && (sl.b||'hard')!=='hard'){             // the text continues on the next slide: put it in front
+      const join = !next.text || /^\s/.test(next.text) || /\s$/.test(over) ? '' : ' ';
+      next.text = over + join + next.text;
+    } else {                                                         // start a new slide for it
+      state.slides.splice(k+1, 0, {text:over, b:sl.b||'hard'}); sl.b='soft'; if(cur>k) cur++;
+    }
+    sl.text=keep; k++;
+  }
+  return moved ? {k:ck, pos:Math.max(0,cp)} : null;
+}
+function flowTyped(i, caret){
+  const before=JSON.stringify(state.slides);
+  const r=flowPush(i, caret); if(!r) return;
+  undoStack.push(snapState(JSON.parse(before))); redoStack=[];
+  changed(true);
+  const ta=document.querySelector(`.slide[data-i="${r.k}"] textarea`); if(ta){ ta.focus(); ta._before=ta.value; ta.setSelectionRange(r.pos,r.pos); ta.closest('.slide').scrollIntoView({block:'nearest'}); }
+}
 function flowRefitAll(){ for(let i=state.markers.length;i<state.slides.length;){ const [,e]=flowBlock(i); flowRefit(i,null); i=flowBlock(i)[1]+1; } }
 function caretLine(ta){ // which visual line the caret is on, and how many lines the box has
   const cs=getComputedStyle(ta), d=document.createElement('div');
@@ -1465,13 +1496,15 @@ slidesEl.addEventListener('keydown', e=>{
   const ta=e.target, p=ta.selectionStart;
   if(e.key==='Enter' && !e.shiftKey){                        // Return = new slide here
     e.preventDefault(); clearTimeout(flowT); snap();
-    const sl=state.slides[i], tail={text:ta.value.slice(p).trim(), b:sl.b||'hard'};
-    sl.text=ta.value.slice(0,p).trim(); sl.b='hard'; state.slides.splice(i+1,0,tail); if(cur>i) cur++;
-    changed(true); flowRefit(i,null); const j=Math.min(flowBlock(i)[1]+1, state.slides.length-1);
-    const nt=document.querySelector(`.slide[data-i="${j}"] textarea`); if(nt){ nt.focus(); nt.setSelectionRange(0,0); }
+    const sl=state.slides[i], tail={text:'', b:sl.b||'hard'};
+    sl.text=ta.value.slice(0,p).replace(/\s+$/,''); sl.b='hard'; tail.text=ta.value.slice(p).replace(/^\s+/,''); state.slides.splice(i+1,0,tail); if(cur>i) cur++;
+    changed(true); const nt=document.querySelector(`.slide[data-i="${i+1}"] textarea`); if(nt){ nt.focus(); nt.setSelectionRange(0,0); nt.closest('.slide').scrollIntoView({block:'nearest'}); }
   } else if(e.key==='Backspace' && p===0 && ta.selectionEnd===0 && i>0 && canFlow(i-1) && (state.slides[i-1].b||'hard')==='hard'){
     e.preventDefault(); clearTimeout(flowT); snap();            // Delete at the start = join with the slide before
-    const prev=state.slides[i-1], at=prev.text.length; prev.b='soft'; changed(true); flowRefit(i-1, at);
+    const prev=state.slides[i-1], here=state.slides[i], join = prev.text && here.text && !/\s$/.test(prev.text) ? ' ' : '', at=prev.text.length+join.length;
+    prev.text=prev.text+join+here.text; prev.b=here.b||'hard'; state.slides.splice(i,1); if(cur>=i) cur=Math.max(0,cur-1);
+    const r=flowPush(i-1, at)||{k:i-1, pos:at}; changed(true);
+    const nt=document.querySelector(`.slide[data-i="${r.k}"] textarea`); if(nt){ nt.focus(); nt.setSelectionRange(r.pos,r.pos); }
   }
 });
 // Flow mode is for writing before cueing: once any cue is on the score it is switched off and locked.
