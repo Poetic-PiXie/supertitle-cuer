@@ -520,6 +520,13 @@ dialog textarea{width:100%;height:220px;background:var(--field);border:1px solid
 .row .lbl{width:150px;color:var(--dim)}
 .row input[type=range]{flex:1}
 .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;align-items:center}
+#pptDlg{width:min(560px,94vw)}
+.pptos{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 0;color:var(--dim);font-size:13px}
+.pptos .pseg{width:200px;--rowh:30px}
+.pptopts{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px}
+.pptopts label{display:flex;align-items:center;gap:8px;min-height:30px;cursor:pointer}
+.pptopts .pptn{color:var(--dim)}
+.pptopts input[type=text]{flex:1;min-width:0;background:var(--field);border:1px solid var(--line);border-radius:999px;box-shadow:var(--field-sh);color:var(--text);padding:5px 12px;font:inherit}
 .actions .info{margin-right:auto;color:var(--dim);font-size:13px}
 select,input[type=text],input[type=search]{background:var(--field);border:1px solid var(--line);border-radius:999px;padding:5px 12px;box-shadow:var(--field-sh)}
 select:focus-visible,input[type=text]:focus-visible,input[type=search]:focus-visible,dialog textarea:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,122,48,.25)}
@@ -643,6 +650,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
 <script>/*@@PDFJS@@*/</script>
 <script>/*@@PDFJSWORKER@@*/</script>
 <script>/*@@PDFLIB@@*/</script>
+<script>/*@@PPTXGEN@@*/</script>
 <script>/*@@FOLLOWJS@@*/</script>
 <script>/*@@GUIDEPRINTJS@@*/</script>
 </head>
@@ -661,6 +669,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <button data-act="saveAsPdf">Save As PDF… <span class="sc" style="float:none;margin-left:6px">opens in any PDF viewer, reopens here</span></button>
       <button data-act="exportPrintable">Export printable score (PDF)…<span class="sc">⌘E</span></button>
       <button data-act="printScore">Print score…<span class="sc">⌘P</span></button>
+      <button data-act="exportPptx">Export as PowerPoint…<span class="sc">⇧⌘P</span></button>
       <hr>
       <button data-act="importSlides">Import slides (CSV / text / PDF)…</button>
       <button data-act="exportCsv">Export slides (CSV)</button>
@@ -744,9 +753,11 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
     <div class="srow"><span class="lbl">Font</span><select id="sFont" class="pill" title="The typeface of the titles">
       <option value='Georgia, "Times New Roman", serif'>Georgia (serif)</option>
       <option value='"Palatino Linotype", Palatino, "Book Antiqua", serif'>Palatino (serif)</option>
-      <option value='Garamond, "EB Garamond", "Times New Roman", serif'>Garamond (serif)</option>
-      <option value='"Helvetica Neue", Helvetica, Arial, sans-serif'>Helvetica (sans)</option>
+      <option value='"Times New Roman", Times, serif'>Times New Roman (serif)</option>
       <option value='Verdana, Geneva, sans-serif'>Verdana (sans)</option>
+      <option value='Arial, Helvetica, sans-serif'>Arial (sans)</option>
+      <option value='"Trebuchet MS", sans-serif'>Trebuchet MS (sans)</option>
+      <option value='Tahoma, Verdana, sans-serif'>Tahoma (sans)</option>
     </select><span></span></div>
     <div class="srow"><span class="lbl">Text style</span><div class="ppair"><label class="ptog" title="Italic titles on or off"><input type="checkbox" id="sItal"><i>Italic</i></label><label class="ptog" title="Bold titles on or off"><input type="checkbox" id="sBold"><b>Bold</b></label></div><span></span></div>
     <div class="srow"><span class="lbl">Slide Colors</span><div class="ppair"><label class="pcol" title="Color of the title text">Text<input type="color" id="sFg"></label><label class="pcol" title="Color of the screen behind the titles">Background<input type="color" id="sBg"></label></div><span></span></div>
@@ -819,6 +830,19 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
     <button type="button" id="ppPrint" class="primary" title="Open the print dialog for the printer, copies and two-sided printing">Print…</button>
   </div>
 </form></dialog>
+<dialog id="pptDlg"><form method="dialog">
+  <h2>Export as PowerPoint</h2>
+  <p class="note">Each supertitle becomes one slide, laid out just as on the projector: the same screen shape, font, type size, colors, line breaks and position. The text stays editable. Each slide's notes give its cue number and score page.</p>
+  <div class="pptopts">
+    <label><input type="radio" name="pptWhich" value="all" checked> All supertitles, in order <span class="pptn" id="pptNAll"></span></label>
+    <label><input type="radio" name="pptWhich" value="cued"> Only the cued ones <span class="pptn" id="pptNCued"></span></label>
+    <label><input type="radio" name="pptWhich" value="some"> Only these supertitles: <input type="text" id="pptRange" placeholder="e.g. 1–20, 25" spellcheck="false"></label>
+  </div>
+  <div class="pptos" id="pptOs"><span>Palatino has a different name on each system. This deck will run on</span>
+    <div class="pseg" id="pptOsSeg" style="--n:2"><button type="button" data-os="mac">a Mac</button><button type="button" data-os="win">Windows</button></div></div>
+  <p class="note" id="pptInfo"></p>
+  <div class="actions"><button value="cancel">Cancel</button><button value="ok" class="primary" id="pptGo">Export…</button></div>
+</form></dialog>
 <dialog id="askDlg"><form method="dialog">
   <h2 id="askTitle"></h2>
   <div class="delpv" id="askPreview"></div>
@@ -848,7 +872,17 @@ function migrateSettings(st){ if(!st.view){ st.view='width'; st.zoomPct=100; }  
   st.vpos=Math.max(-100, Math.min(100, +st.vpos||0));
   st.sideMargin=Math.max(0.02, Math.min(0.06, +st.sideMargin||0.02));
   if(st.markerSize===3.5) st.markerSize=4; st.markerSize=Math.max(2, Math.min(6, +st.markerSize||4));
+  // Only fonts that every Mac and Windows computer has (so a project, and its PowerPoint export, look the same anywhere).
+  // Older projects that used a font missing on some computers switch to its nearest match.
+  if(!SAFE_FONTS.includes(st.font)){ const f=String(st.font||''), to = /palatino|garamond/i.test(f) ? SAFE_FONTS[1] : /times/i.test(f) ? SAFE_FONTS[2] : /helvetica|arial/i.test(f) ? SAFE_FONTS[4] : /verdana/i.test(f) ? SAFE_FONTS[3] : SAFE_FONTS[0];
+    fontSwapped = f ? [fontLabel(f), fontLabel(to)] : null; st.font=to; }
   return st; }
+const SAFE_FONTS=['Georgia, "Times New Roman", serif', '"Palatino Linotype", Palatino, "Book Antiqua", serif', '"Times New Roman", Times, serif', 'Verdana, Geneva, sans-serif', 'Arial, Helvetica, sans-serif', '"Trebuchet MS", sans-serif', 'Tahoma, Verdana, sans-serif'];
+const fontLabel = f => { const n=String(f).split(',')[0].replace(/["']/g,'').trim(); return n==='Palatino Linotype' ? 'Palatino' : n; };
+let fontSwapped=null;
+// Tell about a font switch once the project has opened (after the "Opened…" message).
+function noteFontSwap(){ if(!fontSwapped) return; const [a,b]=fontSwapped; fontSwapped=null;
+  setTimeout(()=>toast(`This project used ${a}, which isn't on every computer — it now uses ${b}. Check the line breaks.`), 2500); }
 const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', vpos:0, sideMargin:0.04, shape:'16/9', markerSize:4, zoom:1, view:'width', zoomPct:100, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:0.8, align:'left' });
 
 const state = { pdfName:null, parts:null, markers:[], slides:[], settings:defaults() };
@@ -1747,6 +1781,7 @@ const actions = {
   importSlides: ()=>openImport(),
   saveAsPdf: ()=>saveDoc(true,'pdf'),
   exportPrintable: ()=>exportPrintable(),
+  exportPptx: ()=>openPptx(),
   printScore: ()=>printScore(),
   exportCsv: ()=>{ if(!allLines().length) return toast('No slides to export'); download(baseName()+' - slides.csv', '﻿'+allLines().map(s=>'"'+s.text.replace(/"/g,'""')+'"').join('\r\n')+'\r\n','text/csv'); },
   clearMarkers: ()=>{ if(state.markers.length && confirm(`Remove all ${state.markers.length} cue markers from the score?`)){ snap(); state.markers=[]; cur=-1; changed(false); } },
@@ -1915,7 +1950,7 @@ async function openAny(file, handle){
   renderSlides(); goTo(-1,false);
   fileHandle=handle||null; docName=file.name; setDirty(false); save();
   idbPut('score',{name:state.pdfName, bytes:orig}); idbPut('doc',{name:docName, handle:fileHandle});
-  toast(`Opened “${file.name}” — ${state.markers.length} cues, ${state.slides.length} slides`);
+  toast(`Opened “${file.name}” — ${state.markers.length} cues, ${state.slides.length} slides`); noteFontSwap();
 }
 // Before closing or replacing the project: offer to save unsaved changes. Resolves true when it's fine to go on.
 async function askSaveFirst(){
@@ -1942,7 +1977,7 @@ async function openProjectFile(f){
     const hadPdf=state.pdfName; state.pdfName = hadPdf || p.pdfName; cur=-1;
     if(p.pdfName && hadPdf && p.pdfName!==hadPdf) toast(`Project was made for "${p.pdfName}" — markers placed on the open score`);
     else if(p.pdfName && !pdfDoc) toast(`Now open the score: "${p.pdfName}"`);
-    layoutPages(); changed(true);
+    layoutPages(); changed(true); noteFontSwap();
   }catch(e){ toast("That doesn't look like a Supertitle Cuer project file"); }
 }
 
@@ -2697,7 +2732,7 @@ window.__stcMenu = (cmd) => {
     new: newProject, close: closeProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true,'supertitles'), saveAsPdf: ()=>saveDoc(true,'pdf'), exportPrintable,
     importSlides: openImport, exportCsv: actions.exportCsv,
     undo: ()=> ed ? document.execCommand('undo') : undo(), redo: ()=> ed ? document.execCommand('redo') : redo(),
-    printScore: ()=>printScore(), edit: ()=>setMode('edit'), show: ()=>setMode('show'), view100: ()=>setView('pct',100), viewFitH: ()=>setView('height'), viewFitW: ()=>setView('width'), projector: openProjector, connect: ()=>openHelp('connect'), help: ()=>openHelp(), printGuide: ()=>printGuide(), settings: openSettings,
+    printScore: ()=>printScore(), exportPptx: ()=>openPptx(), edit: ()=>setMode('edit'), show: ()=>setMode('show'), view100: ()=>setView('pct',100), viewFitH: ()=>setView('height'), viewFitW: ()=>setView('width'), projector: openProjector, connect: ()=>openHelp('connect'), help: ()=>openHelp(), printGuide: ()=>printGuide(), settings: openSettings,
     spell: ()=>{ const on=!spellOn(); applySpell(on); toast(on?'Spell check on':'Spell check off'); },
   };
   if(map[cmd]) map[cmd]();
@@ -2756,6 +2791,86 @@ function closeOnOut(e){ const p=$('#palette'); if(p && !p.contains(e.target)) cl
 function closePalette(){ document.removeEventListener('pointerdown', closeOnOut, true); const p=$('#palette'); if(p){ try{ p.hidePopover(); }catch(_){} p.remove(); } }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#palette')){ e.preventDefault(); e.stopPropagation(); closePalette(); } }, true);
 
+/* ---------- PowerPoint export ----------
+   One slide per supertitle, laid out with the same geometry and line breaks as the projector
+   (titleLayout / measureCtx), as editable text: a fixed text box, no autofit, no wrapping by PowerPoint. */
+function wrapTitle(text){ // the projector's own line breaking (same as lineCount)
+  const ctx=measureCtx(), avail=FIT_W*titleLayout().availW, out=[];
+  for(const para of String(text).replace(/\|/g,'\n').split('\n')){ let line='';
+    for(const w of para.split(/\s+/).filter(Boolean)){ const t=line?line+' '+w:w; if(!line || ctx.measureText(t).width<=avail) line=t; else { out.push(line); line=w; } }
+    out.push(line); }
+  while(out.length && !out[out.length-1].trim()) out.pop();
+  return out;
+}
+// Everything in reading order, with what each line is: {sl, n (its number in the list, or null), cue (index or -1), part}
+function pptItems(){
+  const parts=partsList(), items=[], cueItem=i=>({sl:state.slides[i], n:i+1, cue:i<state.markers.length?i:-1, part: i<state.markers.length ? cuePart(i) : null});
+  if(parts.length<2){ state.slides.forEach((_,i)=>items.push(cueItem(i))); return items; }
+  const ids=state.markers.map(m=>(partOfPage(parts,m.page)||{}).id);
+  for(const p of parts){ ids.forEach((id,i)=>{ if(id===p.id && i<state.slides.length) items.push(cueItem(i)); }); (p.spare||[]).forEach(sl=>items.push({sl, n:null, cue:-1, part:p, waiting:true})); }
+  for(let i=state.markers.length;i<state.slides.length;i++) items.push(cueItem(i));
+  return items;
+}
+function pptChoice(){
+  const v=(document.querySelector('input[name=pptWhich]:checked')||{}).value||'all', all=pptItems();
+  if(v==='cued') return all.filter(x=>x.cue>=0);
+  if(v==='some'){ const set=parseRange($('#pptRange').value, state.slides.length); return all.filter(x=>x.n && set.has(x.n)); }
+  return all;
+}
+function pptPaint(){ const all=pptItems(), n=pptChoice().length;
+  $('#pptNAll').textContent=`(${all.length})`; $('#pptNCued').textContent=`(${all.filter(x=>x.cue>=0).length})`;
+  $('#pptGo').disabled=!n;
+  $('#pptInfo').textContent = n ? `${n} slide${n===1?'':'s'} · ${normShape(state.settings.shape).replace('/',':')} · ${fontLabel(state.settings.font)}` : 'Nothing to export with this choice.'; }
+let pptOs = /Win/i.test(navigator.platform||navigator.userAgent) ? 'win' : 'mac';
+const isPalatino = () => /palatino/i.test(state.settings.font);
+function openPptx(){
+  if(!allLines().length) return toast('No supertitles to export yet');
+  const d=$('#pptDlg'); $('#pptOs').hidden=!isPalatino(); pseg($('#pptOsSeg'), b=>b.dataset.os===pptOs); pptPaint(); d.returnValue=''; d.showModal();
+}
+$('#pptOsSeg').addEventListener('click', e=>{ const b=e.target.closest('[data-os]'); if(!b) return; pptOs=b.dataset.os; pseg($('#pptOsSeg'), x=>x.dataset.os===pptOs); });
+$('#pptDlg').addEventListener('input', e=>{ if(e.target.id==='pptRange'){ document.querySelector('input[name=pptWhich][value=some]').checked=true; } pptPaint(); });
+$('#pptDlg').addEventListener('close', ()=>{ if($('#pptDlg').returnValue==='ok') exportPptx(pptChoice()); });
+async function buildPptx(items){
+  const st=state.settings, sh=normShape(st.shape), L=titleLayout();
+  const W = sh==='4/3' ? 10 : 13.333, H = sh==='6/1' ? W/6 : 7.5;      // inches, PowerPoint's own 16:9 and 4:3 sizes
+  const m=L.px(W,H), lineH=m.font*m.lh, vp=(st.vpos||0)/100;
+  const pptx=new PptxGenJS(); pptx.defineLayout({name:'STQ', width:W, height:H}); pptx.layout='STQ';
+  pptx.title=projectFileName().replace(/\.supertitles$/i,''); pptx.author='STQ (Supertitle Cuer)';
+  const col=c=>String(c||'#000000').replace('#','').toUpperCase(), face = isPalatino() ? (pptOs==='win' ? 'Palatino Linotype' : 'Palatino') : fontLabel(st.font);
+  let cut=0;
+  for(const it of items){
+    const s=pptx.addSlide(); s.background={color:col(st.bg)};
+    let lines=wrapTitle(it.sl.text); const over=lines.length>L.lines; if(over){ lines=lines.slice(0,L.lines); cut++; }
+    const blank=!lines.join('').trim(), notes=[];
+    if(it.cue>=0){ const mk=state.markers[it.cue], p=it.part; notes.push(`Cue ${it.cue+1} · page ${mk.page}${p && partsList().length>1 ? ' · '+p.name : ''}`); }
+    else notes.push(it.waiting ? `Not cued yet (waiting in ${it.part.name})` : 'Not cued yet');
+    if(blank) notes.push('Blank: shows nothing.');
+    if(over) notes.push(`Too long for the screen: like the projector, this slide shows only the first ${L.lines} lines. Full text: `+it.sl.text.replace(/\|/g,' / ').replace(/\n/g,' / '));
+    s.addNotes(notes.join('\n'));
+    if(blank) continue;
+    const n=lines.length, availH=H-2*m.padY, blockH=n*lineH, free=Math.max(0, availH-blockH);
+    const y=m.padY + free/2*(sh==='6/1' ? 1 : 1+vp);
+    s.addText(lines.map((l,i)=>({text:l||' ', options:{breakLine:i<n-1}})), {
+      x:m.padX, y, w:W-2*m.padX, h:blockH, margin:0, valign:'top', align:st.align||'left',
+      fontFace:face, fontSize:Math.round(m.font*72*10)/10, color:col(st.fg), bold:!!st.bold, italic:!!st.italic,
+      lineSpacing:Math.round(lineH*72*100)/100, paraSpaceBefore:0, paraSpaceAfter:0, fit:'none', wrap:false });
+  }
+  return {bytes: await pptx.write({outputType:'uint8array'}), cut};
+}
+async function exportPptx(items){
+  if(!items.length) return;
+  const name = projectFileName().replace(/\.supertitles$/i,'') + ' - supertitles.pptx', type='application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  let out; try{ out=await buildPptx(items); }catch(e){ console.error(e); return toast('Could not make the PowerPoint file: '+e.message); }
+  const done = nm => toast(`Saved “${nm}” — ${items.length} slide${items.length===1?'':'s'}`+(out.cut?` (${out.cut} too long for the screen, cut as on the projector; see their notes)`:''));
+  if(NATIVE){ const p=await window.stc.saveDialog({suggestedName:name, kind:'pptx'}); if(!p) return;
+    try{ await window.stc.writeFile(p, out.bytes); done(p.split(/[\\/]/).pop()); }catch(e){ toast('Could not export: '+e.message); } return; }
+  let h=null;
+  if('showSaveFilePicker' in window){ try{ h=await window.showSaveFilePicker({suggestedName:name, types:[{description:'PowerPoint', accept:{[type]:['.pptx']}}]}); }catch(e){ if(e.name==='AbortError') return; h=null; } }
+  const blob=new Blob([out.bytes],{type});
+  if(h){ try{ const w=await h.createWritable(); await w.write(blob); await w.close(); done(h.name); return; }catch(e){ console.warn(e); } }
+  download(name, blob); done(name);
+}
+
 /* ---------- text that doesn't fit ----------
    Labels too long for their space end in "…"; hovering slides the text sideways to show the rest,
    and it slides back when the pointer leaves. Text directly inside flex buttons is wrapped in a
@@ -2802,6 +2917,7 @@ document.addEventListener('mouseout', e=>{ if(fitAnim && (!e.relatedTarget || !f
   const rec = fresh ? null : await idbGet('score');
   if(rec && rec.bytes && (!state.pdfName || rec.name===state.pdfName)){ await loadPdfBytes(rec.name, new Uint8Array(rec.bytes)); setDirty(wasDirty); toast(`Picked up where you left off`); }
   else if(state.pdfName){ $('#scoreEmpty .big').textContent = `Open the score: ${state.pdfName}`; }
+  if(fresh) fontSwapped=null; else noteFontSwap();
   if(NATIVE){ window.stc.onOpenFile(f=>openNativeFile(f)); window.stc.ready(); }
 })();
 </script>

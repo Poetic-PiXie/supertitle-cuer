@@ -120,7 +120,7 @@
 <p class="lead">A handful of buttons, each with one clear job.</p>
 <figure class="shot"><img src="shots/toolbar.webp" alt="The toolbar across the top of the window"></figure>
 <dl>
-<dt>File ▾</dt><dd>New project, Close project, Open, Save, Save As, Save As PDF, Export printable score, Print score, Import and Export slides, and two clean-up commands: Remove all cue markers and Remove all slides. In the desktop app the same commands are in the menu bar.</dd>
+<dt>File ▾</dt><dd>New project, Close project, Open, Save, Save As, Save As PDF, Export printable score, Print score, Export as PowerPoint, Import and Export slides, and two clean-up commands: Remove all cue markers and Remove all slides. In the desktop app the same commands are in the menu bar.</dd>
 <dt>? Help</dt><dd>This guide. Type in its search box to find any topic.</dd>
 <dt>💾 Save</dt><dd>Saves everything into the project file (<kbd>⌘S</kbd>). The first time, it asks where.</dd>
 <dt>Edit / Show</dt><dd>The two modes — the switch glows <b>orange</b> in Edit and <b>teal</b> in Show, so you can tell at a glance. In <b>Edit</b> a click on the score adds a cue and the slides can be typed in. In <b>Show</b> the keyboard runs the titles and nothing can be changed by accident. <kbd>⇧⌘E</kbd> and <kbd>⇧⌘R</kbd> switch in the desktop app.</dd>
@@ -315,7 +315,7 @@
 <figure class="shot"><img src="shots/settings.webp" alt="The Settings window"></figure>
 <dl>
 <dt>Screen shape</dt><dd><b>16:9</b> fills a widescreen projector; <b>4:3</b> uses a centered 4:3 area; <b>6:1 Strip</b> is a full-width band one sixth as high as it is wide, for two lines of titles above the stage.</dd>
-<dt>Font, Text style, Slide Colors</dt><dd>Five fonts (Georgia, Palatino, Garamond, Helvetica, Verdana), italic and bold, text and background color.</dd>
+<dt>Font, Text style, Slide Colors</dt><dd>Seven fonts that every Mac and Windows computer has: Georgia, Palatino, Times New Roman, Verdana, Arial, Trebuchet MS and Tahoma. So a project, and its PowerPoint export, look the same on any computer. Italic and bold, text and background color. (A project made with an older version in Garamond or Helvetica switches to Palatino or Arial when opened, and STQ says so.)</dd>
 <dt>Alignment</dt><dd>Left (default), center or right.</dd>
 <dt>Text size</dt><dd>75 % to 100 % (new projects start at 80 %). 100 % is the built-in layout (titles about 137 pixels high on an HD projector); at smaller sizes the space gained is shared evenly between the margins and the line gaps. Hover over the little <span class="ui">i</span> for the exact numbers. The size never changes with the amount of text.</dd>
 <dt>Vertical position</dt><dd>A slider from top (left) to bottom (right), starting in the middle. The button beside it shows how far up or down the titles sit; click it to put them back in the <span class="ui">Middle</span>. On the 6:1 strip it moves the whole strip up or down the projector screen.</dd>
@@ -329,7 +329,7 @@
 <figure class="shot"><img src="shots/shapes.webp" alt="The three screen shapes in the preview"><figcaption>With the projector on, the preview shows the whole projector screen; thin lines (on your screen only) mark the 4:3 area or the 6:1 strip.</figcaption></figure>
 <div class="tipsbox"><div class="tbt">💡 Tips for titles people can read from the back row</div><ul>
 <li>White (or warm off-white) on black is the classic for a reason: the black disappears in a dark theatre and only the words float above the stage.</li>
-<li>Serif fonts like Georgia and Palatino read easily at a distance; Helvetica and Verdana look cleaner on a bright LED wall.</li>
+<li>Serif fonts like Georgia and Palatino read easily at a distance; Arial and Verdana look cleaner on a bright LED wall. Tahoma and Times New Roman are narrow, so more words fit on a line: handy for the 6:1 strip.</li>
 <li>Start at 80 % text size: the extra breathing room between the lines makes two-line titles much easier to take in at a glance.</li>
 <li>Walk to the last row during a technical rehearsal and read a few titles. If you squint, go up a size or switch to bold.</li>
 <li>On a 6:1 strip above the proscenium, keep titles short — two lines is all there is, and the audience is looking up.</li>
@@ -433,12 +433,13 @@
 <h2>Sharing and printing: what each export gives you</h2>
 <p class="lead">Need a copy for the conductor, a printout for the booth, or a list for the translator? There's a one-click export for each.</p>
 <figure class="shot small"><img src="shots/file-menu.webp" alt="The File menu"></figure>
-<p>Everything is in the <span class="ui">File ▾</span> menu (and the desktop app's <span class="ui">File</span> menu). There are four kinds of file:</p>
+<p>Everything is in the <span class="ui">File ▾</span> menu (and the desktop app's <span class="ui">File</span> menu). There are five kinds of file:</p>
 <table class="exports">
 <tr><th>Command</th><th>File</th><th>Holds</th><th>Opens again in Supertitle Cuer?</th></tr>
 <tr><td><span class="ui">Save</span> / <span class="ui">Save As…</span></td><td><code>Name.supertitles</code></td><td>The whole project</td><td>Yes, everything editable</td></tr>
 <tr><td><span class="ui">Save As PDF…</span></td><td><code>Name - supertitles.pdf</code></td><td>The whole project, inside a PDF anyone can read</td><td>Yes, everything editable</td></tr>
 <tr><td><span class="ui">Export printable score (PDF)…</span></td><td><code>Name - printable.pdf</code></td><td>The score with numbered cues, and a cue sheet</td><td>Only as a plain score</td></tr>
+<tr><td><span class="ui">Export as PowerPoint…</span></td><td><code>Name - supertitles.pptx</code></td><td>One slide per supertitle, looking just as on the projector</td><td>No</td></tr>
 <tr><td><span class="ui">Export slides (CSV)</span></td><td><code>Name - slides.csv</code></td><td>The titles only</td><td>Through <span class="ui">Import…</span></td></tr>
 </table>
 <h3>The project file (.supertitles)</h3>
@@ -448,6 +449,18 @@
 <h3>Export printable score</h3>
 <p>A plain PDF made for printing: the score pages with the numbered cues drawn on them (at the <span class="ui">Cue circle size</span> from Settings), and at the end a <b>cue sheet</b> listing every title next to its number — red numbers for cued titles, gray for titles that have no cue yet. It contains no project data, so it is small and safe to send anywhere; opened in Supertitle Cuer it is just a score. Use it for the booth binder, the conductor's or stage manager's copy, or to proofread the titles on paper.</p>
 <figure class="shot"><img src="shots/exports.webp" alt="A page of the printable score with numbered cues, and the cue sheet"><figcaption>The printable score: a page with its numbered cues, and the cue sheet at the end.</figcaption></figure>
+<h3>Export as PowerPoint</h3>
+<p>Some theatres run their titles from PowerPoint, and some operators only know PowerPoint. <span class="ui">File ▾ → Export as PowerPoint…</span> (<kbd>⇧⌘P</kbd>) turns the supertitles into a PowerPoint presentation, one slide per supertitle, in order. It is also a good backup: if the show laptop fails, any computer with PowerPoint can run the titles.</p>
+<ul>
+<li><b>It looks like the projector.</b> The slides have the same shape as your screen (16:9, 4:3 or the 6:1 strip) and the same font, type size, italic or bold, text and background colors, alignment, side margins and vertical position. Each title breaks its lines exactly where STQ does.</li>
+<li><b>The text stays editable.</b> Each title is an ordinary PowerPoint text box, so a typo can be fixed there. PowerPoint won't rewrap the lines, so if you make a line longer, break it yourself with <kbd>Return</kbd>.</li>
+<li><b>Choose what goes in:</b> <span class="ui">All supertitles, in order</span> (including any still waiting for a cue), <span class="ui">Only the cued ones</span>, or <span class="ui">Only these supertitles</span>: type their numbers, such as “1–20, 25”.</li>
+<li><b>Speaker notes.</b> Each slide's notes say its cue number and score page (and, with several PDFs, which one), so whoever runs the slides can follow along in a printed score. Uncued lines say “Not cued yet”.</li>
+<li><b>Blank supertitles</b> become empty slides in your background color, so a blackout stays a blackout. A title too long for the screen is cut just as on the projector, and its notes hold the full text.</li>
+<li><b>Palatino</b> is called “Palatino” on a Mac and “Palatino Linotype” on Windows. When your font is Palatino, the export asks which kind of computer the slides will run on, so PowerPoint finds the font by its right name. The other six fonts have the same name everywhere.</li>
+</ul>
+<figure class="shot small"><img src="shots/ppt-export.webp" alt="The Export as PowerPoint window"><figcaption>Exporting supertitles 2–4 and 9 for a Windows computer.</figcaption></figure>
+<p class="note">Keynote and Google Slides open the file too. To run the show from PowerPoint, start the slide show from the first slide and press <kbd>→</kbd> or <kbd>Space</kbd> for each cue, just as in STQ.</p>
 <h3>Printing</h3>
 <p>Two things can go to the printer straight from STQ:</p>
 <ul>
@@ -513,6 +526,7 @@
 <tr><td><kbd>⌘N</kbd></td><td>New project (desktop app)</td></tr>
 <tr><td><kbd>⌘W</kbd></td><td>Close project (desktop app)</td></tr>
 <tr><td><kbd>⌘E</kbd></td><td>Export printable score (desktop app)</td></tr>
+<tr><td><kbd>⇧⌘P</kbd></td><td>Export as PowerPoint (desktop app)</td></tr>
 <tr><td><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd></td><td>Undo / Redo</td></tr>
 <tr><td><kbd>⇧⌘E</kbd> / <kbd>⇧⌘R</kbd></td><td>Edit / Show mode (desktop app)</td></tr>
 <tr><td><kbd>⌘0</kbd> / <kbd>⌘1</kbd> / <kbd>⌘2</kbd></td><td>score view: actual size (100%) / fit the page height / fit the page width</td></tr>

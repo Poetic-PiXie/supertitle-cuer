@@ -348,7 +348,9 @@ ipcMain.handle('open-dialog', async () => {
 ipcMain.handle('save-dialog', async (_e, { suggestedName, kind }) => {
   const filters = kind === 'pdf'
     ? [{ name: 'PDF', extensions: ['pdf'] }]
-    : [{ name: 'Supertitles project', extensions: ['supertitles'] }];
+    : kind === 'pptx'
+      ? [{ name: 'PowerPoint', extensions: ['pptx'] }]
+      : [{ name: 'Supertitles project', extensions: ['supertitles'] }];
   const r = await dialog.showSaveDialog(win, {
     defaultPath: path.join(lastDir || app.getPath('documents'), suggestedName || 'Untitled.supertitles'),
     filters,
@@ -361,7 +363,7 @@ ipcMain.handle('write-file', async (_e, { path: p, bytes }) => {
   fs.writeFileSync(tmp, Buffer.from(bytes));
   fs.renameSync(tmp, p);
   lastDir = path.dirname(p);
-  app.addRecentDocument(p);
+  if (isOpenable(p)) app.addRecentDocument(p);
   return true;
 });
 
@@ -395,6 +397,7 @@ function buildMenu() {
         item('Save As PDF…', 'saveAsPdf', 'Alt+Shift+CmdOrCtrl+S'),
         item('Export Printable Score (PDF)…', 'exportPrintable', 'CmdOrCtrl+E'),
         item('Print Score…', 'printScore', 'CmdOrCtrl+P'),
+        item('Export as PowerPoint…', 'exportPptx', 'Shift+CmdOrCtrl+P'),
         { type: 'separator' },
         item('Import Slides…', 'importSlides'),
         item('Export Slides (CSV)', 'exportCsv'),

@@ -268,6 +268,11 @@ tr:nth-child(4) td{outline:2px solid #1e7145;outline-offset:-2px}</style></body>
         r = await ex.evaluate("(()=>{ const a=document.querySelector('#slides').getBoundingClientRect(); return {x:a.left,y:a.top,width:a.width,height:Math.min(a.height,560)}; })()")
         save(await ex.screenshot(clip=r), 'pdf-sections', 900)
         await ex.evaluate("undo()"); await ex.wait_for_timeout(300); await ex.evaluate("undo()"); await ex.wait_for_timeout(300)
+        # the PowerPoint export window (Palatino: it asks which computer the slides will run on)
+        await ex.evaluate("(()=>{ state.settings.font=SAFE_FONTS[1]; pptOs='win'; openPptx(); document.querySelector('input[name=pptWhich][value=some]').checked=true; $('#pptRange').value='2–4, 9'; pptPaint(); document.activeElement.blur(); })()"); await ex.wait_for_timeout(700)
+        r = await ex.evaluate("(()=>{ const r=document.querySelector('#pptDlg').getBoundingClientRect(); return {x:r.left,y:r.top,width:r.width,height:r.height}; })()")
+        save(await ex.screenshot(clip=r), 'ppt-export', 1100)
+        await ex.evaluate("$('#pptDlg').close()"); await ex.wait_for_timeout(200)
         pdfb = bytes(await ex.evaluate("buildPrintablePdf().then(b=>Array.from(b))"))
         with tempfile.TemporaryDirectory() as td:
             open(td + '/p.pdf', 'wb').write(pdfb)

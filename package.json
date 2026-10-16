@@ -18,7 +18,8 @@
     "electron": "^38.8.6",
     "electron-builder": "^26.15.3",
     "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^3.11.174"
+    "pdfjs-dist": "^3.11.174",
+    "pptxgenjs": "^3.12.0"
   },
   "build": {
     "appId": "com.poeticpixie.supertitlecuer",

@@ -12,11 +12,12 @@ const libs = {
   PDFJS: nm('pdfjs-dist/build/pdf.min.js'),
   PDFJSWORKER: nm('pdfjs-dist/build/pdf.worker.min.js'),
   PDFLIB: nm('pdf-lib/dist/pdf-lib.min.js'),
+  PPTXGEN: nm('pptxgenjs/dist/pptxgen.bundle.js'),
   FOLLOWJS: path.join(root, 'src', 'follow.js'),
   GUIDEPRINTJS: path.join(root, 'src', 'guide-print.js'),
 };
 for (const [key, file] of Object.entries(libs)) {
-  const code = fs.readFileSync(file, 'utf8');
+  const code = fs.readFileSync(file, 'utf8').replace(/\n\/\/# sourceMappingURL=\S+\s*$/, '\n');
   if (/<\/script/i.test(code)) throw new Error(`${file} contains </script>`);
   const marker = `/*@@${key}@@*/`;
   if (!html.includes(marker)) throw new Error(`missing ${marker} in src/app.html`);
