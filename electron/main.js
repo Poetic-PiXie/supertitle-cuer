@@ -456,15 +456,18 @@ function buildMenu() {
 // ---------- lifecycle ----------
 app.whenReady().then(() => {
   buildMenu();
-  createWindow();
+  if (!win || win.isDestroyed()) createWindow();
   if (!isMac) { const l = readPrefs().spellLang; if (l) try { win.webContents.session.setSpellCheckerLanguages([l]); } catch (_) {} }
   if (!isMac) process.argv.slice(1).forEach(queueOpen); // Windows: file given at launch
   screen.on('display-added', () => {
     if (projector && !projector.isDestroyed() && !projector.isFullScreen()) moveProjectorToSecondScreen();
   });
 });
+// macOS sends 'activate' when the Dock icon is clicked or a file is double-clicked; that can happen while
+// the app is still starting, before 'ready' (when the screen size can't be read yet). The window made in
+// whenReady() covers that case, so only make one here once the app is ready and none exists.
 app.on('activate', () => {
-  if (!win) createWindow();
+  if (app.isReady() && (!win || win.isDestroyed())) createWindow();
 });
 app.on('window-all-closed', () => app.quit());
 app.on('will-quit', () => {
