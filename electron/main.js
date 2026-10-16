@@ -30,6 +30,7 @@ const isOpenable = (p) => /\.(supertitles|pdf)$/i.test(p || '') && fs.existsSync
 function queueOpen(p) {
   if (!isOpenable(p)) return;
   pendingFiles.push(p);
+  if (!win && app.isReady()) createWindow();   // Mac: the app was running with no window open
   flushPending();
 }
 
@@ -276,7 +277,9 @@ function setKeepAwake(on) {
 ipcMain.on('renderer-ready', () => {
   rendererReady = true;
   flushPending();
+  while (pendingCmds.length) menuCommand(pendingCmds.shift());
 });
+ipcMain.on('emoji-panel', () => { try { app.showEmojiPanel(); } catch (_) {} });
 ipcMain.on('keep-awake', (_e, on) => setKeepAwake(!!on));
 // the guide as a PDF, shipped inside the app (docs/Supertitle_Cuer_Manual.pdf)
 const GUIDE_PDF = path.join(__dirname, '..', 'docs', 'Supertitle_Cuer_Manual.pdf');
@@ -377,8 +380,12 @@ ipcMain.handle('ask-save', async () => {
 });
 
 // ---------- menu ----------
+// With no window open (Mac: the app keeps running, like Word), a menu command opens the window first.
+const pendingCmds = [];
 function menuCommand(cmd) {
-  if (win) win.webContents.executeJavaScript(`window.__stcMenu && window.__stcMenu(${JSON.stringify(cmd)})`).catch(() => {});
+  if (!win) { if (cmd === 'close') return; pendingCmds.push(cmd); if (app.isReady()) createWindow(); return; }
+  if (!rendererReady) { pendingCmds.push(cmd); return; }
+  win.webContents.executeJavaScript(`window.__stcMenu && window.__stcMenu(${JSON.stringify(cmd)})`).catch(() => {});
 }
 const item = (label, cmd, accelerator) => ({ label, accelerator, click: () => menuCommand(cmd) });
 
@@ -472,7 +479,9 @@ app.whenReady().then(() => {
 app.on('activate', () => {
   if (app.isReady() && (!win || win.isDestroyed())) createWindow();
 });
-app.on('window-all-closed', () => app.quit());
+// Like Word: on a Mac, closing the window closes the project but STQ keeps running (Dock, menu bar);
+// ⌘Q quits. On Windows the app quits with its last window, as Windows apps do.
+app.on('window-all-closed', () => { if (!isMac) app.quit(); });
 app.on('will-quit', () => {
   // words ignored with "Ignore Spelling" are only for this session
   try { const ses = require('electron').session.defaultSession; ignoredWords.forEach((w) => ses.removeWordFromSpellCheckerDictionary(w)); } catch (_) {}

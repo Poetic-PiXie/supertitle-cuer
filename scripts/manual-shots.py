@@ -297,6 +297,12 @@ tr:nth-child(4) td{outline:2px solid #1e7145;outline-offset:-2px}</style></body>
         b = io.BytesIO(); sheet.save(b, 'PNG'); save(b.getvalue(), 'example-printable', 1500)
         await ex.close()
 
+        print('emoji')
+        await pg.evaluate("(()=>{ setFlow(false); goTo(2,false); })()"); await pg.wait_for_timeout(300)
+        await pg.click('.slide[data-i="2"] textarea'); await pg.click('#emojiBtn'); await pg.wait_for_timeout(500)
+        r = await pg.evaluate("(()=>{ const a=document.querySelector('.slidehead').getBoundingClientRect(), b=document.querySelector('#emojiPop').getBoundingClientRect(); const x=Math.min(a.left,b.left)-12, y=Math.min(a.top,b.top)-12; return {x, y, width:Math.max(a.right,b.right)+12-x, height:Math.max(a.bottom,b.bottom)+12-y}; })()")
+        save(await shot(clip=r), 'emoji', 900)
+        await pg.keyboard.press('Escape'); await pg.mouse.click(5,5); await pg.wait_for_timeout(200)
         print('help')
         await pg.evaluate("setFlow(false); openHelp('slides')"); await pg.wait_for_timeout(600)
         await pg.fill('#helpQ', 'blackout'); await pg.wait_for_timeout(400)

@@ -307,7 +307,17 @@ body.swapped .swapbtn::after{left:auto;right:0}
 .pvguide{position:absolute;box-sizing:border-box;border:0 solid rgba(255,255,255,.4);pointer-events:none}
 .nextline{margin-top:8px;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nextline b{color:var(--text);font-weight:500}
-.slidehead{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr));gap:8px;padding:10px 12px 8px}
+.slidehead{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,max-content) 36px minmax(0,max-content) minmax(0,max-content);gap:8px;padding:10px 12px 8px}
+.slidehead .emojibtn{padding:0;font-size:19px;line-height:1}
+.emojipop{position:fixed;inset:auto;margin:0;z-index:1001;width:318px;max-height:min(372px,70vh);overflow:auto;padding:10px 10px 8px;border-radius:14px;background:var(--panel2);border:1px solid var(--btn-line);box-shadow:var(--dlg-sh);color:var(--text)}
+.emojipop h4{margin:6px 2px 4px;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.emojipop h4:first-child{margin-top:0}
+.emojipop .eg{display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
+.emojipop .eg button{height:34px;padding:0;border:0;border-radius:8px;background:transparent;box-shadow:none;font-size:21px;line-height:1;cursor:pointer;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.emojipop .eg button.tx{font-family:Georgia,serif;font-size:22px;color:var(--text)}
+.emojipop .eg button:hover{background:var(--hover-wash);transform:scale(1.15)}
+.emojipop .more{width:100%;margin-top:8px;height:30px;font-size:12.5px}
+.emojipop .tip{font-size:11.5px;color:var(--dim);margin:6px 2px 0;text-align:center}
 .slidehead button{height:30px;min-width:0;padding:0 12px;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 #slides{flex:1;overflow:auto;padding:4px 12px 40px;display:flex;flex-direction:column;gap:6px}
 .slide{display:grid;grid-template-columns:14px 34px 1fr auto auto;gap:8px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-sh);transition:border-color .15s,box-shadow .15s;padding:7px 8px;position:relative}
@@ -435,6 +445,9 @@ body.native #setDlg .web-only{display:none}
 #setDlg .lbl{color:var(--soft);font-size:13.5px;display:flex;align-items:center;gap:7px;white-space:nowrap}
 #setDlg .srule{grid-column:1/-1;height:1px;align-self:center;background:linear-gradient(90deg,transparent,#3a3d47 12%,#3a3d47 88%,transparent)}
 #setDlg .sgrid > .srule{height:1px}
+#setDlg .sdiv{grid-column:1/-1;display:flex;align-items:flex-end;gap:10px;align-self:end;padding-bottom:2px;font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+#setDlg .sdiv::after{content:'';flex:1;height:1px;margin-bottom:5px;background:var(--line)}
+#setDlg .sdiv:not(:first-child){margin-top:6px}
 /* pills */
 #setDlg .pbtn,#setDlg select.pill,#setDlg .ptog,#setDlg .pcol{height:var(--rowh);border-radius:999px;border:0;background:var(--raised);box-shadow:var(--raisedsh);color:var(--text);font-size:13.5px}
 #setDlg .pbtn{padding:0 16px;width:100%;overflow:hidden;text-overflow:ellipsis}
@@ -716,7 +729,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <div class="nextline" id="nextLine"></div>
       <div class="followbar" id="followBar" hidden><div class="fbtext" id="fbText"></div><div class="fbtrack"><div class="fbfill" id="fbFill"></div></div></div>
     </div>
-    <div class="slidehead"><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button data-act="importSlides" title="Bring in titles from a spreadsheet (CSV), a text file or a PDF of existing slides">Import…</button></div>
+    <div class="slidehead"><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn emojibtn" id="emojiBtn" title="Insert an emoji into the slide you're typing in">☺</button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button data-act="importSlides" title="Bring in titles from a spreadsheet (CSV), a text file or a PDF of existing slides">Import…</button></div>
     <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
     <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button id="pickUp" title="Move the selected slides up one place">▲</button><button id="pickDown" title="Move the selected slides down one place">▼</button><button id="pickLink" title="Give the selected supertitles to a PDF: they join its section">🔗 Link to PDF…</button><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
     <div id="slides"></div>
@@ -749,6 +762,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
 <dialog id="setDlg"><form method="dialog">
   <div class="dhead" title="Drag to move · double-click to put it back in the middle"><span class="grip" aria-hidden="true"></span><h2>Settings</h2><span class="ver">STQ v@@VERSION@@</span></div>
   <div class="sgrid">
+    <div class="sdiv">Titles</div>
     <div class="srow"><span class="lbl">Screen shape</span><div class="pseg" id="sShapeSeg" style="--n:3"><button type="button" data-v="4/3" title="A classic 4:3 projector: the titles use a centered 4:3 area">4:3</button><button type="button" data-v="16/9" title="A widescreen projector: the titles use the whole screen">16:9</button><button type="button" data-v="6/1" title="A wide band of two lines, e.g. above the proscenium">6:1 Strip</button></div><select id="sShape" hidden><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select><span></span></div>
     <div class="srow"><span class="lbl">Font</span><select id="sFont" class="pill" title="The typeface of the titles">
       <option value='Georgia, "Times New Roman", serif'>Georgia (serif)</option>
@@ -767,6 +781,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
     <div class="srow"><span class="lbl">Text size <span class="info" id="sFsNote" tabindex="0">i</span></span><input type="range" id="sFs" min="75" max="100" step="1" title="Size of the titles (75–100 %)"><span class="val" id="sFsV"></span></div>
     <div class="srow"><span class="lbl">Vertical position</span><input type="range" id="sVpos" min="-100" max="100" step="1" title="Left = higher on the screen · right = lower"><button type="button" id="sMid" class="val pbtn" title="Put the titles back in the middle">Middle</button></div>
     <div class="srow"><span class="lbl">Side margins</span><input type="range" id="sSide" min="2" max="6" step="0.25" title="Space kept clear at each side"><span class="val" id="sSideV"></span></div>
+    <div class="sdiv">Cues on the score</div>
     <div class="srow"><span class="lbl">Cue circle size</span><input type="range" id="sMk" min="2" max="6" step="0.25" title="Size of the cue circles on the score and in the printable score"><span class="val" id="sMkV"></span></div>
     <div class="srow"><span class="lbl">Cue color</span><div class="ppair"><label class="pcol" title="Color of all the cue circles on the score (and in the printable score)">Cues<input type="color" id="sCue"></label></div><span></span></div>
   </div>
@@ -2002,7 +2017,7 @@ function resetProject(){
 }
 async function newProject(){ if(!await askSaveFirst()) return; resetProject(); }
 // File → Close: back to the welcome screen with nothing open.
-async function closeProject(){ if(!state.markers.length && !state.slides.length && !pdfDoc) return; if(!await askSaveFirst()) return; resetProject(); toast('Project closed'); }
+async function closeProject(){ if(!state.markers.length && !state.slides.length && !pdfDoc){ if(NATIVE) window.close(); return; } if(!await askSaveFirst()) return; resetProject(); toast('Project closed'); }
 async function openProjectFile(f){
   try{
     const p=JSON.parse(await f.text()); if(!Array.isArray(p.slides) && !Array.isArray(p.markers)) throw 0;
@@ -2906,6 +2921,51 @@ async function exportPptx(items){
   if(h){ try{ const w=await h.createWritable(); await w.write(blob); await w.close(); done(h.name); return; }catch(e){ console.warn(e); } }
   download(name, blob); done(name);
 }
+
+/* ---------- emoji ----------
+   ☺ above the slides opens a small palette; a click inserts the emoji where the cursor is in the slide
+   being typed in (or at the end of the current slide). The palette stays open for more. */
+const EMOJI=[['Music & theatre',['♪','♫','♩','🎵','🎶','🎼','🎤','🎻','🎺','🎹','🥁','🎭','🎬','👑','🗡️','🍷','🥂','🕯️','📜','💃']],
+  ['Faces',['😀','😂','😊','😍','🥰','😘','😉','😏','🤔','😳','😱','😢','😭','😡','😴','🥺']],
+  ['Love',['❤️','💔','💕','💘','💋','🌹','💐','💍']],
+  ['Nature',['☀️','🌙','⭐','✨','🔥','⚡','🌊','🌧️','❄️','🌸','🍃','🐦']],
+  ['Hands',['👏','🙏','👋','✋','👉','👈','💪','🤫']],
+  ['Symbols',['✝️','☠️','💀','⚔️','🔔','⏳','❗','❓','⚠️','✅','❌','➡️']]];
+let lastSlideTa=null;
+slidesEl.addEventListener('focusin', e=>{ if(e.target.tagName==='TEXTAREA') lastSlideTa=e.target; }, true);
+function emojiTarget(){
+  const a=document.activeElement; if(a && a.tagName==='TEXTAREA' && slidesEl.contains(a)) return a;
+  if(lastSlideTa && document.contains(lastSlideTa)) return lastSlideTa;
+  const t=cur>=0 && document.querySelector(`.slide[data-i="${cur}"] textarea`); if(t){ t.focus(); const n=t.value.length; t.setSelectionRange(n,n); return t; }
+  return null;
+}
+function insertEmoji(ch){
+  if(mode!=='edit' || state.settings.lockOrder) return lockedNote('order');
+  const ta=emojiTarget(); if(!ta) return toast('Click into a slide first, then pick an emoji');
+  if(ta.readOnly) return lockedNote('order');
+  ta.focus(); document.execCommand('insertText', false, ch);   // goes through the normal typing path (undo, Flow, saving)
+}
+function closeEmoji(){ document.removeEventListener('pointerdown', emojiOut, true); const p=$('#emojiPop'); if(p){ try{ p.hidePopover(); }catch(_){} p.remove(); } $('#emojiBtn').classList.remove('on'); }
+function emojiOut(e){ const p=$('#emojiPop'); if(p && !p.contains(e.target) && e.target!==$('#emojiBtn')) closeEmoji(); }
+function openEmoji(){
+  if($('#emojiPop')) return closeEmoji();
+  if(mode!=='edit' || state.settings.lockOrder) return lockedNote('order');
+  const pop=document.createElement('div'); pop.className='emojipop'; pop.id='emojiPop'; pop.setAttribute('popover','manual');
+  for(const [name,list] of EMOJI){ const h=document.createElement('h4'); h.textContent=name; const g=document.createElement('div'); g.className='eg';
+    for(const ch of list){ const b=document.createElement('button'); b.type='button'; b.textContent=ch; b.title=ch; if(/^[♪♫♩]$/.test(ch)){ b.classList.add('tx'); b.title=ch+' (a music sign in the title font)'; }
+      b.addEventListener('mousedown', e=>e.preventDefault()); b.onclick=()=>insertEmoji(ch); g.append(b); }
+    pop.append(h,g); }
+  if(NATIVE && window.stc.emojiPanel){ const m=document.createElement('button'); m.type='button'; m.className='more'; m.textContent='More emoji…'; m.title='Your computer’s full emoji panel'; m.addEventListener('mousedown', e=>e.preventDefault());
+    m.onclick=()=>{ const t=emojiTarget(); if(t) t.focus(); closeEmoji(); window.stc.emojiPanel(); }; pop.append(m); }
+  else { const t=document.createElement('p'); t.className='tip'; t.innerHTML='More: <kbd>Ctrl</kbd>+<kbd>⌘</kbd>+<kbd>Space</kbd> on a Mac, <kbd>⊞</kbd>+<kbd>.</kbd> on Windows'; pop.append(t); }
+  document.body.append(pop); try{ pop.showPopover(); }catch(_){}
+  const r=$('#emojiBtn').getBoundingClientRect(), w=pop.offsetWidth, h=pop.offsetHeight;
+  pop.style.left=Math.max(8, Math.min(r.left+r.width/2-w/2, innerWidth-w-8))+'px'; pop.style.top=(r.bottom+6+h>innerHeight-8 ? Math.max(8, r.top-h-6) : r.bottom+6)+'px';
+  $('#emojiBtn').classList.add('on'); setTimeout(()=>document.addEventListener('pointerdown', emojiOut, true), 0);
+}
+$('#emojiBtn').addEventListener('mousedown', e=>e.preventDefault());   // keep the cursor in the slide
+$('#emojiBtn').onclick=openEmoji;
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#emojiPop')){ e.preventDefault(); e.stopPropagation(); closeEmoji(); } }, true);
 
 /* ---------- text that doesn't fit ----------
    Labels too long for their space end in "…"; hovering slides the text sideways to show the rest,
