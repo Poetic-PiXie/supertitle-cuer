@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('stc', {
   platform: process.platform,
   openDialog: () => ipcRenderer.invoke('open-dialog'),
   saveDialog: (opts) => ipcRenderer.invoke('save-dialog', opts),
+  askSave: () => ipcRenderer.invoke('ask-save'),
   writeFile: (path, bytes) => ipcRenderer.invoke('write-file', { path, bytes }),
   keepAwake: (on) => ipcRenderer.send('keep-awake', !!on),
   docState: (s) => ipcRenderer.send('doc-state', s),

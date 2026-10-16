@@ -365,6 +365,15 @@ ipcMain.handle('write-file', async (_e, { path: p, bytes }) => {
   return true;
 });
 
+// "Save changes before closing?" for File → Close Project / New Project: 0 Save, 1 Don't Save, 2 Cancel
+ipcMain.handle('ask-save', async () => {
+  const { response } = await dialog.showMessageBox(win, {
+    type: 'warning', buttons: ['Save', 'Don’t Save', 'Cancel'], defaultId: 0, cancelId: 2,
+    message: 'Save changes to this project before closing it?', detail: 'Cues and slides you haven’t saved will be lost.',
+  });
+  return response;
+});
+
 // ---------- menu ----------
 function menuCommand(cmd) {
   if (win) win.webContents.executeJavaScript(`window.__stcMenu && window.__stcMenu(${JSON.stringify(cmd)})`).catch(() => {});
@@ -390,7 +399,8 @@ function buildMenu() {
         item('Import Slides…', 'importSlides'),
         item('Export Slides (CSV)', 'exportCsv'),
         { type: 'separator' },
-        isMac ? { role: 'close' } : { role: 'quit' },
+        item('Close Project', 'close', 'CmdOrCtrl+W'),
+        ...(isMac ? [] : [{ role: 'quit' }]),
       ],
     },
     {

@@ -343,6 +343,9 @@ button.danger:hover:not(:disabled){background:linear-gradient(180deg,#f0594d,#cf
 .slide.over{border-color:#e5484d;background:var(--over-bg)}
 .slide.over.cur{border-color:#e5484d;box-shadow:0 0 0 2px var(--cur);background:var(--over-bg)}
 body.flow #slides{gap:0}
+.pdiv{flex-shrink:0;font-size:11px;line-height:16px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:10px 4px 2px;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden}
+.pdiv::after{content:'';flex:1;height:1px;background:var(--line)}
+.pdiv:first-child{padding-top:2px}
 body.flow .slide{border-radius:0;margin-top:-1px}
 body.flow .slide.soft{border-bottom-style:dashed}
 body.flow .slide.split{border-bottom:1px dashed #b0602e}
@@ -620,7 +623,8 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   <div class="menu" id="fileMenu">
     <button data-menu title="New, open, save, import and export">File ▾</button>
     <div class="items">
-      <button data-act="newProject">New project…</button>
+      <button data-act="newProject">New project…<span class="sc">⌘N</span></button>
+      <button data-act="closeProject">Close project<span class="sc">⌘W</span></button>
       <button data-act="open">Open…<span class="sc">⌘O</span></button>
       <button data-act="save">Save<span class="sc">⌘S</span></button>
       <button data-act="saveAs">Save As…<span class="sc">⇧⌘S</span></button>
@@ -970,12 +974,37 @@ function sortMarkers(){
   if(curObj){ cur = state.markers.indexOf(curObj); }
   if(ancObj){ anchor = state.markers.indexOf(ancObj); }
 }
+// With several PDFs, adding or removing a cue in one PDF must not shift the supertitles of the PDFs after it.
+// Take a snapshot first (keepPdfsPaired()), change the cues, then call the returned function: each PDF keeps its own
+// supertitles in order; a PDF that gained a cue gets a blank supertitle at its end (the last PDF with cues takes the next
+// uncued supertitle instead, as always), and one that lost a cue lets go of a blank one at its end.
+function keepPdfsPaired(){
+  const parts=partsList(); if(parts.length<2) return ()=>0;
+  const own=state.markers.map(m=>(partOfPage(parts,m.page)||{}).id), groups={};
+  state.slides.forEach((sl,i)=>{ const id = i<own.length ? own[i] : '__tail'; (groups[id]=groups[id]||[]).push(sl); });
+  return ()=>{
+    const live=new Set(state.slides); for(const k in groups) groups[k]=groups[k].filter(x=>live.has(x)); // drop deleted supertitles
+    const now=state.markers.map(m=>(partOfPage(parts,m.page)||{}).id), last=now[now.length-1], cnt={};
+    now.forEach(id=>cnt[id]=(cnt[id]||0)+1);
+    const tail=[...(groups.__tail||[])], out=[], extra=[]; let pastLast=false;
+    for(const p of parts){ const g=[...(groups[p.id]||[])], k=cnt[p.id]||0;
+      if(pastLast || !k){ extra.push(...g.filter(x=>x.text.trim())); continue; }
+      if(p.id===last){ out.push(...g); for(let j=g.length;j<k;j++) out.push(tail.length?tail.shift():{text:''}); pastLast=true; continue; }
+      out.push(...g.slice(0,k)); for(let j=g.length;j<k;j++) out.push({text:''});
+      extra.push(...g.slice(k).filter(x=>x.text.trim()));
+    }
+    if(!now.length) return 0;
+    state.slides=[...out, ...tail, ...extra];
+    return extra.length;
+  };
+}
+const movedNote = n => n ? ` · ${n===1?'a supertitle':n+' supertitles'} left without a cue moved to the end of the list` : '';
 function insertIndex(){ if(atStart) return 0; const a = anchor!=null ? anchor : cur; return (a>=0 && a<state.markers.length) ? a+1 : state.markers.length; }
 function deleteMarker(i){
-  snap(); state.markers.splice(i,1);
+  snap(); const fix=keepPdfsPaired(); state.markers.splice(i,1); const mv=fix();
   anchor = null; atStart = false;
   if(cur>i) cur--; else if(cur===i) cur=i-1;
-  changed(false); toast(`Cue ${i+1} removed — the ones after it were renumbered`);
+  changed(partsList().length>1); toast(`Cue ${i+1} removed — the ones after it were renumbered`+movedNote(mv));
 }
 const pagesEl=$('#pages');
 pagesEl.addEventListener('pointerdown', e=>{
@@ -992,8 +1021,8 @@ pagesEl.addEventListener('pointerdown', e=>{
   const r=wrap.getBoundingClientRect();
   snap();
   const m={page:+wrap.dataset.page, x:clamp01((e.clientX-r.left)/r.width), y:clamp01((e.clientY-r.top)/r.height)};
-  state.markers.push(m); sortMarkers();
-  const at=state.markers.indexOf(m); anchor=at; fresh=at; atStart=false; changed(false); fresh=-1;
+  const fix=keepPdfsPaired(); state.markers.push(m); sortMarkers(); fix();
+  const at=state.markers.indexOf(m); anchor=at; fresh=at; atStart=false; changed(partsList().length>1); fresh=-1;
   if(at<state.markers.length-1) toast(`New cue is ${at+1} — cues after it moved up by one`);
 });
 function startDrag(e,i,wrap,el){
@@ -1013,7 +1042,12 @@ pagesEl.addEventListener('contextmenu', e=>{ const mk=e.target.closest('.mk'); i
 /* ---------- slides ---------- */
 function renderSlides(){
   const list=$('#slides'); list.replaceChildren();
+  const pl=partsList(), many=pl.length>1;
   state.slides.forEach((s,i)=>{
+    // With several PDFs, a small heading shows where each PDF's cues begin, so you can see which supertitles go with which PDF.
+    if(many && i<state.markers.length){ const p=cuePart(i), q=i ? cuePart(i-1) : null;
+      if(p && p!==q){ const h=document.createElement('div'); h.className='pdiv'; const k=cuesOf(p.id).length; h.textContent=`${p.name.replace(/\.pdf$/i,'')} · ${k} cue${k===1?'':'s'}`; list.append(h); } }
+    if(many && i===state.markers.length){ const h=document.createElement('div'); h.className='pdiv'; const k=state.slides.length-i; h.textContent=`Not cued yet · ${k} supertitle${k===1?'':'s'}`; list.append(h); }
     const c=document.createElement('div'); c.className='slide'; c.dataset.i=i;
     c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><button type="button" class="sring" data-a="color" title="Color this slide in the list (only here — the projector never shows it)"></button><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
     { const col=slideColor(i); c.classList.toggle('tinted', !!col); if(col) c.style.setProperty('--sc', col); }
@@ -1060,6 +1094,7 @@ function placeAddBelow(){
   card.after(row);
 }
 const slidesEl=$('#slides');
+const SCORE_EMPTY_BIG = ($('#scoreEmpty .big')||{}).textContent || '';
 { let raf=0; new ResizeObserver(()=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>cardFont()); }).observe(slidesEl); }
 slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; grow(e.target);
   showOverflow(e.target.closest('.slide'), e.target.value);
@@ -1105,8 +1140,9 @@ const rangeTxt = (a,b) => a===b ? `${a+1}` : `${a+1}–${b+1}`;
 // Delete slides a..b (0-based, inclusive); with cues=true also the cues with the same numbers.
 function deleteSlides(a, b, cues){
   snap();
-  const n=b-a+1; state.slides.splice(a, n);
+  const n=b-a+1, fix=keepPdfsPaired(); state.slides.splice(a, n);
   let cn=0; if(cues){ const ce=Math.min(b, state.markers.length-1); if(ce>=a){ cn=ce-a+1; state.markers.splice(a, cn); } anchor=null; }
+  fix(); // supertitles only: their PDF keeps its cues and gets blanks at its end, instead of borrowing the next PDF's
   if(cur>b) cur-=n; else if(cur>=a) cur=Math.min(a, state.slides.length-1);
   clearPicks(); changed(true);
   toast(`Deleted ${n===1?'supertitle '+(a+1):'supertitles '+rangeTxt(a,b)}${cn?` and ${cn===1?'cue':'cues'} ${rangeTxt(a,a+cn-1)}`:''} — later ones were renumbered`);
@@ -1568,6 +1604,7 @@ const actions = {
   save: ()=>saveDoc(false),
   saveAs: ()=>saveDoc(true,'supertitles'),
   newProject: ()=>newProject(),
+  closeProject: ()=>closeProject(),
   importSlides: ()=>openImport(),
   saveAsPdf: ()=>saveDoc(true,'pdf'),
   exportPrintable: ()=>exportPrintable(),
@@ -1729,7 +1766,7 @@ async function openAny(file, handle){
   if(!proj){ // a plain score: use it in the current project
     await openPdfFile(file, bytes); fileHandle=null; docName=null; setDirty(true); save(); return;
   }
-  if(dirty && (state.markers.length||state.slides.length) && !confirm('Your current work has unsaved changes. Open the other project anyway?')) return;
+  if(!await askSaveFirst()) return;
   const p=proj.project, orig=proj.original||bytes;
   undoStack=[]; redoStack=[]; cur=-1; blackout=false; atStart=false; anchor=null;
   state.parts=Array.isArray(p.parts)?p.parts:null;
@@ -1741,15 +1778,24 @@ async function openAny(file, handle){
   idbPut('score',{name:state.pdfName, bytes:orig}); idbPut('doc',{name:docName, handle:fileHandle});
   toast(`Opened “${file.name}” — ${state.markers.length} cues, ${state.slides.length} slides`);
 }
-function newProject(){
-  if(dirty && (state.markers.length||state.slides.length) && !confirm('Start a new project? Unsaved changes to the current one will be lost.')) return;
+// Before closing or replacing the project: offer to save unsaved changes. Resolves true when it's fine to go on.
+async function askSaveFirst(){
+  if(!dirty || !(state.markers.length||state.slides.length||pdfDoc)) return true;
+  if(NATIVE && window.stc.askSave){ const r=await window.stc.askSave(); if(r===2) return false; if(r===0) return !!(await saveDoc(false)); return true; }
+  return confirm('This project has unsaved changes. Close it anyway? (Cancel to go back and save.)');
+}
+function resetProject(){
   state.settings.lockCues=false; state.settings.lockOrder=false;
   state.markers=[]; state.slides=[]; state.pdfName=null; state.parts=null; pdfBytes=null; pdfDoc=null; cur=-1; undoStack=[]; redoStack=[];
   pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[]; $('#pages').replaceChildren(); $('#scoreEmpty').hidden=false; $('#zoomCtl').hidden=true;
+  $('#scoreEmpty .big') && ($('#scoreEmpty .big').textContent = SCORE_EMPTY_BIG);
   fileHandle=null; docName=null; idbPut('score',null); idbPut('doc',null);
   stopFollow(); refRuns={}; saveRuns();
   updateLocks(); changed(true); setDirty(false); save();
 }
+async function newProject(){ if(!await askSaveFirst()) return; resetProject(); }
+// File → Close: back to the welcome screen with nothing open.
+async function closeProject(){ if(!state.markers.length && !state.slides.length && !pdfDoc) return; if(!await askSaveFirst()) return; resetProject(); toast('Project closed'); }
 async function openProjectFile(f){
   try{
     const p=JSON.parse(await f.text()); if(!Array.isArray(p.slides) && !Array.isArray(p.markers)) throw 0;
@@ -2013,6 +2059,7 @@ async function applyParts(newParts, removedId, noSnap){
       const ns=[], had=state.slides.length;
       state.markers.forEach(m=>{ ns.push(m._k<had ? state.slides[m._k] : null); });
       while(ns.length && ns[ns.length-1]===null) ns.pop();
+      // Supertitles past the last cue aren't cued yet, so they stay at the very end: anywhere else they'd pair with another PDF's cues.
       const rest=state.slides.slice(state.markers.length);
       state.slides=[...ns.map(x=>x||{text:''}), ...rest];
     }
@@ -2505,7 +2552,7 @@ async function initSpellLang(){
 window.__stcMenu = (cmd) => {
   const ed = document.activeElement && document.activeElement.matches && document.activeElement.matches('textarea:not([readonly]), input[type=text]');
   const map = {
-    new: newProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true,'supertitles'), saveAsPdf: ()=>saveDoc(true,'pdf'), exportPrintable,
+    new: newProject, close: closeProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true,'supertitles'), saveAsPdf: ()=>saveDoc(true,'pdf'), exportPrintable,
     importSlides: openImport, exportCsv: actions.exportCsv,
     undo: ()=> ed ? document.execCommand('undo') : undo(), redo: ()=> ed ? document.execCommand('redo') : redo(),
     printScore: ()=>printScore(), edit: ()=>setMode('edit'), show: ()=>setMode('show'), view100: ()=>setView('pct',100), viewFitH: ()=>setView('height'), viewFitW: ()=>setView('width'), projector: openProjector, connect: ()=>openHelp('connect'), help: ()=>openHelp(), printGuide: ()=>printGuide(), settings: openSettings,
@@ -2566,10 +2613,14 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#palette')){
 
 /* ---------- start ---------- */
 (async function init(){
-  localizeKeys(document.body); loadLocal(); applyAlign(); sortMarkers(); if(state.markers.length) state.settings.flow=false; document.body.classList.toggle('flow', !!state.settings.flow); updateFlowBtn(); updateLocks(); const wasDirty=dirty; renderSlides(); applySpell(spellOn()); initSpellLang(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
+  localizeKeys(document.body); loadLocal();
+  // The desktop app always starts on the welcome screen; a project opens only when you open a file (double-click, Open…, or drop).
+  // (The browser version has no files to double-click, so it still picks up where you left off.)
+  const fresh = NATIVE; if(fresh){ state.markers=[]; state.slides=[]; state.pdfName=null; state.parts=null; docName=null; dirty=false; cur=-1; state.settings.lockCues=false; state.settings.lockOrder=false; save(); idbPut('score',null); idbPut('doc',null); }
+  applyAlign(); sortMarkers(); if(state.markers.length) state.settings.flow=false; document.body.classList.toggle('flow', !!state.settings.flow); updateFlowBtn(); updateLocks(); const wasDirty=dirty; renderSlides(); applySpell(spellOn()); initSpellLang(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
   const d = await idbGet('doc'); if(d && d.handle && d.name===docName) fileHandle=d.handle;
-  const fr = await idbGet('follow'); if(fr && fr.runs) refRuns=fr.runs;
-  const rec = await idbGet('score');
+  const fr = fresh ? null : await idbGet('follow'); if(fr && fr.runs) refRuns=fr.runs;
+  const rec = fresh ? null : await idbGet('score');
   if(rec && rec.bytes && (!state.pdfName || rec.name===state.pdfName)){ await loadPdfBytes(rec.name, new Uint8Array(rec.bytes)); setDirty(wasDirty); toast(`Picked up where you left off`); }
   else if(state.pdfName){ $('#scoreEmpty .big').textContent = `Open the score: ${state.pdfName}`; }
   if(NATIVE){ window.stc.onOpenFile(f=>openNativeFile(f)); window.stc.ready(); }
