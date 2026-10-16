@@ -261,6 +261,13 @@ tr:nth-child(4) td{outline:2px solid #1e7145;outline-offset:-2px}</style></body>
         r = await ex.evaluate("(()=>{ const r=document.querySelector('#partsDlg').getBoundingClientRect(); return {x:r.left,y:r.top,width:r.width,height:r.height}; })()")
         save(await ex.screenshot(clip=r), 'example-parts', 1300)
         await ex.keyboard.press('Escape'); await ex.wait_for_timeout(200)
+        # the slide list split into one section per PDF, with two lines of part 1 waiting for a cue
+        await ex.evaluate("(()=>{ const ids=state.markers.map(m=>partOfPage(state.parts,m.page).id); const last=ids.lastIndexOf(state.parts[0].id); deleteMarker(last); deleteMarker(last-1); goTo(-1,false); setDirty(false); clearTimeout(toastT); $('#toast').classList.remove('on'); })()")
+        await ex.wait_for_timeout(300)
+        await ex.evaluate("(()=>{ const el=document.querySelector('.spare'), sl=$('#slides'); sl.scrollTop += el.getBoundingClientRect().top - sl.getBoundingClientRect().top - 210; })()"); await ex.wait_for_timeout(400)
+        r = await ex.evaluate("(()=>{ const a=document.querySelector('#slides').getBoundingClientRect(); return {x:a.left,y:a.top,width:a.width,height:Math.min(a.height,560)}; })()")
+        save(await ex.screenshot(clip=r), 'pdf-sections', 900)
+        await ex.evaluate("undo()"); await ex.wait_for_timeout(300); await ex.evaluate("undo()"); await ex.wait_for_timeout(300)
         pdfb = bytes(await ex.evaluate("buildPrintablePdf().then(b=>Array.from(b))"))
         with tempfile.TemporaryDirectory() as td:
             open(td + '/p.pdf', 'wb').write(pdfb)

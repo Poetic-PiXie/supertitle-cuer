@@ -346,6 +346,12 @@ body.flow #slides{gap:0}
 .pdiv{flex-shrink:0;font-size:11px;line-height:16px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:10px 4px 2px;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden}
 .pdiv::after{content:'';flex:1;height:1px;background:var(--line)}
 .pdiv:first-child{padding-top:2px}
+.slide.spare{border-style:dashed;background:transparent;box-shadow:none}
+.slide.spare textarea{opacity:.62}
+.slide.spare .num{color:var(--dim);cursor:default}
+.slide.spare .num::after{content:"waiting";display:block;font-size:9px;font-weight:500;color:var(--dim)}
+.slide.spare .grip{visibility:hidden}
+body.order-locked .slide.spare .tools, body.show .slide.spare .tools{display:none}
 body.flow .slide{border-radius:0;margin-top:-1px}
 body.flow .slide.soft{border-bottom-style:dashed}
 body.flow .slide.split{border-bottom:1px dashed #b0602e}
@@ -679,7 +685,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
     </div>
     <div class="slidehead"><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button data-act="importSlides" title="Bring in titles from a spreadsheet (CSV), a text file or a PDF of existing slides">Import…</button></div>
     <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
-    <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button id="pickUp" title="Move the selected slides up one place">▲</button><button id="pickDown" title="Move the selected slides down one place">▼</button><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
+    <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button id="pickUp" title="Move the selected slides up one place">▲</button><button id="pickDown" title="Move the selected slides down one place">▼</button><button id="pickLink" title="Give the selected supertitles to a PDF: they join its section">🔗 Link to PDF…</button><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
     <div id="slides"></div>
   </aside>
 </main>
@@ -860,6 +866,7 @@ async function restore(from,to,label){
       idbPut('score',{name:state.pdfName, bytes:x.bytes});
       if($('#partsDlg').open) renderParts();
     }
+    if(x.parts) state.parts=JSON.parse(x.parts);
     state.markers=d.m; state.slides=d.s; atStart=false; anchor=null; pickA=pickB=pickAnchor=null; cur=Math.min(cur,lastIndex()); changed(true); updatePicks(); toast(label);
   } finally { restoring=false; }
 }
@@ -974,37 +981,100 @@ function sortMarkers(){
   if(curObj){ cur = state.markers.indexOf(curObj); }
   if(ancObj){ anchor = state.markers.indexOf(ancObj); }
 }
-// With several PDFs, adding or removing a cue in one PDF must not shift the supertitles of the PDFs after it.
-// Take a snapshot first (keepPdfsPaired()), change the cues, then call the returned function: each PDF keeps its own
-// supertitles in order; a PDF that gained a cue gets a blank supertitle at its end (the last PDF with cues takes the next
-// uncued supertitle instead, as always), and one that lost a cue lets go of a blank one at its end.
-function keepPdfsPaired(){
-  const parts=partsList(); if(parts.length<2) return ()=>0;
-  const own=state.markers.map(m=>(partOfPage(parts,m.page)||{}).id), groups={};
-  state.slides.forEach((sl,i)=>{ const id = i<own.length ? own[i] : '__tail'; (groups[id]=groups[id]||[]).push(sl); });
+/* ---------- PDF sections ----------
+   With several PDFs, the supertitles are kept in one section per PDF. A PDF's cues take its section's
+   lines in order; lines it has no cue for yet wait in the section (part.spare) instead of drifting
+   onto the next PDF's cues. Adding or removing a cue in one PDF never shifts another PDF's pairs.
+   Lines after the last cued PDF's section are "not cued yet" (the end of state.slides), as before. */
+const blankPad = () => ({text:'', pad:true});      // a placeholder for a cue with no line; filled first when lines come in
+function sectionsNow(){
+  const parts=partsList(), n=state.markers.length, groups={};
+  state.markers.forEach((m,i)=>{ const id=(partOfPage(parts,m.page)||{}).id; if(i<state.slides.length) (groups[id]=groups[id]||[]).push(state.slides[i]); });
+  return {groups, tail: state.slides.slice(n)};
+}
+function rebuildSections({groups, tail}){
+  const parts=partsList();
+  if(parts.length<2){ // one PDF: no sections; its waiting lines simply join the uncued ones
+    const sp=parts.flatMap(p=>{ const x=p.spare||[]; delete p.spare; return x; });
+    state.slides=[...Object.values(groups).flat(), ...sp, ...tail];
+    return;
+  }
+  const ids=state.markers.map(m=>(partOfPage(parts,m.page)||{}).id), last=ids[ids.length-1], cnt={};
+  ids.forEach(id=>cnt[id]=(cnt[id]||0)+1);
+  tail=[...tail]; const out=[];
+  for(const p of parts){
+    let lines=[...(groups[p.id]||[]), ...(p.spare||[])], k=cnt[p.id]||0;
+    lines=lines.filter((x,j)=>!(x.pad && !x.text.trim() && lines.slice(j+1).some(y=>!y.pad || y.text.trim()))); // real lines fill earlier placeholders
+    const block=lines.slice(0,k);
+    while(block.length<k) block.push(p.id===last && tail.length ? tail.shift() : blankPad());
+    const spare=lines.slice(k).filter(x=>!x.pad || x.text.trim());
+    if(spare.length) p.spare=spare; else delete p.spare;
+    out.push(...block);
+  }
+  state.slides=[...out, ...tail];
+}
+const normalizeSections = () => rebuildSections(sectionsNow());
+// Snapshot before changing cues or lines; call the returned function afterwards. Lines keep their PDF;
+// a new line, or one in `moved`, joins the section of the line just before it in the list.
+function keepPdfsPaired(moved=[]){
+  if(partsList().length<2) return ()=>0;
+  const s=sectionsNow(), own=new Map(), mv=new Set(moved);
+  for(const k in s.groups) s.groups[k].forEach(x=>own.set(x,k)); s.tail.forEach(x=>own.set(x,'__tail'));
   return ()=>{
-    const live=new Set(state.slides); for(const k in groups) groups[k]=groups[k].filter(x=>live.has(x)); // drop deleted supertitles
-    const now=state.markers.map(m=>(partOfPage(parts,m.page)||{}).id), last=now[now.length-1], cnt={};
-    now.forEach(id=>cnt[id]=(cnt[id]||0)+1);
-    const tail=[...(groups.__tail||[])], out=[], extra=[]; let pastLast=false;
-    for(const p of parts){ const g=[...(groups[p.id]||[])], k=cnt[p.id]||0;
-      if(pastLast || !k){ extra.push(...g.filter(x=>x.text.trim())); continue; }
-      if(p.id===last){ out.push(...g); for(let j=g.length;j<k;j++) out.push(tail.length?tail.shift():{text:''}); pastLast=true; continue; }
-      out.push(...g.slice(0,k)); for(let j=g.length;j<k;j++) out.push({text:''});
-      extra.push(...g.slice(k).filter(x=>x.text.trim()));
-    }
-    if(!now.length) return 0;
-    state.slides=[...out, ...tail, ...extra];
-    return extra.length;
+    const groups={}, tail=[], at=state.slides.map(x=> own.has(x) && !mv.has(x) ? own.get(x) : null);
+    for(let i=0;i<at.length;i++) if(at[i]==null){ let j=i-1; while(j>=0 && at[j]==null) j--; if(j>=0) at[i]=at[j]; else { j=i+1; while(j<at.length && at[j]==null) j++; at[i] = j<at.length ? at[j] : '__tail'; } }
+    state.slides.forEach((x,i)=>{ if(at[i]==='__tail') tail.push(x); else (groups[at[i]]=groups[at[i]]||[]).push(x); });
+    rebuildSections({groups, tail}); return 0;
   };
 }
-const movedNote = n => n ? ` · ${n===1?'a supertitle':n+' supertitles'} left without a cue moved to the end of the list` : '';
+// Put the caret in a line wherever it ended up (numbered, or waiting in a PDF's section).
+function focusLine(o){
+  const i=state.slides.indexOf(o); if(i>=0) return focusSlide(i);
+  for(const p of partsList()){ const j=(p.spare||[]).indexOf(o); if(j>=0){ const ta=document.querySelector(`.spare[data-sp="${p.id}:${j}"] textarea`); if(ta){ ta.focus(); ta.scrollIntoView({block:'nearest'}); } return; } }
+}
+// Every line in reading order: each PDF's cued lines, then its waiting ones, then the uncued end.
+function allLines(){
+  const parts=partsList(); if(parts.length<2) return state.slides;
+  const {groups, tail}=sectionsNow(); return [...parts.flatMap(p=>[...(groups[p.id]||[]), ...(p.spare||[])]), ...tail];
+}
+const spareCount = () => partsList().reduce((n,p)=>n+((p.spare||[]).length),0);
+// The PDF on screen in the score (the one whose page is at the top third of the view).
+function pdfInView(){
+  const parts=partsList(); if(!parts.length) return null;
+  const r=$('#score').getBoundingClientRect(), y=r.top+r.height/3;
+  for(const pe of pageEls){ const q=pe.wrap.getBoundingClientRect(); if(q.bottom>y) return partOfPage(parts, +pe.wrap.dataset.page); }
+  return parts[parts.length-1];
+}
+// Link lines (state.slides indices, or spare objects) to a PDF: they join the end of its section.
+function linkLines(objs, pid){
+  snap(); const s=sectionsNow(), set=new Set(objs);
+  for(const k in s.groups) s.groups[k]=s.groups[k].filter(x=>!set.has(x));
+  s.tail=s.tail.filter(x=>!set.has(x));
+  for(const p of partsList()){ if(p.spare) p.spare=p.spare.filter(x=>!set.has(x)); }
+  const p=partsList().find(q=>q.id===pid); p.spare=[...(p.spare||[]), ...objs];
+  objs.forEach(o=>delete o.pad);
+  const curObj=state.slides[cur]; rebuildSections(s); cur=curObj ? state.slides.indexOf(curObj) : -1;
+  clearPicks(); changed(true);
+}
+async function askLink(objs){
+  const parts=partsList(); if(parts.length<2 || !objs.length) return;
+  if(state.settings.lockOrder) return lockedNote('order');
+  const here=pdfInView()||parts[0], nm=p=>esc(p.name.replace(/\.pdf$/i,'')), n=objs.length;
+  const r=await ask({ title:`Link ${n===1?'this supertitle':n+' supertitles'} to the current PDF?`,
+    html:`<div style="margin-bottom:8px"><select id="linkPdf" style="width:100%">${parts.map(p=>`<option value="${p.id}"${p===here?' selected':''}>${nm(p)}</option>`).join('')}</select></div>`
+      + objs.slice(0,6).map(o=>`<div style="margin:2px 0">${esc(o.text.replace(/\|/g,' / ').trim()) || '<i style="color:#777">(blank)</i>'}</div>`).join('') + (n>6?`<div style="color:var(--dim)">… and ${n-6} more</div>`:''),
+    note:'They go to the end of that PDF’s section. Its cues take them in order; any it has no cue for yet wait there, grayed, until you place one.',
+    okText:'Link', danger:false, keep:true });
+  if(!r.ok) return;
+  linkLines(objs, r.value);
+  const p=parts.find(q=>q.id===r.value); toast(`Linked ${n===1?'1 supertitle':n+' supertitles'} to “${p.name.replace(/\.pdf$/i,'')}”`);
+}
 function insertIndex(){ if(atStart) return 0; const a = anchor!=null ? anchor : cur; return (a>=0 && a<state.markers.length) ? a+1 : state.markers.length; }
 function deleteMarker(i){
-  snap(); const fix=keepPdfsPaired(); state.markers.splice(i,1); const mv=fix();
+  snap(); const fix=keepPdfsPaired(); state.markers.splice(i,1); fix();
   anchor = null; atStart = false;
   if(cur>i) cur--; else if(cur===i) cur=i-1;
-  changed(partsList().length>1); toast(`Cue ${i+1} removed — the ones after it were renumbered`+movedNote(mv));
+  changed(partsList().length>1); toast(`Cue ${i+1} removed — the ones after it were renumbered`);
 }
 const pagesEl=$('#pages');
 pagesEl.addEventListener('pointerdown', e=>{
@@ -1042,18 +1112,35 @@ pagesEl.addEventListener('contextmenu', e=>{ const mk=e.target.closest('.mk'); i
 /* ---------- slides ---------- */
 function renderSlides(){
   const list=$('#slides'); list.replaceChildren();
-  const pl=partsList(), many=pl.length>1;
-  state.slides.forEach((s,i)=>{
-    // With several PDFs, a small heading shows where each PDF's cues begin, so you can see which supertitles go with which PDF.
-    if(many && i<state.markers.length){ const p=cuePart(i), q=i ? cuePart(i-1) : null;
-      if(p && p!==q){ const h=document.createElement('div'); h.className='pdiv'; const k=cuesOf(p.id).length; h.textContent=`${p.name.replace(/\.pdf$/i,'')} · ${k} cue${k===1?'':'s'}`; list.append(h); } }
-    if(many && i===state.markers.length){ const h=document.createElement('div'); h.className='pdiv'; const k=state.slides.length-i; h.textContent=`Not cued yet · ${k} supertitle${k===1?'':'s'}`; list.append(h); }
+  const pl=partsList(), many=pl.length>1, ro = mode==='show' || !!state.settings.lockOrder;
+  const head=(txt,tip)=>{ const h=document.createElement('div'); h.className='pdiv'; h.textContent=txt; if(tip) h.title=tip; list.append(h); };
+  const card=(s,i)=>{
     const c=document.createElement('div'); c.className='slide'; c.dataset.i=i;
     c.innerHTML=`<div class="grip" title="Drag to reorder">⋮⋮</div><button type="button" class="sring" data-a="color" title="Color this slide in the list (only here — the projector never shows it)"></button><div class="num" title="Show this slide">${i+1}</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-a="up" title="Move up">▲</button><button data-a="add" title="Insert a slide after this one">＋</button><button data-a="down" title="Move down">▼</button></div><button class="trash" data-a="trash" title="Delete this slide">🗑</button>`;
     { const col=slideColor(i); c.classList.toggle('tinted', !!col); if(col) c.style.setProperty('--sc', col); }
-    const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = mode==='show' || !!state.settings.lockOrder; ta.spellcheck = spellOn() && mode==='edit';
+    const ta=c.querySelector('textarea'); ta.value=s.text; ta.readOnly = ro; ta.spellcheck = spellOn() && mode==='edit';
     list.append(c);
-  });
+  };
+  // a line waiting in a PDF's section for a cue: no number yet, grayed
+  const spareCard=(p,j)=>{
+    const c=document.createElement('div'); c.className='slide spare nocue'; c.dataset.sp=p.id+':'+j;
+    c.innerHTML=`<div class="grip"></div><div class="num" title="Not cued yet — the next cue you place in this PDF takes this line">–</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-s="unlink" title="Unlink from this PDF (moves to “Not cued yet” at the end)">↩</button></div><button class="trash" data-s="trash" title="Delete this line">🗑</button>`;
+    const ta=c.querySelector('textarea'); ta.value=p.spare[j].text; ta.readOnly = ro; ta.spellcheck = spellOn() && mode==='edit';
+    list.append(c);
+  };
+  if(!many){ state.slides.forEach((s,i)=>card(s,i)); }
+  else {
+    // With several PDFs, each PDF gets its own section: its cued lines, then the ones still waiting for a cue.
+    const ids=state.markers.map(m=>(partOfPage(pl,m.page)||{}).id);
+    for(const p of pl){
+      const idx=ids.map((id,i)=>id===p.id && i<state.slides.length ? i : -1).filter(i=>i>=0), k=ids.filter(id=>id===p.id).length, w=(p.spare||[]).length;
+      head(`${p.name.replace(/\.pdf$/i,'')} · ${k ? k+' cue'+(k===1?'':'s') : 'no cues yet'}${w ? ' · '+w+' waiting' : ''}`, 'The supertitles for this PDF. Its cues take them in order; ones it has no cue for yet wait here, grayed.');
+      idx.forEach(i=>card(state.slides[i],i));
+      (p.spare||[]).forEach((_,j)=>spareCard(p,j));
+    }
+    if(state.slides.length>state.markers.length){ const k=state.slides.length-state.markers.length; head(`Not cued yet · ${k} supertitle${k===1?'':'s'}`, 'Select some and choose “Link to PDF…” to give them to a PDF, or place cues: the last PDF with cues takes them in order.');
+      for(let i=state.markers.length;i<state.slides.length;i++) card(state.slides[i],i); }
+  }
   const add=document.createElement('div'); add.className='addrow';
   add.innerHTML = state.slides.length ? `<button data-a="append">＋ Add slide</button>` : `<div class="empty" style="height:auto;padding:24px 8px"><div>No slides yet.</div><div style="font-size:13px">Import a CSV (each comma-separated value becomes a numbered slide), or add them one at a time.</div><div style="display:flex;gap:8px"><button class="primary" data-act="importSlides">Import slides…</button><button data-a="append">＋ Add slide</button></div></div>`;
   if(mode==='edit' || !state.slides.length) list.append(add);
@@ -1085,7 +1172,7 @@ function showOverflow(c, text, ctx=measureCtx()){
   const a=document.createElement('span'), b=document.createElement('span'); b.className='ovf';
   a.textContent=text.slice(0,cut); b.textContent=text.slice(cut)+(text.endsWith('\n')?' ':''); mir.replaceChildren(a,b);
 }
-function markOverflow(){ const ctx=measureCtx(); document.querySelectorAll('.slide').forEach(c=>{ const sl=state.slides[+c.dataset.i]; if(sl) showOverflow(c, sl.text, ctx); else c.classList.remove('over'); }); }
+function markOverflow(){ const ctx=measureCtx(); document.querySelectorAll('.slide').forEach(c=>{ const sl=c.dataset.sp ? spareOf(c) : state.slides[+c.dataset.i]; if(sl) showOverflow(c, sl.text, ctx); else c.classList.remove('over'); }); }
 function placeAddBelow(){
   document.querySelectorAll('.addBelowRow').forEach(x=>x.remove());
   if(mode!=='edit' || state.settings.lockOrder || cur<0 || cur>=state.slides.length) return;
@@ -1096,7 +1183,25 @@ function placeAddBelow(){
 const slidesEl=$('#slides');
 const SCORE_EMPTY_BIG = ($('#scoreEmpty .big')||{}).textContent || '';
 { let raf=0; new ResizeObserver(()=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>cardFont()); }).observe(slidesEl); }
-slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; grow(e.target);
+// Lines waiting in a PDF's section (no cue yet) have their own small set of actions.
+function spareOf(el){ const c=el.closest('.spare'); if(!c) return null; const [pid,j]=c.dataset.sp.split(':'), p=partsList().find(q=>q.id===pid); return p && p.spare ? p.spare[+j] : null; }
+const spareHandler = e=>{
+  const c=e.target.closest && e.target.closest('.spare'); if(!c) return;
+  e.stopPropagation();
+  const [pid,j]=c.dataset.sp.split(':'), p=partsList().find(q=>q.id===pid), sl=spareOf(c); if(!sl) return;
+  const t=e.target;
+  if(e.type==='input' && t.tagName==='TEXTAREA'){ sl.text=t.value; grow(t); showOverflow(c, t.value); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); }
+  else if(e.type==='focusin' && t.tagName==='TEXTAREA'){ t._snap=snapState(); }
+  else if(e.type==='focusout' && t.tagName==='TEXTAREA'){ if(t._snap && t._snap.parts!==JSON.stringify(state.parts)){ undoStack.push(t._snap); redoStack=[]; } t._snap=null; }
+  else if(e.type==='click'){ const b=t.closest('button[data-s]'); if(!b) return;
+    if(state.settings.lockOrder || mode==='show') return lockedNote('order');
+    snap();
+    if(b.dataset.s==='trash'){ p.spare.splice(+j,1); if(!p.spare.length) delete p.spare; changed(true); toast('Line deleted — '+keyName('⌘Z')+' brings it back'); }
+    if(b.dataset.s==='unlink'){ p.spare.splice(+j,1); if(!p.spare.length) delete p.spare; state.slides.push(sl); changed(true); toast('Moved to “Not cued yet” at the end of the list'); }
+  }
+};
+['input','focusin','focusout','click','mousedown','keydown','dblclick'].forEach(ev=>slidesEl.addEventListener(ev, spareHandler, true));
+slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; delete state.slides[i].pad; grow(e.target);
   showOverflow(e.target.closest('.slide'), e.target.value);
   if(state.settings.flow && mode==='edit' && i>=state.markers.length){ clearTimeout(flowT); flowT=setTimeout(()=>flowRefit(i, e.target.selectionStart), 450); } if(i===cur||i===cur+1) updateOutput(); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); });
 slidesEl.addEventListener('mousedown', e=>{
@@ -1123,17 +1228,17 @@ slidesEl.addEventListener('click', e=>{
   if(a==='down' && i<state.slides.length-1) return moveSlide(i,i+1);
   snap();
   if(a==='append'){ state.slides.push({text:''}); changed(true); focusSlide(state.slides.length-1); return; }
-  if(a==='add' || a==='addBelow'){ state.slides.splice(i+1,0,{text:'', b:'hard'}); if(state.slides[i]) state.slides[i].b='hard'; if(cur>i) cur++; changed(true); focusSlide(i+1); return; }
+  if(a==='add' || a==='addBelow'){ const fix=keepPdfsPaired(), o={text:'', b:'hard'}, curObj=state.slides[cur]; state.slides.splice(i+1,0,o); if(state.slides[i]) state.slides[i].b='hard'; fix(); if(curObj) cur=state.slides.indexOf(curObj); changed(true); focusLine(o); return; }
   if(a==='del'){ state.slides.splice(i,1); if(cur>i) cur--; else if(cur===i) cur=Math.min(cur,state.slides.length-1); changed(true); toast(`Slide ${i+1} deleted — the ones after it were renumbered`); return; }
   undoStack.pop();
 });
 // Generic confirm with an optional checkbox (unchecked by default). Resolves {ok, checked}.
-function ask({title, html='', checkLabel=null, note='', okText='Delete'}){
+function ask({title, html='', checkLabel=null, note='', okText='Delete', danger=true}){
   $('#askTitle').textContent=title; $('#askPreview').innerHTML=html; $('#askPreview').hidden=!html;
   $('#askCheck').checked=false; $('#askCheckRow').hidden=!checkLabel; $('#askCheckLabel').textContent=checkLabel||'';
-  $('#askNote').textContent=note; $('#askNote').hidden=!note; $('#askOk').textContent=okText;
+  $('#askNote').textContent=note; $('#askNote').hidden=!note; $('#askOk').textContent=okText; $('#askOk').classList.toggle('danger', danger); $('#askOk').classList.toggle('primary', !danger);
   const d=$('#askDlg'); d.returnValue=''; d.showModal(); $('#askCancel').focus();
-  return new Promise(res=>d.addEventListener('close', ()=>res({ok:d.returnValue==='ok', checked:$('#askCheck').checked}), {once:true}));
+  return new Promise(res=>d.addEventListener('close', ()=>{ const sel=$('#askPreview select'); res({ok:d.returnValue==='ok', checked:$('#askCheck').checked, value: sel ? sel.value : null}); }, {once:true}));
 }
 const undoNote = () => `You can still undo with ${keyName('⌘Z')} until you close the app.`;
 const rangeTxt = (a,b) => a===b ? `${a+1}` : `${a+1}–${b+1}`;
@@ -1175,8 +1280,8 @@ document.addEventListener('pointerdown', e=>{
 });
 function updatePicks(){
   document.querySelectorAll('.slide').forEach(c=>{ const i=+c.dataset.i; c.classList.toggle('picked', pickA!=null && i>=pickA && i<=pickB); });
-  const on = pickA!=null && pickB>pickA; $('#pickbar').classList.toggle('on', on);
-  if(on) $('#pickInfo').textContent = `${pickB-pickA+1} supertitles selected (${rangeTxt(pickA,pickB)})`;
+  const many=partsList().length>1, on = pickA!=null && (pickB>pickA || many); $('#pickbar').classList.toggle('on', on); $('#pickLink').hidden=!many;
+  if(on) $('#pickInfo').textContent = pickB>pickA ? `${pickB-pickA+1} supertitles selected (${rangeTxt(pickA,pickB)})` : `Supertitle ${pickA+1} selected`;
 }
 async function askDeleteRange(a,b){
   if(state.settings.lockOrder) return lockedNote('order');
@@ -1189,14 +1294,15 @@ async function askDeleteRange(a,b){
 }
 $('#pickDel').onclick=()=>{ if(pickA!=null) askDeleteRange(pickA,pickB); };
 $('#pickClear').onclick=clearPicks;
+$('#pickLink').onclick=()=>{ if(pickA!=null) askLink(state.slides.slice(pickA,pickB+1)); };
 $('#pickUp').onclick=()=>nudgePick(-1); $('#pickDown').onclick=()=>nudgePick(1);
 function moveSlide(from,to){ moveBlock(from,from,to); }
 // Moves slides a..b so the first of them lands at index `to`. A selected range moves as a block and stays selected.
 function moveBlock(a,b,to){
   const n=b-a+1; to=Math.max(0, Math.min(to, state.slides.length-n));
   if(to===a) return;
-  snap(); const curObj=state.slides[cur];
-  const blk=state.slides.splice(a,n); state.slides.splice(to,0,...blk);
+  snap(); const curObj=state.slides[cur], fix=keepPdfsPaired(state.slides.slice(a,b+1));
+  const blk=state.slides.splice(a,n); state.slides.splice(to,0,...blk); fix();
   if(curObj) cur=state.slides.indexOf(curObj);
   const grouped = pickA!=null && pickA===a && pickB===b && b>a;
   if(grouped){ pickA=to; pickB=to+n-1; pickAnchor=to; }
@@ -1209,7 +1315,7 @@ slidesEl.addEventListener('pointerdown', e=>{
   const g=e.target.closest('.grip'); if(!g || e.button!==0 || mode!=='edit') return;
   if(state.settings.lockOrder) return lockedNote('order');
   e.preventDefault();
-  const card=g.closest('.slide'), i0=+card.dataset.i, cards=[...slidesEl.querySelectorAll('.slide')];
+  const card=g.closest('.slide'), i0=+card.dataset.i, cards=[...slidesEl.querySelectorAll('.slide:not(.spare)')];
   const from = inPick(i0) ? pickA : i0, last = inPick(i0) ? pickB : i0, moving=cards.slice(from,last+1);
   const sy=e.clientY, st0=slidesEl.scrollTop; let slot=from, lastY=e.clientY, raf=0;
   const line=document.createElement('div'); line.className='dropline'; slidesEl.append(line);
@@ -1585,7 +1691,7 @@ function updateHint(){
   h.innerHTML = `Click the score to add a cue — it's numbered by page, then by height on the page${nudge}${del}`;
 }
 function updateCounts(){
-  const m=state.markers.length, s=state.slides.length, el=$('#counts');
+  const m=state.markers.length, s=state.slides.length+spareCount(), el=$('#counts');
   el.textContent = `${m} cue${m===1?'':'s'} · ${s} slide${s===1?'':'s'}`;
   el.classList.toggle('mismatch', !!state.pdfName && m!==s && (m+s)>0);
   el.title = m===s ? 'Every cue has a slide' : (m>s ? `${m-s} cue(s) have no slide yet (dashed circles)` : `${s-m} slide(s) have no cue on the score yet`);
@@ -1609,9 +1715,9 @@ const actions = {
   saveAsPdf: ()=>saveDoc(true,'pdf'),
   exportPrintable: ()=>exportPrintable(),
   printScore: ()=>printScore(),
-  exportCsv: ()=>{ if(!state.slides.length) return toast('No slides to export'); download(baseName()+' - slides.csv', '﻿'+state.slides.map(s=>'"'+s.text.replace(/"/g,'""')+'"').join('\r\n')+'\r\n','text/csv'); },
+  exportCsv: ()=>{ if(!allLines().length) return toast('No slides to export'); download(baseName()+' - slides.csv', '﻿'+allLines().map(s=>'"'+s.text.replace(/"/g,'""')+'"').join('\r\n')+'\r\n','text/csv'); },
   clearMarkers: ()=>{ if(state.markers.length && confirm(`Remove all ${state.markers.length} cue markers from the score?`)){ snap(); state.markers=[]; cur=-1; changed(false); } },
-  clearSlides: ()=>{ if(state.slides.length && confirm(`Remove all ${state.slides.length} slides?`)){ snap(); state.slides=[]; changed(true); } },
+  clearSlides: ()=>{ const n=allLines().length; if(n && confirm(`Remove all ${n} slides?`)){ snap(); state.slides=[]; partsList().forEach(p=>delete p.spare); changed(true); } },
 };
 $('#fPdf').onchange=e=>{ const f=e.target.files[0]; if(f) openAny(f, null); e.target.value=''; };
 /* ---------- ONE-FILE SAVE: a PDF of the numbered score + cue sheet, with the original score and project data embedded ---------- */
@@ -2061,7 +2167,8 @@ async function applyParts(newParts, removedId, noSnap){
       while(ns.length && ns[ns.length-1]===null) ns.pop();
       // Supertitles past the last cue aren't cued yet, so they stay at the very end: anywhere else they'd pair with another PDF's cues.
       const rest=state.slides.slice(state.markers.length);
-      state.slides=[...ns.map(x=>x||{text:''}), ...rest];
+      state.slides=[...ns.map(x=>x||blankPad()), ...rest];
+      normalizeSections();
     }
     state.markers.forEach(m=>delete m._k);
     renderSlides(); updateCounts();
@@ -2086,19 +2193,21 @@ function movePart(i,j){ if(j<0||j>=state.parts.length||i===j) return; const np=[
 async function removePart(i){
   const p=state.parts[i], st=partStarts(state.parts)[p.id];
   const idx=state.markers.map((m,k)=>(m.page>=st && m.page<st+p.pages)?k:-1).filter(k=>k>=0);
-  const a=idx[0], b=idx[idx.length-1], sb=Math.min(b, state.slides.length-1), hasSlides = idx.length && sb>=a;
+  const a=idx[0], b=idx[idx.length-1], sb=Math.min(b, state.slides.length-1), waiting=(p.spare||[]).length, hasSlides = (idx.length && sb>=a) || waiting>0;
   $('#partsDlg').close();
   const r=await ask({ title:`Remove “${p.name}” from the score?`,
     html: idx.length ? `Its pages hold cue${idx.length>1?'s':''} <b>${rangeTxt(a,b)}</b>, which will be removed with it.` : 'No cues are placed on it.',
-    checkLabel: hasSlides ? `Also delete supertitle${sb>a?'s':''} ${rangeTxt(a,sb)}` : null,
-    note: hasSlides ? 'Leave the box unchecked to keep those supertitles; they will then pair with the cues that follow.' : '', okText:'Remove' });
+    checkLabel: hasSlides ? `Also delete its supertitles${idx.length && sb>=a ? ' ('+rangeTxt(a,sb)+(waiting?' and '+waiting+' waiting':'')+')' : ' ('+waiting+' waiting)'}` : null,
+    note: hasSlides ? 'Leave the box unchecked to keep those supertitles: they move to “Not cued yet” at the end of the list. The other PDFs keep theirs.' : '', okText:'Remove' });
   renderParts(); $('#partsDlg').showModal();
   if(!r.ok) return;
   snap();                                                  // one undo step brings back the PDF, its cues and its supertitles
-  if(r.checked && hasSlides) state.slides.splice(a, sb-a+1);
+  const sec=sectionsNow(), gone=[...(sec.groups[p.id]||[]), ...(p.spare||[])]; delete sec.groups[p.id];
+  if(!r.checked) sec.tail.push(...gone.filter(x=>x.text.trim()));
   await applyParts(state.parts.filter((_,k)=>k!==i), p.id, true);
+  rebuildSections(sec);
   renderSlides();
-  toast(`Removed “${p.name}”${r.checked && hasSlides ? ` with cues and supertitles ${rangeTxt(a,b)}` : ''} — ${keyName('⌘Z')} brings it back`);
+  toast(`Removed “${p.name}”${r.checked && hasSlides ? ' with its cues and supertitles' : ''} — ${keyName('⌘Z')} brings it back`);
 }
 async function renderParts(){
   const grid=$('#partsGrid'), locked=!!state.settings.lockCues, parts=state.parts||[], st=partStarts(parts);

@@ -120,7 +120,7 @@
 <p class="lead">A handful of buttons, each with one clear job.</p>
 <figure class="shot"><img src="shots/toolbar.webp" alt="The toolbar across the top of the window"></figure>
 <dl>
-<dt>File ▾</dt><dd>New project, Open, Save, Save As, Save As PDF, Export printable score, Print score, Import and Export slides, and two clean-up commands: Remove all cue markers and Remove all slides. In the desktop app the same commands are in the menu bar.</dd>
+<dt>File ▾</dt><dd>New project, Close project, Open, Save, Save As, Save As PDF, Export printable score, Print score, Import and Export slides, and two clean-up commands: Remove all cue markers and Remove all slides. In the desktop app the same commands are in the menu bar.</dd>
 <dt>? Help</dt><dd>This guide. Type in its search box to find any topic.</dd>
 <dt>💾 Save</dt><dd>Saves everything into the project file (<kbd>⌘S</kbd>). The first time, it asks where.</dd>
 <dt>Edit / Show</dt><dd>The two modes — the switch glows <b>orange</b> in Edit and <b>teal</b> in Show, so you can tell at a glance. In <b>Edit</b> a click on the score adds a cue and the slides can be typed in. In <b>Show</b> the keyboard runs the titles and nothing can be changed by accident. <kbd>⇧⌘E</kbd> and <kbd>⇧⌘R</kbd> switch in the desktop app.</dd>
@@ -179,11 +179,20 @@
 <ul>
 <li><b>Add</b> a PDF before or after any card with <span class="ui">+ Before</span> / <span class="ui">+ After</span>, at the end with the last card, or with <span class="ui">📂 Browse to add a PDF…</span>.</li>
 <li><b>Reorder</b> by dragging the cards, or with <span class="ui">◀</span> <span class="ui">▶</span>. Each PDF's cues travel with their pages and are renumbered, and their supertitles move with them so every title stays with its cue.</li>
-<li><b>Remove</b> a PDF with <span class="ui">🗑</span>. Its cues go with it; a question asks whether to delete its supertitles too (unticked: they stay and pair with the cues that follow).</li>
+<li><b>Remove</b> a PDF with <span class="ui">🗑</span>. Its cues go with it; a question asks whether to delete its supertitles too (unticked: they move to <b>Not cued yet</b> at the end of the list). The other PDFs keep theirs.</li>
 <li>While cues are locked, PDFs can't be added, moved or removed (that would renumber cues); the panel offers <span class="ui">🔓 Unlock to make changes</span>.</li>
 <li>Each card also has <span class="ui">● Record</span> and <span class="ui">🔗 Link…</span> for that PDF's <a href="#follow">reference recording</a>, and shows how many of its cues are timed.</li>
 </ul>
 <p>The PDFs are merged into one score inside the project; Undo brings back a removed or moved PDF.</p>
+<h3>Each PDF has its own supertitles</h3>
+<p>With two or more PDFs, the slide list is divided into sections, one per PDF, each under a small heading with the PDF's name and number of cues. A PDF's cues take the lines in its section, in order, so <b>adding or removing a cue in one PDF never shifts the supertitles of another</b>.</p>
+<figure class="shot small"><img src="shots/pdf-sections.webp" alt="The slide list in two sections, one per PDF; part 1 has two lines waiting for a cue"><figcaption>Part 1 has two lines waiting for a cue. Part 2's cues keep their own supertitles.</figcaption></figure>
+<ul>
+<li><b>Lines waiting for a cue.</b> If a PDF's section has more lines than the PDF has cues, the extra ones wait at the end of its section, grayed and marked <i>waiting</i>. The next cue you place in that PDF takes the first of them. If a PDF has more cues than lines, its last cues get blank supertitles until you type them.</li>
+<li><b>Link to PDF.</b> To give lines to a PDF, select them (shift-click a supertitle; shift-click another to select a range) and click <span class="ui">🔗 Link to PDF…</span> in the bar above the list. It asks <i>Link to the current PDF?</i>, suggesting the PDF on screen in the score; choose another from the menu if needed. The lines join the end of that PDF's section.</li>
+<li><b>Not cued yet.</b> Lines after the last PDF's section belong to no PDF yet. Placing cues in the last PDF takes them in order, just as with a single PDF, so the usual way of working (type or import all the titles, then click the cues) still works. Use <span class="ui">↩</span> on a waiting line to send it back here.</li>
+<li>A line inserted with <span class="ui">＋</span>, or moved with <span class="ui">▲ ▼</span> or by dragging, joins the section it lands in.</li>
+</ul>
 <h3>Preparing PDFs with the PDF Toolkit</h3>
 <p>Scores rarely arrive exactly as you need them: the whole opera in one file when you only need Act 2, pages scanned sideways, an aria cut from the edition, or an insert from a different score. Supertitle Cuer adds and orders whole PDFs; the <b>PDF Toolkit</b>, poetic PiXie's free companion, prepares them first.</p>
 <figure class="shot small"><img src="shots/toolkit-button.webp" alt="The PDF Toolkit button in the PDFs panel"></figure>
@@ -410,12 +419,12 @@
 <p class="lead">One file holds the whole production, so there is nothing to lose track of.</p>
 <p><span class="ui">💾 Save</span> (<kbd>⌘S</kbd>) and <span class="ui">File ▾ → Save As…</span> (<kbd>⇧⌘S</kbd>) write the project as one <code>.supertitles</code> file. Double-click it to open it in the desktop app, or open it with <span class="ui">File ▾ → Open…</span> (<kbd>⌘O</kbd>) or by dropping it on the window. Opening a project locks its cues and slides, so nothing changes by accident.</p>
 <ul>
-<li>The app remembers your work between sessions (“Picked up where you left off”), but only a saved file can be moved to another computer or backed up.</li>
+<li>The desktop app always starts on the welcome screen with nothing open; a project opens only when you open it (double-click its file, <span class="ui">File → Open…</span>, or drop it on the window). The browser version picks up where you left off instead. Either way, only a saved file can be moved to another computer or backed up.</li>
 <li><b>Undo</b> <kbd>⌘Z</kbd> and <b>Redo</b> <kbd>⇧⌘Z</kbd> (<kbd>Ctrl</kbd>+<kbd>Y</kbd> on Windows) cover cues, slides, and moved or removed PDFs.</li>
 <li>The desktop app asks before closing with unsaved changes; “• not saved” next to the project name shows there are some.</li>
-<li><span class="ui">File ▾ → New project…</span> starts empty. <span class="ui">Remove all cue markers…</span> and <span class="ui">Remove all slides…</span> clear one side only.</li>
+<li><span class="ui">File ▾ → Close project</span> (<kbd>⌘W</kbd>) closes the project and returns to the welcome screen, offering to save unsaved changes first. <span class="ui">File ▾ → New project…</span> (<kbd>⌘N</kbd>) does the same and starts empty. <span class="ui">Remove all cue markers…</span> and <span class="ui">Remove all slides…</span> clear one side only.</li>
 </ul>
-<div class="keybox"><div class="kbt">⌨ Files</div><div class="kbr"><span class="k"><kbd>⌘S</kbd></span><span>save</span></div><div class="kbr"><span class="k"><kbd>⇧⌘S</kbd></span><span>save as</span></div><div class="kbr"><span class="k"><kbd>⌥⇧⌘S</kbd></span><span>save as PDF (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘O</kbd></span><span>open</span></div><div class="kbr"><span class="k"><kbd>⌘E</kbd></span><span>export printable score (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd></span><span>undo / redo</span></div></div>
+<div class="keybox"><div class="kbt">⌨ Files</div><div class="kbr"><span class="k"><kbd>⌘S</kbd></span><span>save</span></div><div class="kbr"><span class="k"><kbd>⇧⌘S</kbd></span><span>save as</span></div><div class="kbr"><span class="k"><kbd>⌥⇧⌘S</kbd></span><span>save as PDF (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘O</kbd></span><span>open</span></div><div class="kbr"><span class="k"><kbd>⌘W</kbd></span><span>close project (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘E</kbd></span><span>export printable score (desktop app)</span></div><div class="kbr"><span class="k"><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd></span><span>undo / redo</span></div></div>
 <p>The different files Supertitle Cuer can write are explained in the next chapter, <a href="#exports">Sharing and printing</a>.</p>
 </section>
 
@@ -501,6 +510,7 @@
 <tr><td><kbd>⌥⇧⌘S</kbd></td><td>Save As PDF (desktop app)</td></tr>
 <tr><td><kbd>⌘O</kbd></td><td>Open</td></tr>
 <tr><td><kbd>⌘N</kbd></td><td>New project (desktop app)</td></tr>
+<tr><td><kbd>⌘W</kbd></td><td>Close project (desktop app)</td></tr>
 <tr><td><kbd>⌘E</kbd></td><td>Export printable score (desktop app)</td></tr>
 <tr><td><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd></td><td>Undo / Redo</td></tr>
 <tr><td><kbd>⇧⌘E</kbd> / <kbd>⇧⌘R</kbd></td><td>Edit / Show mode (desktop app)</td></tr>
