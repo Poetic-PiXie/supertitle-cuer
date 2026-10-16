@@ -396,6 +396,15 @@ body.flow.edit .flowhelp{display:block}
 .slide.nocue{background:repeating-linear-gradient(135deg,var(--nocue-a) 0 8px,var(--nocue-b) 8px 16px);border-style:dashed;border-color:var(--btn-line)}
 .slide.nocue textarea{color:#8e9099;font-style:italic}
 .slide.nocue .num{color:#6a6d78}
+/* Selected supertitles (shift-click) all look selected, whatever else they are: blank, uncued, waiting, colored or next. */
+.slide.picked:is(.nocue,.next,.tinted,.spare,.hardb){background:var(--pick-bg);border-color:#4a82d6;box-shadow:0 0 0 1px rgba(74,130,214,.55),0 0 14px rgba(74,130,214,.45)}
+.slide.picked.nocue{background:repeating-linear-gradient(135deg,var(--pick-bg) 0 8px,color-mix(in srgb,var(--pick-bg) 80%,#4a82d6) 8px 16px)}
+.slide.picked.nocue textarea{color:var(--soft)}
+.slide.picked.nocue .num{color:#9cc3ff}
+body.day .slide.picked.nocue .num{color:#2f5fb3}
+body.day .slide.picked:is(.nocue,.next,.tinted,.spare,.hardb):not(.cur){border-color:#4a82d6}
+body.day .slide.picked.nocue textarea{color:#4a4f5c}
+.slide.picked.cur{border-color:var(--cur);box-shadow:0 0 0 1px var(--cur),0 0 14px rgba(74,130,214,.45)}
 .slide.nocue.cur{border-style:solid}
 body.show .slide .tools{display:none}
 body.show .slide, body.order-locked .slide{grid-template-columns:34px 1fr auto}
