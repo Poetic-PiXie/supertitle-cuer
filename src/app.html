@@ -832,7 +832,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
 </form></dialog>
 <dialog id="pptDlg"><form method="dialog">
   <h2>Export as PowerPoint</h2>
-  <p class="note">Each supertitle becomes one slide, laid out just as on the projector: the same screen shape, font, type size, colors, line breaks and position. The text stays editable. Each slide's notes give its cue number and score page.</p>
+  <p class="note">Each supertitle becomes one slide, styled just as on the projector: the same screen shape, font, type size, colors, alignment and line breaks, always centered top to bottom. The text stays editable. Each slide's notes give its cue number and score page.</p>
   <div class="pptopts">
     <label><input type="radio" name="pptWhich" value="all" checked> All supertitles, in order <span class="pptn" id="pptNAll"></span></label>
     <label><input type="radio" name="pptWhich" value="cued"> Only the cued ones <span class="pptn" id="pptNCued"></span></label>
@@ -2833,7 +2833,7 @@ $('#pptDlg').addEventListener('close', ()=>{ if($('#pptDlg').returnValue==='ok')
 async function buildPptx(items){
   const st=state.settings, sh=normShape(st.shape), L=titleLayout();
   const W = sh==='4/3' ? 10 : 13.333, H = sh==='6/1' ? W/6 : 7.5;      // inches, PowerPoint's own 16:9 and 4:3 sizes
-  const m=L.px(W,H), lineH=m.font*m.lh, vp=(st.vpos||0)/100;
+  const m=L.px(W,H), lineH=m.font*m.lh;
   const pptx=new PptxGenJS(); pptx.defineLayout({name:'STQ', width:W, height:H}); pptx.layout='STQ';
   pptx.title=projectFileName().replace(/\.supertitles$/i,''); pptx.author='STQ (Supertitle Cuer)';
   const col=c=>String(c||'#000000').replace('#','').toUpperCase(), face = isPalatino() ? (pptOs==='win' ? 'Palatino Linotype' : 'Palatino') : fontLabel(st.font);
@@ -2848,12 +2848,15 @@ async function buildPptx(items){
     if(over) notes.push(`Too long for the screen: like the projector, this slide shows only the first ${L.lines} lines. Full text: `+it.sl.text.replace(/\|/g,' / ').replace(/\n/g,' / '));
     s.addNotes(notes.join('\n'));
     if(blank) continue;
-    const n=lines.length, availH=H-2*m.padY, blockH=n*lineH, free=Math.max(0, availH-blockH);
-    const y=m.padY + free/2*(sh==='6/1' ? 1 : 1+vp);
-    s.addText(lines.map((l,i)=>({text:l||' ', options:{breakLine:i<n-1}})), {
-      x:m.padX, y, w:W-2*m.padX, h:blockH, margin:0, valign:'top', align:st.align||'left',
-      fontFace:face, fontSize:Math.round(m.font*72*10)/10, color:col(st.fg), bold:!!st.bold, italic:!!st.italic,
-      lineSpacing:Math.round(lineH*72*100)/100, paraSpaceBefore:0, paraSpaceAfter:0, fit:'none', wrap:false });
+    // Always centered vertically: the box fills the title area between the top and bottom margins and PowerPoint centers the lines in it.
+    // Each line is its own paragraph at single spacing (about 1.2 × the type size in PowerPoint); the rest of the
+    // projector's line pitch goes before each line after the first. With fixed line spacing PowerPoint would put
+    // all that space above every line, and the text would look low even when centered.
+    const n=lines.length, fsPt=Math.round(m.font*72*10)/10, gapPt=Math.max(0, Math.round((lineH*72 - 1.2*fsPt)*100)/100);
+    s.addText(lines.map((l,i)=>({text:l||' ', options:{breakLine:i<n-1, paraSpaceBefore: i ? gapPt : 0}})), {
+      x:m.padX, y:m.padY, w:W-2*m.padX, h:H-2*m.padY, margin:0, valign:'middle', align:st.align||'left',
+      fontFace:face, fontSize:fsPt, color:col(st.fg), bold:!!st.bold, italic:!!st.italic,
+      paraSpaceAfter:0, fit:'none', wrap:false });
   }
   return {bytes: await pptx.write({outputType:'uint8array'}), cut};
 }
