@@ -231,6 +231,7 @@ aside{min-width:0}
 #score{overflow:auto;position:relative;background:var(--score-bg);border-right:1px solid var(--line)}
 #pages{display:flex;flex-direction:column;align-items:safe center;gap:18px;padding:20px 24px 60vh}
 #pages:empty{display:none}
+#slides > *{flex-shrink:0}   /* cards keep their full height; a long list scrolls instead of squeezing them (Windows) */
 .page{position:relative;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.45)}
 .page canvas{position:absolute;inset:0;width:100%;height:100%}
 .page .overlay{position:absolute;inset:0}
@@ -686,6 +687,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <hr>
       <button data-act="importSlides">Import slides (CSV / text / PDF)…</button>
       <button data-act="exportCsv">Export slides (CSV)</button>
+      <button data-act="exportTxt">Export slides (text)</button>
       <hr>
       <button data-act="clearMarkers">Remove all cue markers…</button>
       <button data-act="clearSlides">Remove all slides…</button>
@@ -739,7 +741,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
 
 <dialog id="importDlg"><form method="dialog">
   <h2>Import slides</h2>
-  <div class="row"><button type="button" id="impFileBtn">Choose a file…</button><span class="note" style="color:var(--dim)">.csv, .txt, or a PDF of existing slides</span></div>
+  <div class="row"><button type="button" id="impFileBtn">Choose a file…</button><span class="note" style="color:var(--dim)">.csv, .txt, a PowerPoint file (.pptx), or a PDF of existing slides</span></div>
   <p class="note">…or paste below. <b>CSV:</b> every comma-separated value becomes one slide, numbered in order. Wrap a value in <code>"double quotes"</code> if it contains a comma. Use <code>|</code> for a line break inside a slide.</p>
   <textarea id="impText" placeholder='"Libiamo, ne'' lieti calici",Let us drink from the joyful cups,That beauty adorns|with its blossoms'></textarea>
   <div class="row">
@@ -866,7 +868,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   <div class="actions"><button value="cancel" id="askCancel">Cancel</button><button value="ok" class="danger" id="askOk">Delete</button></div>
 </form></dialog>
 <input type="file" id="fPdf" hidden>
-<input type="file" id="fImp" accept=".csv,.txt,.tsv,.pdf,text/csv,text/plain,application/pdf" hidden>
+<input type="file" id="fImp" accept=".csv,.txt,.tsv,.pdf,.pptx,text/csv,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
 <div id="toast"></div>
 <div id="drop">Drop a score PDF, a slides CSV, or a project file</div>
 
@@ -948,7 +950,7 @@ const undo=()=>restore(undoStack,redoStack,'Undone'), redo=()=>restore(redoStack
 /* ---------- utilities ---------- */
 let toastT; function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2200); }
 function download(name, data, type){ const b = data instanceof Blob ? data : new Blob([data],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.append(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000); }
-const baseName = () => (state.pdfName||'supertitles').replace(/\.pdf$/i,'');
+const baseName = () => docName ? docName.replace(/\.(supertitles|pdf)$/i,'').replace(/ - supertitles$/i,'') : (state.pdfName||'Untitled').replace(/\.pdf$/i,'');
 const clamp01 = v => Math.min(1, Math.max(0, v));
 const typingIn = el => el && el.matches && el.matches('textarea:not([readonly]), input[type=text], select') ;
 
@@ -1831,7 +1833,8 @@ const actions = {
   exportPrintable: ()=>exportPrintable(),
   exportPptx: ()=>openPptx(),
   printScore: ()=>printScore(),
-  exportCsv: ()=>{ if(!allLines().length) return toast('No slides to export'); download(baseName()+' - slides.csv', '﻿'+allLines().map(s=>'"'+s.text.replace(/"/g,'""')+'"').join('\r\n')+'\r\n','text/csv'); },
+  exportTxt: ()=>{ if(!allLines().length) return toast('No slides to export'); download(baseName()+' - slides.txt', allLines().map(s=>toBlank(s.text).replace(/\r?\n/g,'|')).join('\r\n')+'\r\n','text/plain;charset=utf-8'); toast('Saved the slides as text: one slide per line, | for a line break inside a slide'); },
+  exportCsv: ()=>{ if(!allLines().length) return toast('No slides to export'); download(baseName()+' - slides.csv', '﻿'+allLines().map(s=>'"'+toBlank(s.text).replace(/"/g,'""')+'"').join('\r\n')+'\r\n','text/csv'); },
   clearMarkers: ()=>{ if(state.markers.length && confirm(`Remove all ${state.markers.length} cue markers from the score?`)){ snap(); state.markers=[]; cur=-1; changed(false); } },
   clearSlides: ()=>{ const n=allLines().length; if(n && confirm(`Remove all ${n} slides?`)){ snap(); state.slides=[]; partsList().forEach(p=>delete p.spare); changed(true); } },
 };
@@ -1844,7 +1847,7 @@ function setDirty(d){
   document.title = (d&&has?'• ':'') + (docName || 'Supertitle Cuer');
   if(NATIVE) window.stc.docState({path: (fileHandle && fileHandle.nativePath) || '', dirty: !!(d&&has)});
 }
-const projectData = () => ({app:'supertitle-cuer', version:4, savedAt:new Date().toISOString(), pdfName:state.pdfName, parts:state.parts, markers:state.markers, slides:state.slides, settings:state.settings, follow: {runs:Object.fromEntries(partsList().filter(p=>refRuns[p.id]).map(p=>[p.id, refMeta(refRuns[p.id])]))}});
+const projectData = () => ({app:'supertitle-cuer', version:4, savedAt:new Date().toISOString(), noScore: !pdfBytes, pdfName: pdfBytes ? state.pdfName : null, parts:state.parts, markers:state.markers, slides:state.slides, settings:state.settings, follow: {runs:Object.fromEntries(partsList().filter(p=>refRuns[p.id]).map(p=>[p.id, refMeta(refRuns[p.id])]))}});
 function drawCues(doc, font){
   const {rgb, degrees} = PDFLib;
   state.markers.forEach((m,i)=>{ const red=hexRgb(cueColor(i)||'#dc1a1a');
@@ -1861,13 +1864,13 @@ function drawCues(doc, font){
   });
 }
 function cueSheetName(){ const parts=state.parts||[]; if(parts.length>1) return docName ? docName.replace(/\.(supertitles|pdf)$/i,'') : parts.map(p=>p.name.replace(/\.pdf$/i,'')).join(' + '); return state.pdfName||''; }
-async function addCueSheet(doc, fb){
+async function addCueSheet(doc, fb, title='Supertitles - cue sheet'){
   if(!state.slides.length) return;
   const {rgb, StandardFonts}=PDFLib; const f=await doc.embedFont(StandardFonts.Helvetica);
   const safe=(t,font)=>{ let o=''; for(const ch of t){ try{ font.encodeText(ch); o+=ch; }catch(e){ o+='?'; } } return o; };
   const W=612, H=792, M=54, size=10.5, lh=14, textW=W-2*M-40; let page, y;
   const wrap=line=>{ const out=[]; let curL=''; for(const w of line.split(/\s+/).filter(Boolean)){ const t=curL?curL+' '+w:w; if(f.widthOfTextAtSize(t,size)>textW && curL){ out.push(curL); curL=w; } else curL=t; } out.push(curL); return out; };
-  const newPage=()=>{ page=doc.addPage([W,H]); y=H-M; page.drawText(safe('Supertitles - cue sheet' + (cueSheetName() ? '   (' + cueSheetName() + ')' : ''), fb), {x:M, y, size:13, font:fb}); y-=28; };
+  const newPage=()=>{ page=doc.addPage([W,H]); y=H-M; page.drawText(safe(title + (cueSheetName() ? '   (' + cueSheetName() + ')' : ''), fb), {x:M, y, size:13, font:fb}); y-=28; };
   newPage();
   state.slides.forEach((s,i)=>{
     const txt=s.text.replace(/\|/g,'\n').trim();
@@ -1880,6 +1883,14 @@ async function addCueSheet(doc, fb){
 }
 async function buildProjectPdf(){
   const {PDFDocument, StandardFonts} = PDFLib;
+  if(!pdfBytes){ // no score yet: the file is a list of the titles (readable in any PDF viewer) with the project inside
+    const doc=await PDFDocument.create(), fb=await doc.embedFont(StandardFonts.HelveticaBold);
+    await addCueSheet(doc, fb, 'Supertitles (no score yet)');
+    if(!doc.getPageCount()){ const pg=doc.addPage([612,792]); pg.drawText('Supertitles (no score yet)', {x:54, y:738, size:13, font:fb}); }
+    await doc.attach(new TextEncoder().encode(JSON.stringify(projectData())), PROJ_ATTACH, {mimeType:'application/json', description:'Supertitle Cuer project: slides and settings (no score yet)'});
+    doc.setSubject('Supertitle Cuer project'); doc.setProducer('Supertitle Cuer');
+    return await doc.save();
+  }
   const doc=await PDFDocument.load(pdfBytes, {ignoreEncryption:true});
   const fb=await doc.embedFont(StandardFonts.HelveticaBold);
   drawCues(doc, fb); await addCueSheet(doc, fb);
@@ -1910,7 +1921,7 @@ function projectFileName(ext){ let n = docName ? docName.replace(/\.(pdf|superti
 // kind: 'supertitles' or 'pdf'. Both hold the same thing — the merged score with the cues drawn on,
 // plus the project data inside — a .pdf one also opens in any PDF viewer.
 async function saveDoc(as, kind){
-  if(!pdfBytes){ toast('Open the score PDF first — the saved file is built around it'); return false; }
+  if(!pdfBytes && !allLines().length){ toast('Nothing to save yet — add some slides or open a score PDF'); return false; }
   const curKind = docName && /\.pdf$/i.test(docName) ? 'pdf' : 'supertitles';
   kind = kind || curKind; if(kind!==curKind) as = true;
   const ext = kind==='pdf' ? '.pdf' : PROJ_EXT, suggested = projectFileName(ext);
@@ -1983,10 +1994,11 @@ async function openDialog(){
 async function openAny(file, handle){
   if(/\.json$/i.test(file.name)) return openProjectFile(file);
   const bytes=new Uint8Array(await file.arrayBuffer());
-  if(!(bytes[0]===0x25 && bytes[1]===0x50 && bytes[2]===0x44 && bytes[3]===0x46)){ if(/\.(csv|txt|tsv)$/i.test(file.name)){ if(!openImport()) return; return loadImportFile(file); } return toast('That isn’t a PDF — open a score PDF or a project you saved'); }
+  if(!(bytes[0]===0x25 && bytes[1]===0x50 && bytes[2]===0x44 && bytes[3]===0x46)){ if(/\.(csv|txt|tsv|pptx)$/i.test(file.name)){ if(!openImport()) return; return loadImportFile(file); } return toast('That isn’t a PDF — open a score PDF or a project you saved'); }
   let proj=null; try{ proj=await readProjectFromPdf(bytes); }catch(e){ console.warn(e); }
   if(!proj){ // a plain score: use it in the current project
-    await openPdfFile(file, bytes); fileHandle=null; docName=null; setDirty(true); save(); return;
+    const slidesOnly = !pdfBytes && !!docName;            // a saved project that had no score yet keeps its file
+    await openPdfFile(file, bytes); if(!slidesOnly){ fileHandle=null; docName=null; } setDirty(true); save(); return;
   }
   if(!await askSaveFirst()) return;
   const p=proj.project, orig=proj.original||bytes;
@@ -1994,11 +2006,11 @@ async function openAny(file, handle){
   state.parts=Array.isArray(p.parts)?p.parts:null;
   state.markers=p.markers||[]; state.slides=p.slides||[]; migrateCueColors(); state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}, {lockCues:true, lockOrder:true})); updateLocks(); applyAlign();
   stopFollow(); refRuns={}; for(const [id,meta] of Object.entries((p.follow&&p.follow.runs)||{})) if(proj.follow[id]) refRuns[id]={...meta, feat:proj.follow[id].feat, audio:proj.follow[id].audio||null}; saveRuns();
-  await loadPdfBytes(p.pdfName||file.name, orig);
+  if(p.noScore){ clearScore(); state.pdfName=null; } else await loadPdfBytes(p.pdfName||file.name, orig);
   renderSlides(); goTo(-1,false);
   fileHandle=handle||null; docName=file.name; setDirty(false); save();
-  idbPut('score',{name:state.pdfName, bytes:orig}); idbPut('doc',{name:docName, handle:fileHandle});
-  toast(`Opened “${file.name}” — ${state.markers.length} cues, ${state.slides.length} slides`); noteFontSwap();
+  idbPut('score', p.noScore ? null : {name:state.pdfName, bytes:orig}); idbPut('doc',{name:docName, handle:fileHandle});
+  toast(`Opened “${file.name}” — ${p.noScore ? 'no score yet, ' : state.markers.length+' cues, '}${state.slides.length} slides`); noteFontSwap();
 }
 // Before closing or replacing the project: offer to save unsaved changes. Resolves true when it's fine to go on.
 async function askSaveFirst(){
@@ -2006,11 +2018,15 @@ async function askSaveFirst(){
   if(NATIVE && window.stc.askSave){ const r=await window.stc.askSave(); if(r===2) return false; if(r===0) return !!(await saveDoc(false)); return true; }
   return confirm('This project has unsaved changes. Close it anyway? (Cancel to go back and save.)');
 }
-function resetProject(){
-  state.settings.lockCues=false; state.settings.lockOrder=false;
-  state.markers=[]; state.slides=[]; state.pdfName=null; state.parts=null; pdfBytes=null; pdfDoc=null; cur=-1; undoStack=[]; redoStack=[];
+function clearScore(){
+  pdfBytes=null; pdfDoc=null; state.parts=null;
   pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[]; $('#pages').replaceChildren(); $('#scoreEmpty').hidden=false; $('#zoomCtl').hidden=true;
   $('#scoreEmpty .big') && ($('#scoreEmpty .big').textContent = SCORE_EMPTY_BIG);
+}
+function resetProject(){
+  state.settings.lockCues=false; state.settings.lockOrder=false;
+  state.markers=[]; state.slides=[]; state.pdfName=null; cur=-1; undoStack=[]; redoStack=[];
+  clearScore();
   fileHandle=null; docName=null; idbPut('score',null); idbPut('doc',null);
   stopFollow(); refRuns={}; saveRuns();
   updateLocks(); changed(true); setDirty(false); save();
@@ -2116,9 +2132,11 @@ function csvToSlides(text){
   if(numbered){ rows = rows.filter(r=>/^\s*\d+\s*$/.test(r[0])).map(r=>[r.slice(1).join(', ')]); }
   let vals=rows.flat();
   const nonEmpty=vals.filter(v=>v.trim()); if(nonEmpty.length>1 && nonEmpty.filter(v=>/,\s*$/.test(v)).length >= nonEmpty.length-1) vals=vals.map(v=>v.replace(/,\s*$/,''));
-  return vals.map(s=>s.replace(/\|/g,'\n').split('\n').map(l=>l.trim()).join('\n').trim()).filter(s=>s!=='');
+  return vals.map(s=>s.replace(/\|/g,'\n').split('\n').map(l=>l.trim()).join('\n').trim()).filter(s=>s!=='').map(unBlank);
 }
-const textLines = t => t.replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(Boolean); // every line break starts a new slide
+// "(blank)" stands for an empty slide (a blackout) in imported and exported lists
+const BLANK='(blank)', unBlank = s => s.trim().toLowerCase()===BLANK ? '' : s, toBlank = t => t.trim() ? t : BLANK;
+const textLines = t => t.replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(Boolean).map(unBlank); // every line break starts a new slide
 function parsedImport(){ const t=$('#impText').value, segs = $('#impFmt').value==='csv' ? csvToSlides(t) : textLines(t);
   return $('#impFit').checked ? fitSegments(segs) : segs.map(text=>({text, b:'hard'})); }
 function updateImpInfo(){ const n=parsedImport().length; $('#impInfo').textContent = n ? `→ ${n} slide${n===1?'':'s'}, numbered ${ $('input[name=impMode]:checked').value==='append' ? (state.slides.length+1)+'–'+(state.slides.length+n) : '1–'+n }` : ''; $('#impGo').disabled=!n; }
@@ -2129,8 +2147,28 @@ $('#impFit').addEventListener('change',()=>{ state.settings.fit=$('#impFit').che
 document.querySelectorAll('input[name=impMode]').forEach(r=>r.onchange=updateImpInfo);
 $('#impFileBtn').onclick=()=>$('#fImp').click();
 $('#fImp').onchange=async e=>{ const f=e.target.files[0]; e.target.value=''; if(f) await loadImportFile(f); };
+// A PowerPoint file: the text of each slide, in order (its text boxes top to bottom, line breaks kept).
+// Each PowerPoint slide becomes one value of a CSV list, so it imports as one STQ slide.
+async function readPptxSlides(bytes){
+  const z=await JSZip.loadAsync(bytes), xml=async n=>{ const f=z.file(n); return f ? new DOMParser().parseFromString(await f.async('string'),'application/xml') : null; };
+  const pres=await xml('ppt/presentation.xml'), rels=await xml('ppt/_rels/presentation.xml.rels'); if(!pres || !rels) throw new Error('not a PowerPoint file');
+  const target={}; for(const r of rels.getElementsByTagName('Relationship')) target[r.getAttribute('Id')]=r.getAttribute('Target');
+  const ids=[...pres.getElementsByTagNameNS('*','sldId')].map(e=>e.getAttribute('r:id')||e.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id'));
+  const out=[];
+  for(const id of ids){ const t=target[id]; if(!t) continue; const d=await xml('ppt/'+t.replace(/^\/?(ppt\/)?/,'')); if(!d) continue;
+    const shapes=[...d.getElementsByTagNameNS('*','sp')].filter(sp=>{ const ph=sp.getElementsByTagNameNS('*','ph')[0], ty=ph && ph.getAttribute('type'); return !/^(sldNum|dt|ftr)$/.test(ty||''); });
+    const texts=shapes.map(sp=>[...sp.getElementsByTagNameNS('*','p')].map(p=>{ let s=''; for(const n of p.getElementsByTagNameNS('*','*')){ if(n.localName==='t') s+=n.textContent; else if(n.localName==='br') s+='\n'; } return s.trim(); }).join('\n').trim()).filter(Boolean);
+    out.push(texts.join('\n'));
+  }
+  return out;
+}
+const slidesToCsv = list => list.map(t=>'"'+toBlank(t).replace(/"/g,'""').replace(/\r?\n/g,'|')+'"').join('\n');
 async function loadImportFile(f){
-  if(/\.pdf$/i.test(f.name) || f.type==='application/pdf'){
+  if(/\.pptx$/i.test(f.name)){
+    let list; try{ list=await readPptxSlides(new Uint8Array(await f.arrayBuffer())); }catch(e){ console.warn(e); return toast('Could not read that PowerPoint file (only .pptx works, not the older .ppt)'); }
+    $('#impText').value=slidesToCsv(list); $('#impFmt').value='csv';
+    toast(`Read ${list.length} PowerPoint slide${list.length===1?'':'s'} — check the text, then Import`);
+  } else if(/\.pdf$/i.test(f.name) || f.type==='application/pdf'){
     const doc=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise; const out=[];
     for(let i=1;i<=doc.numPages;i++){ const tc=await (await doc.getPage(i)).getTextContent(); let s=''; tc.items.forEach(it=>{ s+=it.str; if(it.hasEOL) s+='\n'; });
       s=s.split('\n').map(l=>l.replace(/\s+/g,' ').trim()).filter(Boolean).join('\n'); out.push(s); }
@@ -2778,7 +2816,7 @@ window.__stcMenu = (cmd) => {
   const ed = document.activeElement && document.activeElement.matches && document.activeElement.matches('textarea:not([readonly]), input[type=text]');
   const map = {
     new: newProject, close: closeProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true,'supertitles'), saveAsPdf: ()=>saveDoc(true,'pdf'), exportPrintable,
-    importSlides: openImport, exportCsv: actions.exportCsv,
+    importSlides: openImport, exportCsv: actions.exportCsv, exportTxt: actions.exportTxt,
     undo: ()=> ed ? document.execCommand('undo') : undo(), redo: ()=> ed ? document.execCommand('redo') : redo(),
     printScore: ()=>printScore(), exportPptx: ()=>openPptx(), edit: ()=>setMode('edit'), show: ()=>setMode('show'), view100: ()=>setView('pct',100), viewFitH: ()=>setView('height'), viewFitW: ()=>setView('width'), projector: openProjector, connect: ()=>openHelp('connect'), help: ()=>openHelp(), printGuide: ()=>printGuide(), settings: openSettings,
     spell: ()=>{ const on=!spellOn(); applySpell(on); toast(on?'Spell check on':'Spell check off'); },

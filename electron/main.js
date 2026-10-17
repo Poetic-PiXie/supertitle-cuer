@@ -124,7 +124,11 @@ function createWindow() {
       spellcheck: true,
     },
   });
-  win.once('ready-to-show', () => win.show());
+  // Windows: a window sized to the work area leaves thin gaps at the sides (its resize borders are invisible),
+  // so there it opens maximized — the first time, and whenever it was left maximized.
+  const maxed = !isMac && (!fits || readPrefs().windowMaximized !== false);
+  win.once('ready-to-show', () => { if (maxed) win.maximize(); win.show(); });
+  if (!isMac) { win.on('maximize', () => writePrefs({ windowMaximized: true })); win.on('unmaximize', () => writePrefs({ windowMaximized: false })); }
   win.loadFile(APP_HTML);
 
   // The page opens the projector with window.open(..., 'supertitles-projector')
@@ -342,6 +346,7 @@ ipcMain.handle('open-dialog', async () => {
     properties: ['openFile'],
     filters: [
       { name: 'Supertitles projects and scores', extensions: ['supertitles', 'pdf'] },
+      { name: 'Slides (PowerPoint, CSV, text)', extensions: ['pptx', 'csv', 'txt'] },
       { name: 'All files', extensions: ['*'] },
     ],
   });
@@ -408,6 +413,7 @@ function buildMenu() {
         { type: 'separator' },
         item('Import Slides…', 'importSlides'),
         item('Export Slides (CSV)', 'exportCsv'),
+        item('Export Slides (Text)', 'exportTxt'),
         { type: 'separator' },
         item('Close Project', 'close', 'CmdOrCtrl+W'),
         ...(isMac ? [] : [{ role: 'quit' }]),

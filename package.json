@@ -77,7 +77,8 @@
           ]
         }
       ],
-      "artifactName": "Supertitle_Cuer-Setup-${version}.${ext}"
+      "artifactName": "Supertitle_Cuer-Setup-${version}.${ext}",
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": false,
