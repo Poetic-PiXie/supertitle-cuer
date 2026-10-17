@@ -120,7 +120,7 @@
 <p class="lead">A handful of buttons, each with one clear job.</p>
 <figure class="shot"><img src="shots/toolbar.webp" alt="The toolbar across the top of the window"></figure>
 <dl>
-<dt>File ▾</dt><dd>New project, Close project, Open, Save, Save As, Save As PDF, Export printable score, Print score, Export as PowerPoint, Import and Export slides, and two clean-up commands: Remove all cue markers and Remove all slides. In the desktop app the same commands are in the menu bar.</dd>
+<dt>File ▾</dt><dd>New project, Close project, Open, Save, Save As, Save As PDF, Export printable score, Print score, Import slides (PowerPoint, CSV, text or PDF), Export slides as PowerPoint, CSV or text, and two clean-up commands: Remove all cue markers and Remove all slides. In the desktop app the same commands are in the menu bar.</dd>
 <dt>? Help</dt><dd>This guide. Type in its search box to find any topic.</dd>
 <dt>💾 Save</dt><dd>Saves everything into the project file (<kbd>⌘S</kbd>). The first time, it asks where.</dd>
 <dt>Edit / Show</dt><dd>The two modes — the switch glows <b>orange</b> in Edit and <b>teal</b> in Show, so you can tell at a glance. In <b>Edit</b> a click on the score adds a cue and the slides can be typed in. In <b>Show</b> the keyboard runs the titles and nothing can be changed by accident. <kbd>⇧⌘E</kbd> and <kbd>⇧⌘R</kbd> switch in the desktop app.</dd>
@@ -274,11 +274,12 @@
 <section data-id="import" data-part="Guide">
 <h2>Bringing in titles you already have</h2>
 <p class="lead">Already have the translation in a document or spreadsheet? Bring it all in at once — no retyping.</p>
-<p>Click <span class="ui">Import…</span> above the slides (or <span class="ui">File ▾ → Import slides</span>).</p>
+<p>Click <span class="ui">Import…</span> above the slides (or <span class="ui">File ▾ → Import slides (PowerPoint / CSV / text / PDF)…</span>).</p>
 <figure class="shot"><img src="shots/import.webp" alt="The Import slides window"></figure>
 <ul>
 <li><span class="ui">Choose a file…</span> opens a <b>.csv</b>, a <b>.txt</b>, a <b>PowerPoint file</b> (.pptx) or a <b>PDF of existing slides</b> (its text is read page by page) — or paste the text into the box. Dropping one of these files on the window, or opening it with <span class="ui">File → Open…</span>, brings it here too.</li>
 <li><b>From PowerPoint</b>, only the text comes in: each PowerPoint slide becomes one STQ slide, in order, with its line breaks. (Slide numbers, dates and footers are left out, and only .pptx works, not the older .ppt.) The text appears in the box as a CSV list first, so you can check it before you click <span class="ui">Import</span>.</li>
+<li><b>Format: PowerPoint</b> — each PowerPoint slide becomes one slide. Choosing it opens the file chooser for a .pptx file (as does <span class="ui">Choose a file…</span>).</li>
 <li><b>Format: CSV</b> — every comma-separated value becomes one slide, numbered in order. Put a value in <code>"double quotes"</code> if it contains a comma. <code>|</code> makes a line break inside a slide.</li>
 <li><b>Format: Text</b> — every line becomes one slide.</li>
 <li><code>(blank)</code> on its own stands for an empty slide, a blackout. A blank PowerPoint slide shows up this way, and STQ's own CSV and text exports write blank slides the same way, so they come back intact.</li>
@@ -445,21 +446,21 @@
 <tr><td><span class="ui">Save</span> / <span class="ui">Save As…</span></td><td><code>Name.supertitles</code></td><td>The whole project</td><td>Yes, everything editable</td></tr>
 <tr><td><span class="ui">Save As PDF…</span></td><td><code>Name - supertitles.pdf</code></td><td>The whole project, inside a PDF anyone can read</td><td>Yes, everything editable</td></tr>
 <tr><td><span class="ui">Export printable score (PDF)…</span></td><td><code>Name - printable.pdf</code></td><td>The score with numbered cues, and a cue sheet</td><td>Only as a plain score</td></tr>
-<tr><td><span class="ui">Export as PowerPoint…</span></td><td><code>Name - supertitles.pptx</code></td><td>One slide per supertitle, looking just as on the projector</td><td>No</td></tr>
-<tr><td><span class="ui">Export slides (CSV)</span></td><td><code>Name - slides.csv</code></td><td>The titles only</td><td>Through <span class="ui">Import…</span></td></tr>
-<tr><td><span class="ui">Export slides (text)</span></td><td><code>Name - slides.txt</code></td><td>The titles only, one per line</td><td>Through <span class="ui">Import…</span></td></tr>
+<tr><td><span class="ui">Export slides as PowerPoint…</span></td><td><code>Name - supertitles.pptx</code></td><td>One slide per supertitle, looking just as on the projector</td><td>No</td></tr>
+<tr><td><span class="ui">Export slides as CSV</span></td><td><code>Name - slides.csv</code></td><td>The titles only</td><td>Through <span class="ui">Import…</span></td></tr>
+<tr><td><span class="ui">Export slides as text</span></td><td><code>Name - slides.txt</code></td><td>The titles only, one per line</td><td>Through <span class="ui">Import…</span></td></tr>
 </table>
 <h3>The project file (.supertitles)</h3>
 <p>Everything about the production, in one file: the score PDF (all its parts, merged), the cues, every title, the display settings, and the reference runs for Follow — including recordings made in the app.</p>
-<p><b>No score yet?</b> Save anyway. A project with only titles saves as a normal <code>.supertitles</code> file too; opened in a PDF viewer it shows a numbered list of the titles. Open it in STQ, add the score PDF whenever it arrives, and <span class="ui">Save</span> puts everything into the same file. The PowerPoint, CSV and text exports work without a score as well.</p>
+<p><b>Save at any stage.</b> A project can hold a score with no titles yet, titles with no score yet, or both, and <span class="ui">Save</span> works the same in every case. <b>No score yet?</b> A project with only titles saves as a normal <code>.supertitles</code> file too; opened in a PDF viewer it shows a numbered list of the titles. Open it in STQ, add the score PDF whenever it arrives, and <span class="ui">Save</span> puts everything into the same file. The PowerPoint, CSV and text exports work without a score as well.</p>
 <p>This is the file to keep, back up and take to the theatre. A <code>.supertitles</code> file is a PDF inside, but it is meant to be opened with Supertitle Cuer.</p>
 <h3>Save As PDF</h3>
 <p>The same complete project — including the cue times, Follow's reference runs and recordings made in the app — saved with a <code>.pdf</code> ending so that anyone can open it in any PDF viewer — Preview, Acrobat, a browser, a tablet. In a viewer it shows the score with the numbered red cues on its pages, followed by the cue sheet. Opened in Supertitle Cuer, it is the full, editable project again. Use it to share a production with a conductor, stage manager or translator who doesn't have the app, without keeping two files.</p>
 <h3>Export printable score</h3>
 <p>A plain PDF made for printing: the score pages with the numbered cues drawn on them (at the <span class="ui">Cue circle size</span> from Settings), and at the end a <b>cue sheet</b> listing every title next to its number — red numbers for cued titles, gray for titles that have no cue yet. It contains no project data, so it is small and safe to send anywhere; opened in Supertitle Cuer it is just a score. Use it for the booth binder, the conductor's or stage manager's copy, or to proofread the titles on paper.</p>
 <figure class="shot"><img src="shots/exports.webp" alt="A page of the printable score with numbered cues, and the cue sheet"><figcaption>The printable score: a page with its numbered cues, and the cue sheet at the end.</figcaption></figure>
-<h3>Export as PowerPoint</h3>
-<p>Some theatres run their titles from PowerPoint, and some operators only know PowerPoint. <span class="ui">File ▾ → Export as PowerPoint…</span> (<kbd>⇧⌘P</kbd>) turns the supertitles into a PowerPoint presentation, one slide per supertitle, in order. It is also a good backup: if the show laptop fails, any computer with PowerPoint can run the titles.</p>
+<h3>Export slides as PowerPoint</h3>
+<p>Some theatres run their titles from PowerPoint, and some operators only know PowerPoint. <span class="ui">File ▾ → Export slides as PowerPoint…</span> (<kbd>⇧⌘P</kbd>) turns the supertitles into a PowerPoint presentation, one slide per supertitle, in order. It is also a good backup: if the show laptop fails, any computer with PowerPoint can run the titles.</p>
 <ul>
 <li><b>It looks like the projector.</b> The slides have the same shape as your screen (16:9, 4:3 or the 6:1 strip) and the same font, type size, italic or bold, text and background colors, alignment and side margins. Each title breaks its lines exactly where STQ does.</li>
 <li><b>Always centered top to bottom.</b> Every title sits in the vertical middle of its slide, whatever <span class="ui">Vertical position</span> is set to in STQ, so it looks the same in PowerPoint, Keynote or Google Slides.</li>
@@ -488,9 +489,9 @@
 <p class="note">In the single-file HTML version the browser prints instead, with its own print preview — the same choices are there under “More settings”.</p>
 <div class="tipsbox"><div class="tbt">💡 Printing tips</div><ul><li>For the booth binder, print the score two-sided and the cue sheet single-sided, as a separate job — it's easier to keep on the desk next to the laptop.</li><li>Need the cue sheet only? Print just its pages: they are always the last ones.</li><li>Cues looking small on paper? Raise <span class="ui">Cue circle size</span> in Settings before printing.</li></ul></div>
 
-<h3>Export slides (CSV)</h3>
+<h3>Export slides as CSV</h3>
 <p>All the titles as a CSV file: one title per line, each in double quotes (an empty title as <code>(blank)</code>), numbered by their order; line breaks inside a title are kept. It opens in Excel, Numbers or Google Sheets (with accents intact), so a translator can work on the titles. Bring it back with <span class="ui">Import…</span> (Format: CSV) — choose <span class="ui">Replace</span> to swap in the new version. The cues are not affected.</p>
-<h3>Export slides (text)</h3>
+<h3>Export slides as text</h3>
 <p>All the titles as plain text, one title per line: a line break inside a title is written as <code>|</code> and an empty title as <code>(blank)</code>. Handy for a quick read-through or an email. Bring it back with <span class="ui">Import…</span> (Format: Text).</p>
 <p class="note">Recordings linked with <span class="ui">🔗 Link…</span> stay where they are on your computer; only the cue times and Follow's analysis of the music are saved with the project.</p>
 <h3>What if a linked recording moves?</h3>
@@ -538,7 +539,7 @@
 <tr><td><kbd>⌘N</kbd></td><td>New project (desktop app)</td></tr>
 <tr><td><kbd>⌘W</kbd></td><td>Close project (desktop app)</td></tr>
 <tr><td><kbd>⌘E</kbd></td><td>Export printable score (desktop app)</td></tr>
-<tr><td><kbd>⇧⌘P</kbd></td><td>Export as PowerPoint (desktop app)</td></tr>
+<tr><td><kbd>⇧⌘P</kbd></td><td>Export slides as PowerPoint (desktop app)</td></tr>
 <tr><td><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd></td><td>Undo / Redo</td></tr>
 <tr><td><kbd>⇧⌘E</kbd> / <kbd>⇧⌘R</kbd></td><td>Edit / Show mode (desktop app)</td></tr>
 <tr><td><kbd>⌘0</kbd> / <kbd>⌘1</kbd> / <kbd>⌘2</kbd></td><td>score view: actual size (100%) / fit the page height / fit the page width</td></tr>

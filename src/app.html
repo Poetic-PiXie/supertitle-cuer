@@ -683,11 +683,11 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <button data-act="saveAsPdf">Save As PDF… <span class="sc" style="float:none;margin-left:6px">opens in any PDF viewer, reopens here</span></button>
       <button data-act="exportPrintable">Export printable score (PDF)…<span class="sc">⌘E</span></button>
       <button data-act="printScore">Print score…<span class="sc">⌘P</span></button>
-      <button data-act="exportPptx">Export as PowerPoint…<span class="sc">⇧⌘P</span></button>
       <hr>
-      <button data-act="importSlides">Import slides (CSV / text / PDF)…</button>
-      <button data-act="exportCsv">Export slides (CSV)</button>
-      <button data-act="exportTxt">Export slides (text)</button>
+      <button data-act="importSlides">Import slides (PowerPoint / CSV / text / PDF)…</button>
+      <button data-act="exportPptx">Export slides as PowerPoint…<span class="sc">⇧⌘P</span></button>
+      <button data-act="exportCsv">Export slides as CSV</button>
+      <button data-act="exportTxt">Export slides as text</button>
       <hr>
       <button data-act="clearMarkers">Remove all cue markers…</button>
       <button data-act="clearSlides">Remove all slides…</button>
@@ -741,12 +741,12 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
 
 <dialog id="importDlg"><form method="dialog">
   <h2>Import slides</h2>
-  <div class="row"><button type="button" id="impFileBtn">Choose a file…</button><span class="note" style="color:var(--dim)">.csv, .txt, a PowerPoint file (.pptx), or a PDF of existing slides</span></div>
+  <div class="row"><button type="button" id="impFileBtn">Choose a file…</button><span class="note" style="color:var(--dim)">a PowerPoint file (.pptx), .csv, .txt, or a PDF of existing slides</span></div>
   <p class="note">…or paste below. <b>CSV:</b> every comma-separated value becomes one slide, numbered in order. Wrap a value in <code>"double quotes"</code> if it contains a comma. Use <code>|</code> for a line break inside a slide.</p>
   <textarea id="impText" placeholder='"Libiamo, ne'' lieti calici",Let us drink from the joyful cups,That beauty adorns|with its blossoms'></textarea>
   <div class="row">
     <span class="lbl">Format</span>
-    <select id="impFmt"><option value="csv">CSV — each comma-separated value is a slide</option><option value="text">Text — each line is a slide</option></select>
+    <select id="impFmt"><option value="pptx">PowerPoint — each PowerPoint slide is a slide (.pptx)</option><option value="csv">CSV — each comma-separated value is a slide</option><option value="text">Text — each line is a slide</option></select>
   </div>
   <div class="row">
     <span class="lbl">Existing slides</span>
@@ -2137,12 +2137,14 @@ function csvToSlides(text){
 // "(blank)" stands for an empty slide (a blackout) in imported and exported lists
 const BLANK='(blank)', unBlank = s => s.trim().toLowerCase()===BLANK ? '' : s, toBlank = t => t.trim() ? t : BLANK;
 const textLines = t => t.replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(Boolean).map(unBlank); // every line break starts a new slide
-function parsedImport(){ const t=$('#impText').value, segs = $('#impFmt').value==='csv' ? csvToSlides(t) : textLines(t);
+function parsedImport(){ const t=$('#impText').value, segs = $('#impFmt').value!=='text' ? csvToSlides(t) : textLines(t);   // a PowerPoint file arrives as a CSV list
   return $('#impFit').checked ? fitSegments(segs) : segs.map(text=>({text, b:'hard'})); }
 function updateImpInfo(){ const n=parsedImport().length; $('#impInfo').textContent = n ? `→ ${n} slide${n===1?'':'s'}, numbered ${ $('input[name=impMode]:checked').value==='append' ? (state.slides.length+1)+'–'+(state.slides.length+n) : '1–'+n }` : ''; $('#impGo').disabled=!n; }
 function openImport(){ if(state.settings.lockOrder){ lockedNote('order'); return false; } $('#impText').value=''; $('#impFmt').value='csv'; $('#impFit').checked=state.settings.fit!==false; impFitNote(); updateImpInfo(); $('#importDlg').showModal();  return true; }
 function impFitNote(){ const shp={'4/3':'4:3','16/9':'16:9','6/1':'6:1 strip'}[normShape(state.settings.shape)]; $('#impFitNote').textContent=`Fits each slide to ${maxLines()} lines on the ${shp} screen at the current title size (change both in ⚙︎ Settings). Sentences are kept together where they fit.`; }
 ['input','change'].forEach(ev=>{ $('#impText').addEventListener(ev,updateImpInfo); $('#impFmt').addEventListener(ev,updateImpInfo); });
+// Picking "PowerPoint" with nothing loaded yet opens the file chooser, for .pptx files
+$('#impFmt').addEventListener('change',()=>{ if($('#impFmt').value==='pptx' && !$('#impText').value.trim()){ const f=$('#fImp'), a=f.accept; f.accept='.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation'; f.click(); setTimeout(()=>f.accept=a, 0); } });
 $('#impFit').addEventListener('change',()=>{ state.settings.fit=$('#impFit').checked; save(); updateImpInfo(); });
 document.querySelectorAll('input[name=impMode]').forEach(r=>r.onchange=updateImpInfo);
 $('#impFileBtn').onclick=()=>$('#fImp').click();
@@ -2166,7 +2168,7 @@ const slidesToCsv = list => list.map(t=>'"'+toBlank(t).replace(/"/g,'""').replac
 async function loadImportFile(f){
   if(/\.pptx$/i.test(f.name)){
     let list; try{ list=await readPptxSlides(new Uint8Array(await f.arrayBuffer())); }catch(e){ console.warn(e); return toast('Could not read that PowerPoint file (only .pptx works, not the older .ppt)'); }
-    $('#impText').value=slidesToCsv(list); $('#impFmt').value='csv';
+    $('#impText').value=slidesToCsv(list); $('#impFmt').value='pptx';
     toast(`Read ${list.length} PowerPoint slide${list.length===1?'':'s'} — check the text, then Import`);
   } else if(/\.pdf$/i.test(f.name) || f.type==='application/pdf'){
     const doc=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise; const out=[];
