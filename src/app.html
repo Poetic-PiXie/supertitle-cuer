@@ -231,6 +231,15 @@ aside{min-width:0}
 #score{overflow:auto;position:relative;background:var(--score-bg);border-right:1px solid var(--line)}
 #pages{display:flex;flex-direction:column;align-items:safe center;gap:18px;padding:20px 24px 60vh}
 #pages:empty{display:none}
+/* slim scroll bars (not on a Mac): a thin rounded thumb, no arrow buttons, no visible track */
+:root{--sb-thumb:rgba(150,156,175,.38);--sb-thumb-h:rgba(185,190,210,.62);--sb-thumb-a:rgba(245,122,48,.85)}
+:root:has(body.day){--sb-thumb:rgba(80,64,104,.26);--sb-thumb-h:rgba(80,64,104,.48);--sb-thumb-a:rgba(240,105,26,.85)}
+html.slimbars ::-webkit-scrollbar{width:11px;height:11px;background:transparent}
+html.slimbars ::-webkit-scrollbar-track,html.slimbars ::-webkit-scrollbar-corner{background:transparent}
+html.slimbars ::-webkit-scrollbar-button{display:none;width:0;height:0}
+html.slimbars ::-webkit-scrollbar-thumb{background:var(--sb-thumb);border:3px solid transparent;border-radius:999px;background-clip:padding-box;min-height:36px;min-width:36px}
+html.slimbars ::-webkit-scrollbar-thumb:hover{background:var(--sb-thumb-h);border-width:2px;background-clip:padding-box}
+html.slimbars ::-webkit-scrollbar-thumb:active{background:var(--sb-thumb-a);border-width:2px;background-clip:padding-box}
 #slides > *{flex-shrink:0}   /* cards keep their full height; a long list scrolls instead of squeezing them (Windows) */
 .page{position:relative;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.45)}
 .page canvas{position:absolute;inset:0;width:100%;height:100%}
@@ -883,6 +892,8 @@ const $ = s => document.querySelector(s);
 const NATIVE = !!window.stc; // true inside the desktop app (see electron/preload.js)
 const IS_MAC = NATIVE ? window.stc.platform==='darwin' : /Mac|iPhone|iPad/i.test((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent);
 if(NATIVE) document.body.classList.add('native');
+// Slim STQ scroll bars everywhere except on a Mac, whose own thin overlay bars already fit (Windows draws wide gray ones)
+if(!/Mac/i.test(navigator.platform||navigator.userAgent||'')) document.documentElement.classList.add('slimbars');
 const keyName = k => IS_MAC ? k : k.replace(/⇧⌘/g,'Ctrl+Shift+').replace(/⌘/g,'Ctrl+');
 function localizeKeys(root){ if(IS_MAC) return;
   const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while((n=w.nextNode())) if(n.nodeValue.includes('⌘')) n.nodeValue=keyName(n.nodeValue);
