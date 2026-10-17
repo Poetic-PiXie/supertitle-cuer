@@ -80,8 +80,8 @@ button:disabled{opacity:.45;cursor:default}
 header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
 header .brand{position:relative;display:inline-flex;align-items:baseline;gap:7px;margin-right:10px;cursor:default;outline:none;padding:2px 4px;border-radius:6px}
 header .brand .bn{font-size:21px;font-weight:800;letter-spacing:.03em;color:var(--strong);white-space:nowrap}
-header .brand .bnf{font-size:14px;font-weight:600;letter-spacing:0;color:var(--soft)}
-header .brand .by{font-size:13px;color:var(--dim);font-style:italic;white-space:nowrap}
+header .brand .bnf{font-size:16.8px;font-weight:600;letter-spacing:0;color:var(--soft)}
+header .brand .by{font-size:15.6px;color:var(--dim);font-style:italic;white-space:nowrap}
 header .brand .by b{font-style:normal;font-weight:700;background:linear-gradient(90deg,#ff5f6d,#ffc371,#7bed9f,#70a1ff,#c56cf0);-webkit-background-clip:text;background-clip:text;color:transparent}
 body.day header .brand .by b{background:none;color:#8b5cf6}
 .pixiePop{position:absolute;top:calc(100% + 12px);left:0;width:340px;height:340px;border-radius:16px;overflow:hidden;background:#000;
@@ -309,7 +309,11 @@ body.swapped .swapbtn::after{left:auto;right:0}
 .nextline{margin-top:8px;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nextline b{color:var(--text);font-weight:500}
 .slidehead{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,max-content) 36px minmax(0,max-content) minmax(0,max-content);gap:8px;padding:10px 12px 8px}
-.slidehead .emojibtn{padding:0;font-size:19px;line-height:1}
+.slidehead .emojibtn{padding:0;display:inline-grid;place-items:center}
+.slidehead .emojibtn svg{width:18px;height:18px;display:block}
+.slidesempty{outline:none;border-radius:12px;border:1px dashed transparent;transition:border-color .15s}
+.slidesempty:focus{border-color:var(--btn-line)}
+.slidesempty kbd{font-size:11.5px}
 .emojipop{position:fixed;inset:auto;margin:0;z-index:1001;width:318px;max-height:min(372px,70vh);overflow:auto;padding:10px 10px 8px;border-radius:14px;background:var(--panel2);border:1px solid var(--btn-line);box-shadow:var(--dlg-sh);color:var(--text)}
 .emojipop h4{margin:6px 2px 4px;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
 .emojipop h4:first-child{margin-top:0}
@@ -586,9 +590,10 @@ button:focus:not(:focus-visible){outline:none}
 /* the Night / Day switch in the header: a pill with a moon and a sun, the knob slides onto the one in use */
 .themesw{position:relative;display:inline-flex;align-items:center;justify-content:space-between;width:68px;height:34px;padding:0 10px;border-radius:999px;border:1px solid var(--btn-line);
   background:linear-gradient(180deg,#141a2e,#232b48);box-shadow:inset 0 1px 3px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.06);color:#9fb0e8;flex:none}
-.themesw svg{position:absolute;z-index:1;top:50%;transform:translate(-50%,-50%);transition:color .2s,opacity .2s}
-.themesw .moon{left:16px}
-.themesw .sun{left:50px}
+/* each icon sits in a box exactly where the knob stops (whole pixels, no centering by percentage), so it lines up at any display scaling */
+.themesw svg{position:absolute;z-index:1;top:3px;width:26px;height:26px;padding:5.5px;box-sizing:border-box;transition:color .2s,opacity .2s}
+.themesw .moon{left:3px}
+.themesw .sun{left:37px}
 .themesw .knob{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#8ea2ff,#5a6fe0);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 1px 4px rgba(0,0,0,.5),0 0 10px rgba(120,140,255,.45);transition:transform .25s cubic-bezier(.4,0,.2,1),background .25s,box-shadow .25s}
 .themesw .moon{color:#fff}
 .themesw .sun{color:#7d88ad}
@@ -731,7 +736,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <div class="nextline" id="nextLine"></div>
       <div class="followbar" id="followBar" hidden><div class="fbtext" id="fbText"></div><div class="fbtrack"><div class="fbfill" id="fbFill"></div></div></div>
     </div>
-    <div class="slidehead"><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn emojibtn" id="emojiBtn" title="Insert an emoji into the slide you're typing in">☺</button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button data-act="importSlides" title="Bring in titles from a spreadsheet (CSV), a text file or a PDF of existing slides">Import…</button></div>
+    <div class="slidehead"><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn emojibtn" id="emojiBtn" title="Insert an emoji into the slide you're typing in" aria-label="Emoji"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="8.2"/><circle cx="7.2" cy="8.2" r=".9" fill="currentColor" stroke="none"/><circle cx="12.8" cy="8.2" r=".9" fill="currentColor" stroke="none"/><path d="M6.4 11.9c.9 1.5 2.2 2.3 3.6 2.3s2.7-.8 3.6-2.3"/></svg></button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button data-act="importSlides" title="Bring in titles from a spreadsheet (CSV), a text file or a PDF of existing slides">Import…</button></div>
     <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
     <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button id="pickUp" title="Move the selected slides up one place">▲</button><button id="pickDown" title="Move the selected slides down one place">▼</button><button id="pickLink" title="Give the selected supertitles to a PDF: they join its section">🔗 Link to PDF…</button><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
     <div id="slides"></div>
@@ -1222,7 +1227,7 @@ function renderSlides(){
       for(let i=state.markers.length;i<state.slides.length;i++) card(state.slides[i],i); }
   }
   const add=document.createElement('div'); add.className='addrow';
-  add.innerHTML = state.slides.length ? `<button data-a="append">＋ Add slide</button>` : `<div class="empty" style="height:auto;padding:24px 8px"><div>No slides yet.</div><div style="font-size:13px">Import a CSV (each comma-separated value becomes a numbered slide), or add them one at a time.</div><div style="display:flex;gap:8px"><button class="primary" data-act="importSlides">Import slides…</button><button data-a="append">＋ Add slide</button></div></div>`;
+  add.innerHTML = state.slides.length ? `<button data-a="append">＋ Add slide</button>` : `<div class="empty slidesempty" tabindex="0" title="Click here, then paste titles (${keyName('⌘V')})" style="height:auto;padding:24px 8px"><div>No slides yet.</div><div style="font-size:13px">Import a PowerPoint file, a CSV, a text file or a PDF of existing slides — or click here and paste titles (<kbd>${keyName('⌘V')}</kbd>): each line becomes a slide. Or add them one at a time.</div><div style="display:flex;gap:8px"><button class="primary" data-act="importSlides">Import slides…</button><button data-a="append">＋ Add slide</button></div></div>`;
   if(mode==='edit' || !state.slides.length) list.append(add);
   cardFont(false); list.querySelectorAll('textarea').forEach(grow);
   updateSlideClasses(); markOverflow();
@@ -2962,6 +2967,19 @@ async function exportPptx(items){
   download(name, blob); done(name);
 }
 
+/* Pasting onto the slide list while it's empty (and not typing anywhere): the Import window opens with the
+   pasted titles in it — one title per line, or a CSV list — or reads a pasted PowerPoint / CSV / text / PDF file. */
+document.addEventListener('paste', e=>{
+  const t=e.target; if(mode!=='edit' || state.slides.length || allLines().length) return;
+  if(t && t.closest && (t.closest('textarea, input, [contenteditable], dialog'))) return;
+  if(!(t===document.body || (t.closest && t.closest('#slides, .slidesempty')))) return;
+  const f=[...(e.clipboardData.files||[])][0], txt=e.clipboardData.getData('text/plain');
+  if(!f && !txt.trim()) return;
+  e.preventDefault(); if(!openImport()) return;
+  if(f){ loadImportFile(f); return; }
+  $('#impText').value=txt; $('#impFmt').value = /\n/.test(txt.trim()) && !/^\s*"/.test(txt) ? 'text' : 'csv'; updateImpInfo();
+  toast('Pasted — check the titles, then Import');
+});
 /* ---------- emoji ----------
    ☺ above the slides opens a small palette; a click inserts the emoji where the cursor is in the slide
    being typed in (or at the end of the current slide). The palette stays open for more. */

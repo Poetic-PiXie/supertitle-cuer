@@ -114,6 +114,7 @@ function createWindow() {
     height: b.height,
     minWidth: 960,
     minHeight: 600,
+    ...(isMac ? {} : { icon: path.join(__dirname, '..', 'build', 'icon.ico') }),   // Windows: every taskbar size, drawn sharp
     backgroundColor: '#16171b',
     title: 'Supertitle Cuer',
     show: false,

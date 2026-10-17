@@ -33,7 +33,8 @@
       "electron/**",
       "dist/Supertitle_Cuer.html",
       "package.json",
-      "docs/Supertitle_Cuer_Manual.pdf"
+      "docs/Supertitle_Cuer_Manual.pdf",
+      "build/icon.ico"
     ],
     "afterPack": "build/afterPack.js",
     "publish": null,
