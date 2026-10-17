@@ -297,6 +297,20 @@ tr:nth-child(4) td{outline:2px solid #1e7145;outline-offset:-2px}</style></body>
         b = io.BytesIO(); sheet.save(b, 'PNG'); save(b.getvalue(), 'example-printable', 1500)
         await ex.close()
 
+        print('projector switch')
+        sw = []
+        await pg.evaluate("document.querySelectorAll('.pvhead > *:not(.pvctl), .pvctl > *:not(#projBtn)').forEach(e=>e.style.visibility='hidden')")
+        for live in (False, True):
+            await pg.evaluate("(on)=>{ const b=$('#projBtn'); b.classList.toggle('live', on); b.querySelector('.pjl').textContent = on ? 'Projector on' : 'Projector off'; }", live); await pg.wait_for_timeout(300)
+            r = await pg.evaluate("(()=>{ const a=document.querySelector('#projBtn').getBoundingClientRect(); return {x:a.left-14, y:a.top-12, width:a.width+28, height:a.height+24}; })()")
+            sw.append(Image.open(io.BytesIO(await shot(clip=r))))
+        await pg.evaluate("(()=>{ const b=$('#projBtn'); b.classList.remove('live'); document.querySelectorAll('.pvhead *').forEach(e=>e.style.visibility=''); updateOutput(); })()")
+        gap = 40; comp = Image.new('RGB', (sw[0].width + sw[1].width + gap, max(sw[0].height, sw[1].height)), sw[0].getpixel((2, 2)))
+        comp.paste(sw[0], (0, 0)); comp.paste(sw[1], (sw[0].width + gap, 0))
+        from PIL import ImageDraw
+        d = ImageDraw.Draw(comp); cx = sw[0].width + gap // 2; cy = comp.height // 2
+        d.line([(cx - 12, cy), (cx + 8, cy)], fill=(200, 200, 210), width=3); d.polygon([(cx + 12, cy), (cx + 4, cy - 6), (cx + 4, cy + 6)], fill=(200, 200, 210))
+        b = io.BytesIO(); comp.save(b, 'PNG'); save(b.getvalue(), 'projector-switch', 700)
         print('emoji')
         await pg.evaluate("(()=>{ setFlow(false); goTo(2,false); })()"); await pg.wait_for_timeout(300)
         await pg.click('.slide[data-i="2"] textarea'); await pg.click('#emojiBtn'); await pg.wait_for_timeout(500)
