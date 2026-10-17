@@ -1289,7 +1289,7 @@ const spareHandler = e=>{
 slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; delete state.slides[i].pad; grow(e.target);
   showOverflow(e.target.closest('.slide'), e.target.value);
   if(state.settings.flow && mode==='edit' && i>=state.markers.length){ setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); if(i===cur||i===cur+1) updateOutput();
-    if(/^insertFrom(Paste|Drop)/.test(e.inputType||'')){ snap(); flowRefit(i, e.target.selectionStart); } else flowTyped(i, e.target.selectionStart);   // a pasted libretto gets laid out by sentences; typing stays exactly as typed
+    if(/^insertFrom(Paste|Drop)/.test(e.inputType||'') || Date.now()-cleanPasteAt<200){ snap(); flowRefit(i, e.target.selectionStart); } else flowTyped(i, e.target.selectionStart);   // a pasted libretto gets laid out by sentences; typing stays exactly as typed
     return; } if(i===cur||i===cur+1) updateOutput(); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); });
 slidesEl.addEventListener('mousedown', e=>{
   const card=e.target.closest('.slide'); if(!card || e.target.closest('button') || mode!=='edit') return;
@@ -2141,7 +2141,7 @@ function csvToSlides(text){
 }
 // "(blank)" stands for an empty slide (a blackout) in imported and exported lists
 const BLANK='(blank)', unBlank = s => s.trim().toLowerCase()===BLANK ? '' : s, toBlank = t => t.trim() ? t : BLANK;
-const textLines = t => t.replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(Boolean).map(unBlank); // every line break starts a new slide
+const textLines = t => t.replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(Boolean).map(unBlank).map(l=>l.replace(/\s*\|\s*/g,'\n').trim()); // every line break starts a new slide
 function parsedImport(){ const t=$('#impText').value, segs = $('#impFmt').value!=='text' ? csvToSlides(t) : textLines(t);   // a PowerPoint file arrives as a CSV list
   return $('#impFit').checked ? fitSegments(segs) : segs.map(text=>({text, b:'hard'})); }
 function updateImpInfo(){ const n=parsedImport().length; $('#impInfo').textContent = n ? `→ ${n} slide${n===1?'':'s'}, numbered ${ $('input[name=impMode]:checked').value==='append' ? (state.slides.length+1)+'–'+(state.slides.length+n) : '1–'+n }` : ''; $('#impGo').disabled=!n; }
@@ -2967,13 +2967,46 @@ async function exportPptx(items){
   download(name, blob); done(name);
 }
 
+/* Pasted text from Word, Pages, a web page…: use the formatted (HTML) version, which knows where paragraphs
+   are. Each paragraph is a line (one slide in Text format); a line break inside a paragraph becomes | (a line
+   break inside the slide). Word's list bullets, hidden markup and odd spaces are dropped. */
+function htmlToLines(html){
+  const d=new DOMParser().parseFromString(html,'text/html');
+  d.querySelectorAll('style,script,meta,title,head,xml,[style*="mso-list:Ignore" i],[style*="display:none" i]').forEach(n=>n.remove());
+  const out=[]; let cur='';
+  const flush=()=>{ const t=cur.replace(/[\u00a0\u2007\u202f\t ]+/g,' ').replace(/ *\| */g,'|').replace(/\|{2,}/g,'|').replace(/^\||\|$/g,'').trim(); if(t) out.push(t); cur=''; };
+  const BLOCK=/^(P|DIV|LI|H[1-6]|TR|TD|TH|BLOCKQUOTE|PRE|SECTION|ARTICLE|DT|DD|UL|OL|TABLE|TBODY)$/;
+  const walk=n=>{ for(const c of n.childNodes){
+    if(c.nodeType===3) cur+=c.nodeValue.replace(/[\r\n]+/g,' ');
+    else if(c.nodeType===1){ if(c.tagName==='BR'){ cur+='|'; continue; } const b=BLOCK.test(c.tagName); if(b) flush(); walk(c); if(b) flush(); } } };
+  walk(d.body); flush(); return out;
+}
+const cleanText = t => t.replace(/\r\n?/g,'\n').replace(/[\u000b\u2028]/g,'|').replace(/\u2029/g,'\n').replace(/[\u00a0\u2007\u202f]/g,' ').replace(/[\u200b\u200c\u200d\u00ad\ufeff]/g,'').replace(/^[ \t]*[\u00b7\u2022\u25e6\u25aa\u2023][ \t]+/gm,'');   // also Word's list bullets
+function clipText(dt){
+  const html=dt.getData('text/html');
+  if(html && /<(p|div|li|br|h\d|td)\b/i.test(html)){ const lines=htmlToLines(html); if(lines.length) return lines.join('\n'); }
+  return cleanText(dt.getData('text/plain')||'');
+}
+// pasting into a slide: Word's odd characters cleaned, its paragraphs kept as lines
+slidesEl.addEventListener('paste', e=>{ const t=e.target; if(t.tagName!=='TEXTAREA' || t.readOnly) return;
+  const html=e.clipboardData.getData('text/html'), raw=e.clipboardData.getData('text/plain');
+  const txt = html && /<(p|div|li|br|h\d|td)\b/i.test(html) ? htmlToLines(html).join('\n').replace(/\|/g,'\n') : cleanText(raw||'').replace(/\|/g,'\n');
+  if(txt===raw) return; e.preventDefault(); cleanPasteAt=Date.now(); document.execCommand('insertText', false, txt); });
+let cleanPasteAt=0;   // a cleaned-up paste still counts as a paste (Flow mode lays it out by sentences)
+// the same when pasting straight into the Import window's text box
+$('#impText').addEventListener('paste', e=>{
+  const html=e.clipboardData.getData('text/html'); if(!html || !/<(p|div|li|br|h\d|td)\b/i.test(html)) { const t=e.clipboardData.getData('text/plain'); if(t && cleanText(t)!==t){ e.preventDefault(); document.execCommand('insertText', false, cleanText(t)); } return; }
+  e.preventDefault(); document.execCommand('insertText', false, htmlToLines(html).join('\n'));
+  if(!$('#impText').value.trim().startsWith('"')) $('#impFmt').value='text'; updateImpInfo();
+});
 /* Pasting onto the slide list while it's empty (and not typing anywhere): the Import window opens with the
    pasted titles in it — one title per line, or a CSV list — or reads a pasted PowerPoint / CSV / text / PDF file. */
 document.addEventListener('paste', e=>{
   const t=e.target; if(mode!=='edit' || state.slides.length || allLines().length) return;
   if(t && t.closest && (t.closest('textarea, input, [contenteditable], dialog'))) return;
   if(!(t===document.body || (t.closest && t.closest('#slides, .slidesempty')))) return;
-  const f=[...(e.clipboardData.files||[])][0], txt=e.clipboardData.getData('text/plain');
+  // only files STQ can import count (Word also puts a picture of the selection on the clipboard: ignore it)
+  const f=[...(e.clipboardData.files||[])].find(x=>/\.(pptx|csv|txt|tsv|pdf)$/i.test(x.name||'')), txt=clipText(e.clipboardData);
   if(!f && !txt.trim()) return;
   e.preventDefault(); if(!openImport()) return;
   if(f){ loadImportFile(f); return; }
