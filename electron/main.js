@@ -139,7 +139,8 @@ function createWindow() {
       return { action: 'allow', overrideBrowserWindowOptions: { title: 'Supertitle Cuer — User Guide', width: 900, height: 1000, autoHideMenuBar: true, backgroundColor: '#ffffff' } };
     }
     if (frameName !== 'supertitles-projector') return { action: 'deny' };
-    const ext = otherDisplay();
+    const ext = isMac ? otherDisplay() : winProjectorDisplay();   // the Mac keeps its own rule
+    if (!isMac) keepOperatorOffProjector(ext);
     const bounds = ext ? ext.bounds : null;
     return {
       action: 'allow',
@@ -158,7 +159,8 @@ function createWindow() {
     if (details && details.frameName === 'stq-guide') return;
     projector = child;
     child.setMenuBarVisibility(false);
-    if (otherDisplay()) setTimeout(() => !child.isDestroyed() && child.setFullScreen(true), 300);
+    if (isMac) { if (otherDisplay()) setTimeout(() => !child.isDestroyed() && child.setFullScreen(true), 300); }
+    else { const t = winProjectorDisplay(); if (t) winPlaceProjector(child, t); }
     setTimeout(() => win && !win.isDestroyed() && win.focus(), 700); // keyboard stays with the operator's window
     child.on('closed', () => {
       if (projector === child) projector = null;
@@ -256,7 +258,7 @@ function moveProjectorToSecondScreen() {
     menuCommand('projector');
     return;
   }
-  const ext = otherDisplay();
+  const ext = isMac ? otherDisplay() : winProjectorDisplay();
   if (!ext) {
     dialog.showMessageBox(win, {
       type: 'info',
@@ -265,9 +267,49 @@ function moveProjectorToSecondScreen() {
     });
     return;
   }
+  if (!isMac) { keepOperatorOffProjector(ext); winPlaceProjector(projector, ext, true); return; }
   projector.setFullScreen(false);
   projector.setBounds(ext.bounds);
   setTimeout(() => !projector.isDestroyed() && projector.setFullScreen(true), 300);
+}
+
+// ---------- Windows only (the Mac keeps the rule above) ----------
+// The projector is the external screen, never the laptop's own; on a PC with no built-in screen,
+// the one that isn't Windows' main display (or, failing that, the one STQ's window isn't on).
+function winProjectorDisplay() {
+  const all = screen.getAllDisplays();
+  if (all.length < 2) return null;
+  const internal = all.find((d) => d.internal), external = all.filter((d) => !d.internal);
+  if (internal && external.length) return external[0];
+  const primary = screen.getPrimaryDisplay();
+  return all.find((d) => d.id !== primary.id) || otherDisplay();
+}
+// If STQ's own window is on the projector screen, move it to the laptop's screen (or the other one).
+function keepOperatorOffProjector(target) {
+  if (!win || win.isDestroyed() || !target) return;
+  if (screen.getDisplayMatching(win.getBounds()).id !== target.id) return;
+  const all = screen.getAllDisplays(), op = all.find((d) => d.internal && d.id !== target.id) || all.find((d) => d.id !== target.id);
+  if (!op) return;
+  const wasMax = win.isMaximized(), wasFull = win.isFullScreen();
+  if (wasFull) win.setFullScreen(false);
+  if (wasMax) win.unmaximize();
+  win.setBounds(op.workArea);
+  if (wasMax || wasFull) win.maximize();
+}
+// Windows can drop a new window on the wrong screen when the screens use different scaling:
+// check where the audience window really is, put it on the projector if needed, then go full screen.
+function winPlaceProjector(child, target, now) {
+  const place = () => {
+    if (child.isDestroyed()) return;
+    if (child.isFullScreen()) child.setFullScreen(false);
+    if (screen.getDisplayMatching(child.getBounds()).id !== target.id) child.setBounds(target.bounds);
+    setTimeout(() => {
+      if (child.isDestroyed()) return;
+      if (screen.getDisplayMatching(child.getBounds()).id !== target.id) child.setBounds(target.bounds);
+      child.setFullScreen(true);
+    }, 200);
+  };
+  if (now) place(); else setTimeout(place, 250);
 }
 
 function setKeepAwake(on) {
