@@ -781,6 +781,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   <div class="sgrid">
     <div class="sdiv">Titles</div>
     <div class="srow"><span class="lbl">Screen shape</span><div class="pseg" id="sShapeSeg" style="--n:3"><button type="button" data-v="4/3" title="A classic 4:3 projector: the titles use a centered 4:3 area">4:3</button><button type="button" data-v="16/9" title="A widescreen projector: the titles use the whole screen">16:9</button><button type="button" data-v="6/1" title="A wide band of two lines, e.g. above the proscenium">6:1 Strip</button></div><select id="sShape" hidden><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select><span></span></div>
+    <div class="srow web-only"><span class="lbl">Projector on</span><div class="pseg" id="sScreenSeg" style="--n:2"><button type="button" data-scr="here" title="The audience window opens on this screen: drag it onto the projector">This screen</button><button type="button" data-scr="other" title="The audience window opens straight on the second screen (Chrome asks your permission once)">Screen 2</button></div><span></span></div>
     <div class="srow"><span class="lbl">Transition</span><select id="sTrans" class="pill" title="How one title gives way to the next on the screens">
       <option value="cut">Cut</option>
       <option value="soft">Soft Cut (⅙ s)</option>
@@ -801,7 +802,6 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
     <div class="srow"><span class="lbl">Slide Colors</span><div class="ppair"><label class="pcol" title="Color of the title text">Text<input type="color" id="sFg"></label><label class="pcol" title="Color of the screen behind the titles">Background<input type="color" id="sBg"></label></div><span></span></div>
     <div class="srow"><span class="lbl">Alignment</span><div class="pseg" id="sAlign" style="--n:3"><button type="button" data-al="left" title="Lines start at the left margin">Left</button><button type="button" data-al="center" title="Lines are centered">Center</button><button type="button" data-al="right" title="Lines end at the right margin">Right</button></div><span></span></div>
     <div class="srow" id="spellLangRow" hidden><span class="lbl">Spelling language</span><select id="sSpellLang" class="pill"></select><span></span></div>
-    <div class="srow web-only"><span class="lbl">Second screen</span><button type="button" id="sScreens" class="pbtn" title="Let the projector window open on the 2nd screen automatically">Open the projector on screen 2</button><span></span></div>
     <div class="srow"><span class="lbl">Text size <span class="info" id="sFsNote" tabindex="0">i</span></span><input type="range" id="sFs" min="50" max="100" step="1" title="Size of the titles (50–100 %)"><span class="val" id="sFsV"></span></div>
     <div class="srow"><span class="lbl">Vertical position</span><input type="range" id="sVpos" min="-100" max="100" step="1" title="Left = higher on the screen · right = lower"><button type="button" id="sMid" class="val pbtn" title="Put the titles back in the middle">Middle</button></div>
     <div class="srow"><span class="lbl">Side margins</span><input type="range" id="sSide" min="2" max="6" step="0.25" title="Space kept clear at each side"><span class="val" id="sSideV"></span></div>
@@ -1772,7 +1772,7 @@ async function openProjector(){
   if(projOpen()){ projWin.focus(); toast('Projector window is already open'); return; }
   let feat='popup,width=1024,height=576';
   try{
-    if(!NATIVE && 'getScreenDetails' in window){
+    if(!NATIVE && projScreen()==='other' && 'getScreenDetails' in window){
       const perm = await navigator.permissions.query({name:'window-management'}).catch(()=>null);
       if(perm && perm.state==='granted'){ const sd=await window.getScreenDetails(); const other=sd.screens.find(s=>s!==sd.currentScreen);
         if(other) feat=`popup,left=${other.availLeft},top=${other.availTop},width=${other.availWidth},height=${other.availHeight}`; }
@@ -2289,11 +2289,17 @@ $('#setDlg').addEventListener('input', ()=>{
   setVals(); updateOutput(); cardFont(); setDirty(true); save();
   clearTimeout(flowT); flowT=setTimeout(()=>{ if(state.settings.flow) flowRefitAll(); markOverflow(); }, 300);
 });
-$('#sScreens').onclick=async ()=>{
-  if(!('getScreenDetails' in window)) return toast('This browser can’t place windows on other screens — just drag the projector window over');
-  try{ const sd=await window.getScreenDetails(); toast(sd.screens.length>1 ? `Found ${sd.screens.length} screens — the projector window will open on the other one` : 'Only one screen found right now — connect the projector and try again'); }
-  catch(e){ toast('Permission not granted — you can still drag the window over'); }
-};
+// Browser version: where the audience window opens (this screen, or straight on the second one)
+const projScreen = () => { try{ return localStorage.getItem('stc.projScreen')||'here'; }catch(_){ return 'here'; } };
+function setProjScreen(v){ try{ localStorage.setItem('stc.projScreen', v); }catch(_){} pseg($('#sScreenSeg'), b=>b.dataset.scr===v); }
+setProjScreen(projScreen());
+$('#sScreenSeg').addEventListener('click', async e=>{ const b=e.target.closest('[data-scr]'); if(!b) return;
+  if(b.dataset.scr==='here'){ setProjScreen('here'); return toast('The projector window will open on this screen'); }
+  if(!('getScreenDetails' in window)){ setProjScreen('here'); return toast('This browser can’t place windows on other screens — just drag the projector window over'); }
+  setProjScreen('other');
+  try{ const sd=await window.getScreenDetails(); toast(sd.screens.length>1 ? 'The projector window will open on the second screen' : 'Only one screen found right now — connect the projector; the window will then open on it'); }
+  catch(e){ setProjScreen('here'); toast('Permission not granted — you can still drag the window over'); }
+});
 
 /* ---------- zoom, resize, drag & drop ---------- */
 /* view size: ⌘0 actual size (100%), ⌘1 fit the page height, ⌘2 fit the page width, or any size on the slider (25%–400%) */

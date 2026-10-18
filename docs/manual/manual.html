@@ -85,7 +85,7 @@
 <p><code>Supertitle_Cuer.html</code> is the whole app in one file. Double-click it to run it in Google Chrome on any computer; it opens and saves the same <code>.supertitles</code> files. The desktop app adds a few things the browser can't do:</p>
 <ul>
 <li>double-clicking a <code>.supertitles</code> file opens it;</li>
-<li>the projector window goes full screen on the second screen by itself;</li>
+<li>the projector window goes full screen on the second screen by itself (in the browser, set <span class="ui">Settings → Projector on</span> to <b>Screen 2</b> and press <kbd>F</kbd> in the projector window);</li>
 <li>the computer and both screens stay awake during Show mode;</li>
 <li>saving needs no browser prompts, and closing asks about unsaved changes;</li>
 <li>spelling suggestions, synonyms and <span class="ui">Look Up</span> in the right-click menu.</li>
@@ -323,6 +323,7 @@
 <figure class="shot"><img src="shots/settings.webp" alt="The Settings window"></figure>
 <dl>
 <dt>Screen shape</dt><dd><b>16:9</b> fills a widescreen projector; <b>4:3</b> uses a centered 4:3 area; <b>6:1 Strip</b> is a full-width band one sixth as high as it is wide, for two lines of titles above the stage.</dd>
+<dt>Projector on</dt><dd>Browser version only: <b>This screen</b> opens the audience window where you are, to drag onto the projector; <b>Screen 2</b> opens it straight on the second screen (Chrome asks your permission the first time).</dd>
 <dt id="transitions">Transition</dt><dd>How one title gives way to the next when you move to another cue:
 <ul><li><b>Cut</b> (the default): the next title appears instantly.</li>
 <li><b>Soft Cut</b>: a quick ⅙-second dissolve, just enough to take the edge off.</li>
@@ -337,7 +338,6 @@ The preview shows the same transition as the projector. Going to a blank slide f
 <dt>Cue circle size</dt><dd>2 to 6 (default 4, the middle).</dd>
 <dt>Cue color</dt><dd>The color of all the cue circles on the score — and in the printable score. Click <span class="ui">Cues</span> to choose any color, just like the text and background colors; it starts at the standard red. (The current cue is always highlighted in orange while you work, whatever color you pick.) A cue whose slide is colored with “Also color its cue” shows the slide's color instead (see <a href="#slide-colors">Color-coding slides and cues</a>).</dd>
 <dt>Spelling language</dt><dd>Windows desktop app only.</dd>
-<dt>Second screen</dt><dd>Browser version only: lets Chrome open the projector window straight on the second screen.</dd>
 </dl>
 
 <figure class="shot"><img src="shots/shapes.webp" alt="The three screen shapes in the preview"><figcaption>With the projector on, the preview shows the whole projector screen; thin lines (on your screen only) mark the 4:3 area or the 6:1 strip.</figcaption></figure>
@@ -388,8 +388,8 @@ The preview shows the same transition as the projector. Going to a blank slide f
 <h2>Show time! Running the titles live</h2>
 <p class="lead">The fun part: follow the score and press one key at each cue. STQ takes care of everything else.</p>
 <figure class="shot"><img src="shots/show.webp" alt="Show mode with the projector live"></figure>
-<p>Click <span class="ui">Show</span>. The slide text can no longer be changed, and the keyboard runs the titles. To jump somewhere else, click a slide in the list, or use <kbd>↑</kbd> <kbd>↓</kbd> after clicking in the list.</p>
-<p>While the projector is on, a <span class="ui">Blackout</span> button sits next to the Projector switch. Click it (or press <kbd>B</kbd>) and the audience screen goes empty at once; it glows red until you click it again to bring the title back.</p>
+<p>Click <span class="ui">Show</span>. The slide text can no longer be changed, and the keyboard runs the titles. To jump somewhere else, click a slide in the list, or use <kbd>↑</kbd> <kbd>↓</kbd> after clicking in the list. Each new title comes in with the <a href="#transitions">Transition</a> chosen in Settings: a plain cut unless you pick Soft Cut, Dissolve or Crossfade.</p>
+<p>While the projector is on, a <span class="ui">Blackout</span> button sits next to the Projector switch. Click it (or press <kbd>B</kbd>) and the audience screen goes empty at once, whatever the transition; it glows red until you click it again to bring the title back.</p>
 <figure class="shot small"><img src="shots/blackout.webp" alt="The Blackout button next to the Projector switch, glowing red"><figcaption>With the projector on, <span class="ui">Blackout</span> and the <span class="ui">Projector</span> switch sit side by side above the preview. Here the blackout is on: it glows red, and the preview shows what the audience sees — nothing.</figcaption></figure>
 <div class="keybox"><div class="kbt">⌨ Running the show (Show mode)</div><div class="kbr"><span class="k"><kbd>→</kbd> <kbd>Space</kbd> <kbd>Page Down</kbd></span><span>next title (a presentation clicker works too)</span></div><div class="kbr"><span class="k"><kbd>←</kbd> <kbd>Page Up</kbd></span><span>previous title</span></div><div class="kbr"><span class="k"><kbd>B</kbd> or <kbd>.</kbd></span><span>blackout: the screen goes empty; press again to bring the title back</span></div><div class="kbr"><span class="k"><kbd>Home</kbd></span><span>back to the start, before cue 1 (empty screen)</span></div></div>
 <ul>
@@ -566,7 +566,7 @@ The preview shows the same transition as the projector. Going to a blank slide f
 <p class="lead">Most hiccups have a one-click fix — STQ is rarely more than a click away from working again. Find yours below.</p>
 <dl>
 <dt>The projector shows my whole screen</dt><dd>The display is mirrored. Set it to extended (see <a href="#connect">The quickest way to connect your projector</a>).</dd>
-<dt>The projector window opened on my own screen</dt><dd>Desktop app: <span class="ui">View → Move Projector to Second Screen</span>. Browser: drag it to the projector and press <kbd>F</kbd>.</dd>
+<dt>The projector window opened on my own screen</dt><dd>Desktop app: <span class="ui">View → Move Projector to Second Screen</span>. Browser: drag it to the projector and press <kbd>F</kbd>, or set <span class="ui">Settings → Projector on</span> to <b>Screen 2</b> so it opens there next time.</dd>
 <dt>The arrow keys don't change the title</dt><dd>Make sure <span class="ui">Show</span> is selected and click once in the main window so it has the keyboard. In Edit mode the arrow keys nudge cues or step through slides instead.</dd>
 <dt>Clicking the score does nothing</dt><dd>The cues are locked (opening a project locks them). Click the red <span class="ui">🔒 Cues locked</span> button over the score (or switch to <span class="ui">Edit</span>). In Show mode clicks select cues instead of adding them.</dd>
 <dt>I can't type in, move or delete a slide</dt><dd>The slides are locked: click <span class="ui">🔒 Slides locked</span> above the slides.</dd>
