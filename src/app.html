@@ -788,6 +788,13 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <option value='Arial, Helvetica, sans-serif'>Arial (sans)</option>
       <option value='"Trebuchet MS", sans-serif'>Trebuchet MS (sans)</option>
       <option value='Tahoma, Verdana, sans-serif'>Tahoma (sans)</option>
+      <option value='Impact, "Arial Narrow Bold", sans-serif'>Impact (sans)</option>
+    </select><span></span></div>
+    <div class="srow"><span class="lbl">Transition</span><select id="sTrans" class="pill" title="How one title gives way to the next on the screens">
+      <option value="cut">Cut</option>
+      <option value="soft">Soft Cut (⅙ s)</option>
+      <option value="dissolve">Dissolve (1 s)</option>
+      <option value="crossfade">Crossfade (⅔ s out, ⅔ s in)</option>
     </select><span></span></div>
     <div class="srow"><span class="lbl">Text style</span><div class="ppair"><label class="ptog" title="Italic titles on or off"><input type="checkbox" id="sItal"><i>Italic</i></label><label class="ptog" title="Bold titles on or off"><input type="checkbox" id="sBold"><b>Bold</b></label></div><span></span></div>
     <div class="srow"><span class="lbl">Slide Colors</span><div class="ppair"><label class="pcol" title="Color of the title text">Text<input type="color" id="sFg"></label><label class="pcol" title="Color of the screen behind the titles">Background<input type="color" id="sBg"></label></div><span></span></div>
@@ -910,13 +917,13 @@ function migrateSettings(st){ if(!st.view){ st.view='width'; st.zoomPct=100; }  
   if(!SAFE_FONTS.includes(st.font)){ const f=String(st.font||''), to = /palatino|garamond/i.test(f) ? SAFE_FONTS[1] : /times/i.test(f) ? SAFE_FONTS[2] : /helvetica|arial/i.test(f) ? SAFE_FONTS[4] : /verdana/i.test(f) ? SAFE_FONTS[3] : SAFE_FONTS[0];
     fontSwapped = f ? [fontLabel(f), fontLabel(to)] : null; st.font=to; }
   return st; }
-const SAFE_FONTS=['Georgia, "Times New Roman", serif', '"Palatino Linotype", Palatino, "Book Antiqua", serif', '"Times New Roman", Times, serif', 'Verdana, Geneva, sans-serif', 'Arial, Helvetica, sans-serif', '"Trebuchet MS", sans-serif', 'Tahoma, Verdana, sans-serif'];
+const SAFE_FONTS=['Georgia, "Times New Roman", serif', '"Palatino Linotype", Palatino, "Book Antiqua", serif', '"Times New Roman", Times, serif', 'Verdana, Geneva, sans-serif', 'Arial, Helvetica, sans-serif', '"Trebuchet MS", sans-serif', 'Tahoma, Verdana, sans-serif', 'Impact, "Arial Narrow Bold", sans-serif'];
 const fontLabel = f => { const n=String(f).split(',')[0].replace(/["']/g,'').trim(); return n==='Palatino Linotype' ? 'Palatino' : n; };
 let fontSwapped=null;
 // Tell about a font switch once the project has opened (after the "Opened…" message).
 function noteFontSwap(){ if(!fontSwapped) return; const [a,b]=fontSwapped; fontSwapped=null;
   setTimeout(()=>toast(`This project used ${a}, which isn't on every computer — it now uses ${b}. Check the line breaks.`), 2500); }
-const defaults = () => ({ fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', vpos:0, sideMargin:0.04, shape:'16/9', markerSize:4, zoom:1, view:'width', zoomPct:100, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:0.8, align:'left' });
+const defaults = () => ({ transition:'cut', fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', vpos:0, sideMargin:0.04, shape:'16/9', markerSize:4, zoom:1, view:'width', zoomPct:100, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:0.8, align:'left' });
 
 const state = { pdfName:null, parts:null, markers:[], slides:[], settings:defaults() };
 // parts: the PDFs that make up the score, in order: [{id, name, pages}]. The merged score is pdfBytes.
@@ -1582,7 +1589,8 @@ document.addEventListener('click', e=>{ const b=e.target.closest('[data-lock]');
 function lastIndex(){ return Math.max(state.slides.length, state.markers.length) - 1; }
 function goTo(i, scroll=true){
   atStart=false; anchor=null;
-  const was=cur; cur = Math.max(-1, Math.min(i, lastIndex())); blackout=false;
+  const was=cur, wasBo=blackout; cur = Math.max(-1, Math.min(i, lastIndex())); blackout=false;
+  if(cur!==was && !wasBo) transNext=true;      // a cue move (not leaving a blackout) gets the chosen transition
   onCue(cur, was);
   renderMarkers(); updateSlideClasses(); updateOutput(); updateHint(); save();
   if(scroll) scrollToCue();
@@ -1604,6 +1612,30 @@ function scrollToCue(){
 }
 
 /* ---------- output (preview + projector) ---------- */
+/* ---------- transitions between titles (Settings → Transition) ----------
+   Cut: instant. Soft Cut: 1/6 s dissolve. Dissolve: 1 s dissolve. Crossfade: 2/3 s fade out, then 2/3 s fade in.
+   Only a move to another cue animates; blackout, leaving a blackout, edits and setting changes cut. */
+const TRANS={cut:null, soft:{out:167,inn:167,gap:0}, dissolve:{out:1000,inn:1000,gap:0}, crossfade:{out:667,inn:667,gap:667}};
+let transNext=false;
+function clearTrans(text){ text.getAnimations().forEach(a=>a.cancel()); (text.parentNode? [...text.parentNode.querySelectorAll('.tghost')] : []).forEach(g=>g.remove()); }
+// Before the new title goes in: leave a copy of what is on the screen to fade away, if this change animates
+function startTrans(text, newT, anim){
+  const tr=TRANS[state.settings.transition], same = text.dataset.shown===newT;
+  if(same) return null;
+  text.dataset.shown=newT;
+  if(!anim || !tr){ clearTrans(text); return null; }
+  const view=text.ownerDocument.defaultView, op=+view.getComputedStyle(text).opacity;
+  clearTrans(text);
+  let g=null;
+  if(text.textContent.trim() && op>0.01){
+    g=text.cloneNode(true); g.removeAttribute('id'); g.classList.add('tghost');
+    Object.assign(g.style,{position:'absolute', left:text.offsetLeft+'px', top:text.offsetTop+'px', width:text.offsetWidth+'px', margin:'0', pointerEvents:'none'});
+    text.parentNode.appendChild(g);
+    g.animate([{opacity:op},{opacity:0}],{duration:tr.out*op, easing:'linear', fill:'forwards'}).onfinish=()=>g.remove();
+  }
+  return tr;
+}
+function endTrans(text, tr){ if(tr && text.textContent.trim()) text.animate([{opacity:0},{opacity:1}],{duration:tr.inn, delay:tr.gap, easing:'linear', fill:'backwards'}); }
 function liveText(){ if(blackout || cur<0) return ''; const s=state.slides[cur]; return s? s.text.replace(/\|/g,'\n') : ''; }
 /* ---------- title layout per screen shape ----------
    6:1 strip (the formula): in a strip of height H and width W —
@@ -1668,13 +1700,14 @@ function fit(stage, text){
 }
 function updateOutput(){
   const t=liveText(), pv=$('#pv'), txt=$('#pvText');
-  styleVars(pv); txt.textContent=t; pv.classList.toggle('blackout', blackout);
+  const anim=transNext; transNext=false;
+  styleVars(pv); const trP=startTrans(txt, t, anim); txt.textContent=t; pv.classList.toggle('blackout', blackout);
   placePreview(pv);
-  fit(pv.querySelector('.stage'), txt);                               // right away, so overflowing text is never painted, not even for one frame
+  fit(pv.querySelector('.stage'), txt); endTrans(txt, trP);           // right away, so overflowing text is never painted, not even for one frame
   requestAnimationFrame(()=>fit(pv.querySelector('.stage'), txt));   // and again once the layout has settled
   const n = state.slides[cur+1];
   $('#nextLine').innerHTML = cur+1<=lastIndex() ? `Next <span class="kbd">→</span> <b>${cur+2}</b>: ${n? esc(n.text.replace(/[|\n]+/g,' / ')) || '<i>(blank)</i>' : '<i>(no slide)</i>'}` : (cur>=0? 'End of cues' : '');
-  if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; placeProjStage(d); const pt=d.getElementById('t'); pt.textContent=t; fit(d.getElementById('stage'), pt); }catch(e){} }
+  if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; placeProjStage(d); const pt=d.getElementById('t'); const trJ=startTrans(pt, t, anim); pt.textContent=t; fit(d.getElementById('stage'), pt); endTrans(pt, trJ); }catch(e){} }
   { const bo=$('#boBtn'), on=projOpen(); bo.hidden=!on; bo.classList.toggle('on', !!blackout); bo.setAttribute('aria-pressed', !!blackout); bo.textContent = blackout ? 'Blackout on' : 'Blackout';
     const tt = blackout ? 'The screen is blacked out — click (or press B) to bring the title back' : 'Blackout: empty the projector screen right now (key B). Click again to bring the title back'; if(bo.dataset.ttl!=null) bo.dataset.ttl=tt; else bo.title=tt;
     document.querySelector('.pvhead').classList.toggle('live', on); }
@@ -1718,7 +1751,7 @@ const PROJ_HTML = `<!doctype html><html><head><meta charset="utf-8"><title>Super
 html,body{margin:0;height:100%;overflow:hidden;background:#000}
 body{cursor:none}
 #stage{container-type:size;position:fixed;left:0;top:0;width:100vw;height:100vh;display:flex;align-items:var(--va,center);justify-content:center;padding:3cqh 5cqw;box-sizing:border-box}
-#t{font-family:var(--font);color:var(--sfg,#fff);font-size:calc(var(--fs,4) * 1cqw);text-align:center;white-space:pre-wrap;line-height:1.22;max-height:100%}
+#t,.tghost{font-family:var(--font);color:var(--sfg,#fff);font-size:calc(var(--fs,4) * 1cqw);text-align:center;white-space:pre-wrap;line-height:1.22;max-height:100%}
 #hint{position:fixed;left:0;right:0;bottom:14px;text-align:center;font:14px -apple-system,system-ui,sans-serif;color:#9a9dab;cursor:default}
 #hint b{color:#fff}
 <\/style></head><body><div id="stage"><div id="t"></div></div>
@@ -2210,7 +2243,7 @@ $('#importDlg').addEventListener('close', ()=>{
 /* ---------- settings ---------- */
 function openSettings(){
   const s=state.settings;
-  applyAlign(); $('#sFs').value=Math.round((s.textScale||1)*100); $('#sFont').value=s.font; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVpos').value=s.vpos||0; $('#sSide').value=((s.sideMargin||0.02)*100); $('#sShape').value=normShape(s.shape); $('#sMk').value=s.markerSize;
+  applyAlign(); $('#sFs').value=Math.round((s.textScale||1)*100); $('#sFont').value=s.font; $('#sTrans').value=TRANS[s.transition]?s.transition:'cut'; $('#sItal').checked=s.italic; $('#sBold').checked=s.bold; $('#sFg').value=s.fg; $('#sBg').value=s.bg; $('#sVpos').value=s.vpos||0; $('#sSide').value=((s.sideMargin||0.02)*100); $('#sShape').value=normShape(s.shape); $('#sMk').value=s.markerSize;
   if(![...$('#sFont').options].some(o=>o.value===s.font)) $('#sFont').selectedIndex=0;
   $('#sCue').value=state.settings.cueColor||CUE_RED; setVals(); $('#setDlg').showModal(); placeSetDlg();
 }
@@ -2247,7 +2280,7 @@ $('#settingsBtn').onclick=openSettings;
 $('#sMid').onclick=()=>{ $('#sVpos').value=0; $('#setDlg').dispatchEvent(new Event('input')); };
 $('#sAlign').addEventListener('click', e=>{ const b=e.target.closest('[data-al]'); if(!b) return; state.settings.align=b.dataset.al; applyAlign(); updateOutput(); setDirty(true); save(); });
 $('#setDlg').addEventListener('input', ()=>{
-  const s=state.settings; s.textScale=(+$('#sFs').value)/100; s.font=$('#sFont').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.vpos=+$('#sVpos').value; s.sideMargin=(+$('#sSide').value)/100; s.shape=$('#sShape').value;
+  const s=state.settings; s.textScale=(+$('#sFs').value)/100; s.font=$('#sFont').value; s.transition=$('#sTrans').value; s.italic=$('#sItal').checked; s.bold=$('#sBold').checked; s.fg=$('#sFg').value; s.bg=$('#sBg').value; s.vpos=+$('#sVpos').value; s.sideMargin=(+$('#sSide').value)/100; s.shape=$('#sShape').value;
   const mk=+$('#sMk').value; if(mk!==s.markerSize){ s.markerSize=mk; layoutPages(); if(state.markers.length){ sortMarkers(); changed(false); } }
   setVals(); updateOutput(); cardFont(); setDirty(true); save();
   clearTimeout(flowT); flowT=setTimeout(()=>{ if(state.settings.flow) flowRefitAll(); markOverflow(); }, 300);
