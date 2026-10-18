@@ -125,7 +125,7 @@
 <dt>💾 Save</dt><dd>Saves everything into the project file (<kbd>⌘S</kbd>). The first time, it asks where.</dd>
 <dt>Edit / Show</dt><dd>The two modes — the switch glows <b>orange</b> in Edit and <b>teal</b> in Show, so you can tell at a glance. In <b>Edit</b> a click on the score adds a cue and the slides can be typed in. In <b>Show</b> the keyboard runs the titles and nothing can be changed by accident. <kbd>⇧⌘E</kbd> and <kbd>⇧⌘R</kbd> switch in the desktop app.</dd>
 <dt>🎧 Follow</dt><dd>Reference recordings and the live countdown. While following it reads <span class="ui">🎧 Following</span>; while recording, <span class="ui">● Recording</span>.</dd>
-<dt>⚙︎ Settings</dt><dd>Screen shape, font, style, colors, alignment, text size, vertical position, side margins and cue circle size (see <a href="#settings">Making the titles look just right</a>).</dd>
+<dt>⚙︎ Settings</dt><dd>Screen shape, transition, font, style, colors, alignment, text size, vertical position, side margins and cue circle size (see <a href="#settings">Making the titles look just right</a>).</dd>
 </dl>
 <dl>
 <dt>☾ ☀ Night / Day</dt><dd>The moon-and-sun switch flips the whole app between the <b>Night</b> look (dark — kind to your eyes in a dark theatre, the default) and the <b>Day</b> look (light, for rehearsal rooms and daylight). It is remembered on this computer and never changes the titles on the projector.</dd>
@@ -323,9 +323,15 @@
 <figure class="shot"><img src="shots/settings.webp" alt="The Settings window"></figure>
 <dl>
 <dt>Screen shape</dt><dd><b>16:9</b> fills a widescreen projector; <b>4:3</b> uses a centered 4:3 area; <b>6:1 Strip</b> is a full-width band one sixth as high as it is wide, for two lines of titles above the stage.</dd>
-<dt>Font, Text style, Slide Colors</dt><dd>Seven fonts that every Mac and Windows computer has: Georgia, Palatino, Times New Roman, Verdana, Arial, Trebuchet MS and Tahoma. So a project, and its PowerPoint export, look the same on any computer. Italic and bold, text and background color. (A project made with an older version in Garamond or Helvetica switches to Palatino or Arial when opened, and STQ says so.)</dd>
+<dt id="transitions">Transition</dt><dd>How one title gives way to the next when you move to another cue:
+<ul><li><b>Cut</b> (the default): the next title appears instantly.</li>
+<li><b>Soft Cut</b>: a quick ⅙-second dissolve, just enough to take the edge off.</li>
+<li><b>Dissolve</b>: a gentle 1-second dissolve from one title into the next.</li>
+<li><b>Crossfade</b>: the title fades out in ⅔ of a second, then the next one fades in over another ⅔ of a second.</li></ul>
+The preview shows the same transition as the projector. Going to a blank slide fades the title away. <span class="ui">Blackout</span> always cuts to black at once, and bringing the title back cuts too; after the last cue the final title simply stays up. If you press <span class="kbd">→</span> again in the middle of a fade, the next fade starts from what is on the screen, with no jump.</dd>
+<dt>Font, Text style, Slide Colors</dt><dd>Eight fonts that every Mac and Windows computer has: Georgia, Palatino, Times New Roman, Verdana, Arial, Trebuchet MS, Tahoma and Impact. So a project, and its PowerPoint export, look the same on any computer. Italic and bold, text and background color. Impact is already as heavy as a font gets and has no bold of its own, so with Impact the <span class="ui">Bold</span> button is grayed out and the titles look the same either way. (A project made with an older version in Garamond or Helvetica switches to Palatino or Arial when opened, and STQ says so.)</dd>
 <dt>Alignment</dt><dd>Left (default), center or right.</dd>
-<dt>Text size</dt><dd>75 % to 100 % (new projects start at 80 %). 100 % is the built-in layout (titles about 137 pixels high on an HD projector); at smaller sizes the space gained is shared evenly between the margins and the line gaps. Hover over the little <span class="ui">i</span> for the exact numbers. The size never changes with the amount of text.</dd>
+<dt>Text size</dt><dd>50 % to 100 % (new projects start at 75 %, the middle of the slider). 100 % is the built-in layout (titles about 137 pixels high on an HD projector). At smaller sizes the lines and the spaces between them shrink together, a title still has room for 2 lines on the 6:1 strip and 6 on the other shapes, and the height that frees up goes to the top and bottom margins. Hover over the little <span class="ui">i</span> for the exact numbers. The size never changes with the amount of text.</dd>
 <dt>Vertical position</dt><dd>A slider from top (left) to bottom (right), starting in the middle. The button beside it shows how far up or down the titles sit; click it to put them back in the <span class="ui">Middle</span>. On the 6:1 strip it moves the whole strip up or down the projector screen.</dd>
 <dt>Side margins</dt><dd>2 % to 6 % of the width on each side (new projects start in the middle, at 4 %).</dd>
 <dt>Cue circle size</dt><dd>2 to 6 (default 4, the middle).</dd>
@@ -338,7 +344,8 @@
 <div class="tipsbox"><div class="tbt">💡 Tips for titles people can read from the back row</div><ul>
 <li>White (or warm off-white) on black is the classic for a reason: the black disappears in a dark theatre and only the words float above the stage.</li>
 <li>Serif fonts like Georgia and Palatino read easily at a distance; Arial and Verdana look cleaner on a bright LED wall. Tahoma and Times New Roman are narrow, so more words fit on a line: handy for the 6:1 strip.</li>
-<li>Start at 80 % text size: the extra breathing room between the lines makes two-line titles much easier to take in at a glance.</li>
+<li>75 % is a good starting size: big enough for the back row, with dark space around the titles so they don't crowd the stage.</li>
+<li>For the transition, <b>Soft Cut</b> feels calm without ever making the audience wait; save <b>Dissolve</b> and <b>Crossfade</b> for slow, lyrical scenes.</li>
 <li>Walk to the last row during a technical rehearsal and read a few titles. If you squint, go up a size or switch to bold.</li>
 <li>On a 6:1 strip above the proscenium, keep titles short — two lines is all there is, and the audience is looking up.</li>
 <li>Drag the Settings window to one side so the <span class="ui">Audience sees</span> preview stays in view while you try things.</li>

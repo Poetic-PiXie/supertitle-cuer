@@ -472,6 +472,7 @@ body.native #setDlg .web-only{display:none}
 #setDlg .ppair{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:var(--rail)}
 #setDlg .ptog,#setDlg .pcol{display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;user-select:none;position:relative}
 #setDlg .ptog input{position:absolute;opacity:0;pointer-events:none}
+#setDlg .ptog:has(input:disabled){opacity:.45;cursor:default}
 #setDlg .ptog i,#setDlg .ptog b{font-family:Georgia,serif;font-size:14.5px}
 #setDlg .ptog::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--btn-line);box-shadow:inset 0 1px 1px rgba(0,0,0,.3);transition:background .15s,box-shadow .15s}
 #setDlg .ptog:has(input:checked){background:var(--gold);box-shadow:var(--goldsh);color:#1a1a1a}
@@ -780,6 +781,12 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   <div class="sgrid">
     <div class="sdiv">Titles</div>
     <div class="srow"><span class="lbl">Screen shape</span><div class="pseg" id="sShapeSeg" style="--n:3"><button type="button" data-v="4/3" title="A classic 4:3 projector: the titles use a centered 4:3 area">4:3</button><button type="button" data-v="16/9" title="A widescreen projector: the titles use the whole screen">16:9</button><button type="button" data-v="6/1" title="A wide band of two lines, e.g. above the proscenium">6:1 Strip</button></div><select id="sShape" hidden><option value="4/3">4:3</option><option value="16/9">16:9</option><option value="6/1">6:1 Strip</option></select><span></span></div>
+    <div class="srow"><span class="lbl">Transition</span><select id="sTrans" class="pill" title="How one title gives way to the next on the screens">
+      <option value="cut">Cut</option>
+      <option value="soft">Soft Cut (⅙ s)</option>
+      <option value="dissolve">Dissolve (1 s)</option>
+      <option value="crossfade">Crossfade (⅔ s out, ⅔ s in)</option>
+    </select><span></span></div>
     <div class="srow"><span class="lbl">Font</span><select id="sFont" class="pill" title="The typeface of the titles">
       <option value='Georgia, "Times New Roman", serif'>Georgia (serif)</option>
       <option value='"Palatino Linotype", Palatino, "Book Antiqua", serif'>Palatino (serif)</option>
@@ -790,18 +797,12 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
       <option value='Tahoma, Verdana, sans-serif'>Tahoma (sans)</option>
       <option value='Impact, "Arial Narrow Bold", sans-serif'>Impact (sans)</option>
     </select><span></span></div>
-    <div class="srow"><span class="lbl">Transition</span><select id="sTrans" class="pill" title="How one title gives way to the next on the screens">
-      <option value="cut">Cut</option>
-      <option value="soft">Soft Cut (⅙ s)</option>
-      <option value="dissolve">Dissolve (1 s)</option>
-      <option value="crossfade">Crossfade (⅔ s out, ⅔ s in)</option>
-    </select><span></span></div>
     <div class="srow"><span class="lbl">Text style</span><div class="ppair"><label class="ptog" title="Italic titles on or off"><input type="checkbox" id="sItal"><i>Italic</i></label><label class="ptog" title="Bold titles on or off"><input type="checkbox" id="sBold"><b>Bold</b></label></div><span></span></div>
     <div class="srow"><span class="lbl">Slide Colors</span><div class="ppair"><label class="pcol" title="Color of the title text">Text<input type="color" id="sFg"></label><label class="pcol" title="Color of the screen behind the titles">Background<input type="color" id="sBg"></label></div><span></span></div>
     <div class="srow"><span class="lbl">Alignment</span><div class="pseg" id="sAlign" style="--n:3"><button type="button" data-al="left" title="Lines start at the left margin">Left</button><button type="button" data-al="center" title="Lines are centered">Center</button><button type="button" data-al="right" title="Lines end at the right margin">Right</button></div><span></span></div>
     <div class="srow" id="spellLangRow" hidden><span class="lbl">Spelling language</span><select id="sSpellLang" class="pill"></select><span></span></div>
     <div class="srow web-only"><span class="lbl">Second screen</span><button type="button" id="sScreens" class="pbtn" title="Let the projector window open on the 2nd screen automatically">Open the projector on screen 2</button><span></span></div>
-    <div class="srow"><span class="lbl">Text size <span class="info" id="sFsNote" tabindex="0">i</span></span><input type="range" id="sFs" min="75" max="100" step="1" title="Size of the titles (75–100 %)"><span class="val" id="sFsV"></span></div>
+    <div class="srow"><span class="lbl">Text size <span class="info" id="sFsNote" tabindex="0">i</span></span><input type="range" id="sFs" min="50" max="100" step="1" title="Size of the titles (50–100 %)"><span class="val" id="sFsV"></span></div>
     <div class="srow"><span class="lbl">Vertical position</span><input type="range" id="sVpos" min="-100" max="100" step="1" title="Left = higher on the screen · right = lower"><button type="button" id="sMid" class="val pbtn" title="Put the titles back in the middle">Middle</button></div>
     <div class="srow"><span class="lbl">Side margins</span><input type="range" id="sSide" min="2" max="6" step="0.25" title="Space kept clear at each side"><span class="val" id="sSideV"></span></div>
     <div class="sdiv">Cues on the score</div>
@@ -907,7 +908,7 @@ function localizeKeys(root){ if(IS_MAC) return;
   root.querySelectorAll('[title*="⌘"]').forEach(el=>el.title=keyName(el.title)); }
 const LS_KEY = 'supertitle-cuer-v1';
 function migrateCueColors(){ (state.markers||[]).forEach((m,i)=>{ if(m && m.color){ const s=state.slides[i]; if(s && s.color && s.color.toLowerCase()===m.color.toLowerCase()) s.colorCue=true; delete m.color; } }); }
-function migrateSettings(st){ if(!st.view){ st.view='width'; st.zoomPct=100; }  st.shape=normShape(st.shape); if(st.textScale==null) st.textScale=1; st.textScale=Math.min(1, Math.max(0.75, st.textScale));
+function migrateSettings(st){ if(!st.view){ st.view='width'; st.zoomPct=100; }  st.shape=normShape(st.shape); if(st.textScale==null) st.textScale=1; st.textScale=Math.min(1, Math.max(0.5, st.textScale));
   if(st.vpos==null) st.vpos = st.va==='flex-start' ? -100 : st.va==='flex-end' ? 100 : 0;
   st.vpos=Math.max(-100, Math.min(100, +st.vpos||0));
   st.sideMargin=Math.max(0.02, Math.min(0.06, +st.sideMargin||0.02));
@@ -918,12 +919,13 @@ function migrateSettings(st){ if(!st.view){ st.view='width'; st.zoomPct=100; }  
     fontSwapped = f ? [fontLabel(f), fontLabel(to)] : null; st.font=to; }
   return st; }
 const SAFE_FONTS=['Georgia, "Times New Roman", serif', '"Palatino Linotype", Palatino, "Book Antiqua", serif', '"Times New Roman", Times, serif', 'Verdana, Geneva, sans-serif', 'Arial, Helvetica, sans-serif', '"Trebuchet MS", sans-serif', 'Tahoma, Verdana, sans-serif', 'Impact, "Arial Narrow Bold", sans-serif'];
+const boldOn = () => !!state.settings.bold && !/^\s*Impact\b/.test(state.settings.font||'');   // Impact has no bold weight
 const fontLabel = f => { const n=String(f).split(',')[0].replace(/["']/g,'').trim(); return n==='Palatino Linotype' ? 'Palatino' : n; };
 let fontSwapped=null;
 // Tell about a font switch once the project has opened (after the "Opened…" message).
 function noteFontSwap(){ if(!fontSwapped) return; const [a,b]=fontSwapped; fontSwapped=null;
   setTimeout(()=>toast(`This project used ${a}, which isn't on every computer — it now uses ${b}. Check the line breaks.`), 2500); }
-const defaults = () => ({ transition:'cut', fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', vpos:0, sideMargin:0.04, shape:'16/9', markerSize:4, zoom:1, view:'width', zoomPct:100, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:0.8, align:'left' });
+const defaults = () => ({ transition:'cut', fontSize: 4.2, font: 'Georgia, "Times New Roman", serif', italic:false, bold:false, fg:'#ffffff', bg:'#000000', va:'center', vpos:0, sideMargin:0.04, shape:'16/9', markerSize:4, zoom:1, view:'width', zoomPct:100, lockCues:false, lockOrder:false, flow:false, fit:true, textScale:0.75, align:'left' });
 
 const state = { pdfName:null, parts:null, markers:[], slides:[], settings:defaults() };
 // parts: the PDFs that make up the score, in order: [{id, name, pages}]. The merged score is pdfBytes.
@@ -1252,7 +1254,7 @@ function renderSlides(){
 }
 // The slide boxes break their lines exactly like the screen: same font and style, and the same text width measured in font sizes.
 function cardFont(regrow=true){ const L=titleLayout(), r=L.availW/L.fsOfWidth, st=state.settings, el=slidesEl;
-  el.style.setProperty('--cardff', st.font); el.style.setProperty('--cardfst', st.italic?'italic':'normal'); el.style.setProperty('--cardfw', st.bold?'700':'400');
+  el.style.setProperty('--cardff', st.font); el.style.setProperty('--cardfst', st.italic?'italic':'normal'); el.style.setProperty('--cardfw', boldOn()?'700':'400');
   el.style.setProperty('--cardw','100%'); const ta=el.querySelector('.slide textarea'); if(!ta) return; const cw=ta.getBoundingClientRect().width; if(!cw) return;
   let fs=cw/r, w='100%'; if(fs>19){ fs=19; w=(fs*r)+'px'; } else if(fs<11){ fs=11; w=(fs*r)+'px'; }
   el.style.setProperty('--cardfs', fs+'px'); el.style.setProperty('--cardw', w);
@@ -1647,13 +1649,15 @@ function normShape(sh){ return sh==='576/93' ? '6/1' : (['6/1','16/9','4/3'].inc
 // Lines are whole pixels: T = round(Tmax·size), gap = round(Gmax). Any height left over — from a smaller
 // Text size or from rounding — is shared evenly by the top margin, the bottom margin and every gap.
 function titleFrame(W, H, lines, Tmax, Gmax, Mmax, k){
-  const T=Tmax*k, G0=Gmax;   // no rounding: every screen (projector, preview, slide boxes) then breaks its lines alike
-  const extra=Math.max(0, H - lines*T - (lines-1)*G0 - 2*Mmax)/(lines+1);
-  const G=G0+extra, M=Mmax+extra;
-  return {font:T, lh:(T+G)/T, padY:M - G/2, padX:(state.settings.sideMargin||0.02)*W};     // CSS puts half a gap above the first and below the last line
+  // The frame is laid out at 100% (no rounding: every screen then breaks its lines alike). A smaller size scales the
+  // lines AND their gaps by k inside that same frame, so the block keeps its 2 or 6 lines and the freed height
+  // becomes extra top and bottom margin (the block is centered, or placed by Vertical position).
+  const extra=Math.max(0, H - lines*Tmax - (lines-1)*Gmax - 2*Mmax)/(lines+1);
+  const G=Gmax+extra, M=Mmax+extra;
+  return {font:Tmax*k, lh:(Tmax+G)/Tmax, padY:M - G/2, padX:(state.settings.sideMargin||0.02)*W};     // CSS puts half a gap above the first and below the last line
 }
 function titleLayout(){
-  const st=state.settings, k=Math.min(1, Math.max(0.75, st.textScale||1)), sh=normShape(st.shape);
+  const st=state.settings, k=Math.min(1, Math.max(0.5, st.textScale||1)), sh=normShape(st.shape);
   // 6:1 strip (H = strip height): margins 0.05H top/bottom, 0.02W sides; lines 3H/7, gap 3H/70; 2 lines.
   const aw=1-2*(st.sideMargin||0.02);
   if(sh==='6/1') return {shape:sh, lines:2, availW:aw, fsOfWidth:3/7*k/6,
@@ -1674,7 +1678,7 @@ function fit(stage, text){
   const m=titleLayout().px(W,H);
   stage.style.padding=`${m.padY}px ${m.padX}px`;
   text.style.width='100%'; text.style.textAlign=state.settings.align||'left';
-  text.style.lineHeight=m.lh; text.style.fontStyle=state.settings.italic?'italic':'normal'; text.style.fontWeight=state.settings.bold?'700':'400';
+  text.style.lineHeight=m.lh; text.style.fontStyle=state.settings.italic?'italic':'normal'; text.style.fontWeight=boldOn()?'700':'400';
   // The type size comes only from Settings. Text beyond the shape's lines (2 on 6:1, 6 otherwise)
   // is not shown on the screens at all (the slide box in the list grays it out instead).
   const fs=m.font, lineH=fs*m.lh, maxLines=titleLayout().lines;
@@ -2102,7 +2106,7 @@ async function openProjectFile(f){
 const ELL='…', FIT_W=1000;
 let _mctx=null;
 function measureCtx(){ if(!_mctx) _mctx=document.createElement('canvas').getContext('2d'); const st=state.settings;
-  _mctx.font=`${st.italic?'italic ':''}${st.bold?700:400} ${titleLayout().fsOfWidth*FIT_W}px ${st.font}`; return _mctx; }
+  _mctx.font=`${st.italic?'italic ':''}${boldOn()?700:400} ${titleLayout().fsOfWidth*FIT_W}px ${st.font}`; return _mctx; }
 const maxLines = () => titleLayout().lines;
 function lineCount(text, ctx){
   const avail=FIT_W*titleLayout().availW; let n=0;
@@ -2247,8 +2251,8 @@ function openSettings(){
   if(![...$('#sFont').options].some(o=>o.value===s.font)) $('#sFont').selectedIndex=0;
   $('#sCue').value=state.settings.cueColor||CUE_RED; setVals(); $('#setDlg').showModal(); placeSetDlg();
 }
-function setVals(){ $('#sSideV').textContent=(+$('#sSide').value).toFixed(2)+'%'; const vp=+$('#sVpos').value; $('#sMid').classList.toggle('on', vp===0); $('#sMid').textContent = vp===0 ? 'Middle' : (vp<0 ? '↑ ' : '↓ ')+Math.abs(vp)+'%'; $('#sFsV').textContent=$('#sFs').value+'%'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%';
-  $('#sFsNote').dataset.tip = ($('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = six lines on the screen: lines 137/1080 of its height, 137/10800 apart, 47/540 top/bottom and 2% side margins.') + ' Smaller sizes share the freed height evenly between the margins and the line gaps.';
+function setVals(){ { const imp=/^\s*Impact\b/.test($('#sFont').value), b=$('#sBold'); b.disabled=imp; b.closest('label').title = imp ? 'Impact has no bold: it always looks the same' : 'Bold titles on or off'; } $('#sSideV').textContent=(+$('#sSide').value).toFixed(2)+'%'; const vp=+$('#sVpos').value; $('#sMid').classList.toggle('on', vp===0); $('#sMid').textContent = vp===0 ? 'Middle' : (vp<0 ? '↑ ' : '↓ ')+Math.abs(vp)+'%'; $('#sFsV').textContent=$('#sFs').value+'%'; $('#sMkV').textContent=(+$('#sMk').value).toFixed(2)+'%';
+  $('#sFsNote').dataset.tip = ($('#sShape').value==='6/1' ? '100% = two lines filling the strip: lines 3/7 of its height, 3/70 apart, 5% top/bottom and 2% side margins.' : '100% = six lines on the screen: lines 137/1080 of its height, 137/10800 apart, 47/540 top/bottom and 2% side margins.') + ' Smaller sizes shrink the lines and their gaps alike; the title keeps its 2 or 6 lines and the freed height goes to the top and bottom margins.';
   document.querySelectorAll('#setDlg input[type=range]').forEach(r=>r.style.setProperty('--fill', ((r.value-r.min)/(r.max-r.min)*100)+'%'));
   pseg($('#sShapeSeg'), b=>b.dataset.v===$('#sShape').value); }
 function pseg(el, isOn){ const bs=[...el.querySelectorAll('button')]; let k=bs.findIndex(isOn); bs.forEach((b,j)=>{ b.classList.toggle('on', j===k); b.setAttribute('aria-pressed', j===k); }); el.style.setProperty('--i', Math.max(0,k)); el.classList.toggle('none', k<0); }
@@ -2992,7 +2996,7 @@ async function buildPptx(items){
     const n=lines.length, fsPt=Math.round(m.font*72*10)/10, gapPt=Math.max(0, Math.round((lineH*72 - 1.2*fsPt)*100)/100);
     s.addText(lines.map((l,i)=>({text:l||' ', options:{breakLine:i<n-1, paraSpaceBefore: i ? gapPt : 0}})), {
       x:m.padX, y:m.padY, w:W-2*m.padX, h:H-2*m.padY, margin:0, valign:'middle', align:st.align||'left',
-      fontFace:face, fontSize:fsPt, color:col(st.fg), bold:!!st.bold, italic:!!st.italic,
+      fontFace:face, fontSize:fsPt, color:col(st.fg), bold:boldOn(), italic:!!st.italic,
       paraSpaceAfter:0, fit:'none', wrap:false });
   }
   return {bytes: await pptx.write({outputType:'uint8array'}), cut};
