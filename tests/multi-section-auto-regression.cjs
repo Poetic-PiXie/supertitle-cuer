@@ -82,7 +82,21 @@ async function recording(s, { finish = true } = {}) {
   await select(s, 1); await js(`await startAutoRecording();if(autoPending)await useAutoRecordingFile(window.__waves[${s.wave}]);`);
   await until('autoRun?.kind==="recording"&&!autoRun.loading', 'recording metadata');
   assert.deepEqual(await js('return {cur,part:autoRun.part.id,events:window.__events};'), { cur: s.first, part: s.id, events: [{ index: s.first, part: s.id }] });
-  if (finish) { await js('autoRun.media.playbackRate=8;'); await until('!autoRun', 'selected group playback end'); assert.equal(await js('return cur;'), s.last); assert.deepEqual(await js('return [...new Set(window.__events.map(e=>e.part))];'), [s.id]); await delay(30); assert.equal(await js('return cur;'), s.last); }
+  if (finish) {
+    // Real metadata/file verification is retained; only this orchestration
+    // suite's media clock is explicit, so a slow runner cannot skip assertions.
+    for (let offset = 1; offset < s.times.length; offset++) {
+      await js(`autoRun.media.currentTime=${s.times[offset] - .0001};tickAuto();`);
+      assert.equal(await js('return cur;'), s.first + offset - 1, 'no cue before its saved media time');
+      await js(`autoRun.media.currentTime=${s.times[offset]};`);
+      await until(`cur===${s.first + offset}`, 'automatic timer at controlled saved media time');
+      assert.equal(await js('return cur;'), s.first + offset, 'exact saved media time advances exactly one title');
+    }
+    assert.deepEqual(await js('return window.__events.map(e=>e.index);'), [s.first, s.first + 1, s.last]);
+    await js('window.__finishedMedia=autoRun.media;autoRun.media.currentTime=autoRun.media.duration;autoRun.media.dispatchEvent(new Event("ended"));');
+    assert.equal(await js('return !autoRun&&window.__finishedMedia.paused&&!window.__finishedMedia.getAttribute("src");'), true, 'actual ended handler stops playback and releases its source');
+    assert.equal(await js('return cur;'), s.last); assert.deepEqual(await js('return [...new Set(window.__events.map(e=>e.part))];'), [s.id]); await delay(30); assert.equal(await js('return cur;'), s.last);
+  }
   await unchanged();
 }
 async function manual(s) { await select(s); const before = await js('return cur;'); await js('await startAutoLive();await startAutoRecording();'); assert.equal(await js('return !autoRun&&!autoPending&&!autoPreparing;'), true); assert.equal(await js('return cur;'), before); await js(`handleKey(' ',{preventDefault(){}});`); assert.equal(await js('return cur;'), before + 1); await unchanged(); }
@@ -125,8 +139,33 @@ const watchdog = setTimeout(() => { console.error('Mixed section regression time
     else errors.push(event.message);
   });
   await win.loadFile(path.join(root, 'dist/Supertitle_Cuer.html')); await js(`await idbGet('doc');await idbGet('follow');await idbGet('score');`);
+  await js(`
+    // Keep real Audio elements and their native WAV metadata/duration/loading.
+    // Hold the decoder clock before any play call, including native menu clicks.
+    // Native playback itself is covered by auto-ui-regression.cjs.
+    const NativeAudio=window.Audio;
+    window.Audio=function(...args){
+      const media=new NativeAudio(...args),nativePause=media.pause.bind(media),clock={time:0,paused:true,plays:0,pauses:0};
+      Object.defineProperties(media,{
+        currentTime:{configurable:true,get:()=>clock.time,set:value=>{if(!Number.isFinite(value)||value<0)throw new Error('Invalid test media time');clock.time=value;}},
+        paused:{configurable:true,get:()=>clock.paused},
+        __testMediaClock:{value:clock}
+      });
+      media.play=()=>{clock.plays++;clock.paused=false;return Promise.resolve();};
+      media.pause=()=>{clock.pauses++;clock.paused=true;nativePause();};
+      return media;
+    };
+    window.Audio.prototype=NativeAudio.prototype;
+  `);
   for (const count of [10, 20]) {
     let spec; await test(count + ' actual PDF sections load with isolated mixed references', async () => { spec = await fixture(count); assert.equal(await js('return pdfDoc.numPages;'), count * 3); });
+    await test(count + ' recording launch stays on its first cue despite wall-clock delay', async () => {
+      const s=spec[0];await recording(s,{finish:false});
+      await delay(650); // Longer than the second cue's .4-second saved time.
+      assert.deepEqual(await js('return {cur,part:autoRun.part.id,time:autoRun.media.currentTime,playing:!autoRun.media.paused,plays:autoRun.media.__testMediaClock.plays,events:window.__events};'),{cur:s.first,part:s.id,time:0,playing:true,plays:1,events:[{index:s.first,part:s.id}]});
+      assert.equal(await js('return autoRun.media instanceof HTMLMediaElement&&autoRun.media.duration===1.2&&Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,"paused").get.call(autoRun.media);'),true,'real metadata, with native decoder playback held');
+      await js('stopAuto();');await unchanged();
+    });
     await test(count + ' section score rendering remains canvas-bounded while scrolling', () => memoryObservation(count));
     for (const s of spec) await test(count + ' section eligibility: ' + s.id + ' / ' + s.kind, () => selected(s));
     await test(count + ' Next and Back across every boundary select the correct section and its eligibility', async () => {
@@ -201,6 +240,6 @@ const watchdog = setTimeout(() => { console.error('Mixed section regression time
   await js('await stopProjectActivity();');
   await test('layout observers settle after reset', layoutSettles);
   assert.deepEqual(errors, []);
-  const report = { checks, randomSeed: '0x2940a17', deterministicScenarios: scenarios, observations, errors, layoutNotifications, watchdogMs, source: root, profile, generatedPdfAndAudioOnly: true, distinctAudioFixtures: 2, audioFixtureSeconds: 1.2, audioOutputMuted: true, hardwareMicrophone: false, networkDenied: true };
+  const report = { checks, randomSeed: '0x2940a17', deterministicScenarios: scenarios, observations, errors, layoutNotifications, watchdogMs, mediaClock: 'held and explicitly advanced; native metadata and handlers retained; native playback covered separately', source: root, profile, generatedPdfAndAudioOnly: true, distinctAudioFixtures: 2, audioFixtureSeconds: 1.2, audioOutputMuted: true, hardwareMicrophone: false, networkDenied: true };
   fs.writeFileSync(path.join(qa, 'multi-section-auto-report.json'), JSON.stringify(report, null, 2)); clearTimeout(watchdog); console.log(checks.length + ' checks and ' + scenarios.length + ' deterministic randomized scenarios passed. QA: ' + qa); win.destroy(); app.exit(0);
 })().catch(async error => { console.error(error.stack); try { await shot('failure'); fs.writeFileSync(path.join(qa, 'failure.json'), JSON.stringify({ error: String(error.stack), lastScenario, checks, scenarios, observations, errors, layoutNotifications }, null, 2)); } catch (_) {} clearTimeout(watchdog); app.exit(1); });

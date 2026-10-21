@@ -1,4 +1,4 @@
-/* Frozen 2.9.5 release evidence: source, rebuilt HTML, packed runtime and uploads.
+/* Frozen 1.0.0 release evidence: source, rebuilt HTML, packed runtime and uploads.
  * STQ_VERIFY_ROOT permits read-only checks against an existing local build.
  */
 const fs = require('node:fs');
@@ -7,7 +7,7 @@ const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
 const { createRequire } = require('node:module');
 const root = path.resolve(process.env.STQ_VERIFY_ROOT || path.join(__dirname, '..'));
-const manifest = require('../build/release-2.9.5-manifest.json');
+const manifest = require('../build/release-1.0.0-manifest.json');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const [mode, ...args] = process.argv.slice(2);
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');

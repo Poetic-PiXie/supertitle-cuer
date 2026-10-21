@@ -1,5 +1,5 @@
 {
-  "version": "2.9.5",
+  "version": "1.0.0",
   "lineEndings": "Source/build inputs must be checked out with LF bytes, as in the verified source. Use before-checkout core.autocrlf=false, or explicit .gitattributes eol=lf.",
   "sourceInputs": [
     {
@@ -16,11 +16,11 @@
     },
     {
       "path": "docs/Supertitle_Cuer_Manual.pdf",
-      "sha256": "b487b5cf117554bfbc470df9d627b47dc8999f5daaeb7c1f8b0c8315a87abedd"
+      "sha256": "2bc30a8487cba164212416c268375161244a12745e5032b0f05ca88848d8f661"
     },
     {
       "path": "docs/manual/manual.html",
-      "sha256": "2ef5f154ac7a47bb99d3d8a9f0f187c4559ffb04e13a4f4a4a41bdf8a27ee37c"
+      "sha256": "8e2f4116d7bd98998894fca14b8426181d5f090b1bc8bb88e84f2215e43af03e"
     },
     {
       "path": "docs/manual/shots/blackout.webp",
@@ -152,7 +152,7 @@
     },
     {
       "path": "docs/manual/shots/settings.webp",
-      "sha256": "919cc67f858bc28cda8cd2209c78983b7697b85409c3fbecc48cc8cab7c9a445"
+      "sha256": "83326a95304aa5163ed3e1cdb8ab88e62ee2dbfbb8f2a115e449c052b48972e6"
     },
     {
       "path": "docs/manual/shots/shapes.webp",
@@ -208,11 +208,11 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "a4d39f1ed2d0e9f9e25deb4bf8f94a67c5c2a6098fe1af987c613582039b004e"
+      "sha256": "ce22b84064eb62ebb0f72899b7f8405397bde8209284a2476fc6fdb5af47b7d0"
     },
     {
       "path": "package.json",
-      "sha256": "284e0923857dd4da140729a09414593fef0918021097810e63d2de37af65e724"
+      "sha256": "5cd49bd772b15153e6d766d9c88957a547658feb69616a150656619c8b796dad"
     },
     {
       "path": "scripts/build-html.js",
@@ -271,7 +271,7 @@
   ],
   "standalone": {
     "path": "dist/Supertitle_Cuer.html",
-    "sha256": "5c8ffbe9d06996aaf1d18f1563e9af03257af6521152c7031a826a90e3c8d515"
+    "sha256": "6bdf38e7abd1c6029fdecf32d29c5141afe480d63d1cc0251b374ff0ac816d49"
   },
   "packagedFiles": [
     {
@@ -280,11 +280,11 @@
     },
     {
       "path": "dist/Supertitle_Cuer.html",
-      "sha256": "5c8ffbe9d06996aaf1d18f1563e9af03257af6521152c7031a826a90e3c8d515"
+      "sha256": "6bdf38e7abd1c6029fdecf32d29c5141afe480d63d1cc0251b374ff0ac816d49"
     },
     {
       "path": "docs/Supertitle_Cuer_Manual.pdf",
-      "sha256": "b487b5cf117554bfbc470df9d627b47dc8999f5daaeb7c1f8b0c8315a87abedd"
+      "sha256": "2bc30a8487cba164212416c268375161244a12745e5032b0f05ca88848d8f661"
     },
     {
       "path": "electron/main.js",
@@ -300,10 +300,10 @@
     },
     {
       "path": "package.json",
-      "sha256": "8cc4102997d14f6eecc3d2cd8764068e666f1f9c7b11ce2ca9cfa61f1c98e219"
+      "sha256": "c5f52af86cdb32376d2222301c981effb9924036e2de3d1eed6b56c1d71a5578"
     }
   ],
-  "localVerifiedAsarSHA256": "3f9afb40f14e9d096e4b89d126d6a704c97356a2044ecc2f403dccc9a967f7f2",
+  "localVerifiedAsarSHA256": "748a1200d30f80b433e6556300ced6b43beb1785f206bc5396d8c9360894e30c",
   "notes": [
     "The full ASAR hash is local evidence; comparing every packed file gives the essential runtime parity check across builders.",
     "Source package.json and electron-builder-normalized packed package.json have distinct bytes; verify them against their own listed hashes.",

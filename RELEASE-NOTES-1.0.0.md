@@ -1,6 +1,6 @@
-# Supertitle Cuer 2.9.5
+# Supertitle Cuer 1.0.0
 
-This release brings the 2.9 editor, section tools, Follow guidance and Auto modes to the public Mac and Windows builds, including the latest cue-selection fix.
+This refreshed 1.0 release consolidates score-cue editing, PDF-section tools, Follow guidance and Auto modes for Mac and Windows, including the latest cue-selection fix. Existing projects from the 2.x development builds remain compatible. The October 14 build is retained under `legacy-v1.0.0-20261014`; its application source and downloads are preserved, with current workflow safeguards in the archive.
 
 ## Editing and sections
 
@@ -24,9 +24,9 @@ This release brings the 2.9 editor, section tools, Follow guidance and Auto mode
 
 ## Downloads
 
-- Apple Silicon Mac: `Supertitle_Cuer-2.9.5-arm64.dmg`
-- Intel Mac: `Supertitle_Cuer-2.9.5-x64.dmg`
-- Windows 64-bit: `Supertitle_Cuer-Setup-2.9.5.exe`
+- Apple Silicon Mac: `Supertitle_Cuer-1.0.0-arm64.dmg`
+- Intel Mac: `Supertitle_Cuer-1.0.0-x64.dmg`
+- Windows 64-bit: `Supertitle_Cuer-Setup-1.0.0.exe`
 - Standalone browser app: `Supertitle_Cuer.html`
 - User guide: `Supertitle_Cuer_Manual.pdf`
 

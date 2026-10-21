@@ -1,7 +1,7 @@
 {
   "name": "supertitle-cuer",
   "productName": "Supertitle Cuer",
-  "version": "2.9.5",
+  "version": "1.0.0",
   "description": "Cue opera supertitles from the score: number the cues on your PDF score, pair them with slides, and run them to a projector with one key.",
   "author": "Poetic PiXie",
   "homepage": "https://github.com/poetic-pixie/supertitle-cuer",
@@ -27,7 +27,7 @@
   "build": {
     "appId": "com.poeticpixie.supertitlecuer",
     "productName": "Supertitle Cuer",
-    "copyright": "\u00a9 Poetic PiXie",
+    "copyright": "© Poetic PiXie",
     "directories": {
       "output": "release",
       "buildResources": "build"
