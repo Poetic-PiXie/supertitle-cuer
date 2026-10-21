@@ -12,6 +12,7 @@ on:
       - package-lock.json
       - .github/workflows/release.yml
       - scripts/verify-release-inputs.cjs
+      - 'tests/**'
       - build/release-2.9.5-manifest.json
       - RELEASE-NOTES-2.9.5.md
   workflow_dispatch:
@@ -80,7 +81,23 @@ jobs:
         if: needs.prepare.outputs.version == '2.9.5'
         run: node scripts/verify-release-inputs.cjs source
       - run: npm test
-      - run: npm run test:electron
+      - name: Native editor regressions
+        timeout-minutes: 3
+        run: npx --no-install electron tests/electron-regression.cjs
+      - name: Native transfer regressions
+        timeout-minutes: 4
+        run: npx --no-install electron tests/transfer-regression.cjs
+      - name: Native Auto regressions
+        timeout-minutes: 3
+        run: npx --no-install electron tests/auto-ui-regression.cjs
+      - name: Native mixed-section stress regressions
+        timeout-minutes: 16
+        env:
+          STQ_STRESS_TIMEOUT_MS: '900000'
+        run: npx --no-install electron tests/multi-section-auto-regression.cjs
+      - name: Native cue-focus regressions
+        timeout-minutes: 3
+        run: npx --no-install electron tests/cue-focus-regression.cjs
       - run: npm run ${{ matrix.script }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
