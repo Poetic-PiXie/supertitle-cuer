@@ -111,7 +111,9 @@ async function persistenceAndReorder(spec) {
   assert.equal(copied.parts, spec.length + 1); assert.equal(copied.pages, (spec.length + 1) * 3); assert.equal(copied.ref, false); assert.deepEqual(copied.times, [null, null, null]); assert.deepEqual(copied.slides, ['Section 1 / title 1', 'Section 1 / title 2', 'Section 1 / title 3']); assert.deepEqual(copied.refs, copied.before);
   await js(`window.__baseline=window.__snapshot();setDirty(false);const b=await buildProjectPdf();resetProject();await openAny(new File([b],'Mixed copied reordered roundtrip.supertitles'),null);`); await unchanged();
 }
-const watchdog = setTimeout(() => { console.error('Mixed section regression timed out'); app.exit(1); }, 240000);
+const watchdogMs = Number(process.env.STQ_STRESS_TIMEOUT_MS || 240000);
+assert.ok(Number.isFinite(watchdogMs) && watchdogMs >= 240000 && watchdogMs <= 900000, 'Stress timeout must be between 4 and 15 minutes');
+const watchdog = setTimeout(() => { console.error('Mixed section regression timed out after ' + watchdogMs + 'ms'); app.exit(1); }, watchdogMs);
 (async () => {
   await app.whenReady(); session.defaultSession.setPermissionRequestHandler((_, __, done) => done(false)); session.defaultSession.webRequest.onBeforeRequest({ urls: ['http://*/*', 'https://*/*'] }, (_, done) => done({ cancel: true }));
   win = new BrowserWindow({ show: false, width: 1440, height: 960, webPreferences: { contextIsolation: true, nodeIntegration: false, backgroundThrottling: false } }); win.webContents.setAudioMuted(true);
@@ -199,6 +201,6 @@ const watchdog = setTimeout(() => { console.error('Mixed section regression time
   await js('await stopProjectActivity();');
   await test('layout observers settle after reset', layoutSettles);
   assert.deepEqual(errors, []);
-  const report = { checks, randomSeed: '0x2940a17', deterministicScenarios: scenarios, observations, errors, layoutNotifications, source: root, profile, generatedPdfAndAudioOnly: true, distinctAudioFixtures: 2, audioFixtureSeconds: 1.2, audioOutputMuted: true, hardwareMicrophone: false, networkDenied: true };
+  const report = { checks, randomSeed: '0x2940a17', deterministicScenarios: scenarios, observations, errors, layoutNotifications, watchdogMs, source: root, profile, generatedPdfAndAudioOnly: true, distinctAudioFixtures: 2, audioFixtureSeconds: 1.2, audioOutputMuted: true, hardwareMicrophone: false, networkDenied: true };
   fs.writeFileSync(path.join(qa, 'multi-section-auto-report.json'), JSON.stringify(report, null, 2)); clearTimeout(watchdog); console.log(checks.length + ' checks and ' + scenarios.length + ' deterministic randomized scenarios passed. QA: ' + qa); win.destroy(); app.exit(0);
 })().catch(async error => { console.error(error.stack); try { await shot('failure'); fs.writeFileSync(path.join(qa, 'failure.json'), JSON.stringify({ error: String(error.stack), lastScenario, checks, scenarios, observations, errors, layoutNotifications }, null, 2)); } catch (_) {} clearTimeout(watchdog); app.exit(1); });
