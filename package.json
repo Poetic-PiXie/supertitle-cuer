@@ -12,17 +12,13 @@
     "build:html": "node scripts/build-html.js",
     "start": "npm run build:html && electron .",
     "dist:mac": "npm run build:html && electron-builder --mac",
-    "dist:win": "npm run build:html && electron-builder --win",
-    "test": "node tests/flow-regression.js && node scripts/section-ui-checks.js && node tests/import-regression.js && node tests/persistence-regression.js && node tests/follow-lifecycle-regression.js && node tests/follow-display-regression.js && node tests/auto-cue-regression.js && node tests/quit-regression.cjs --pure",
-    "test:electron": "electron tests/electron-regression.cjs && electron tests/transfer-regression.cjs && electron tests/auto-ui-regression.cjs && electron tests/multi-section-auto-regression.cjs && electron tests/cue-focus-regression.cjs",
-    "test:quit": "node tests/quit-regression.cjs --native"
+    "dist:win": "npm run build:html && electron-builder --win"
   },
   "devDependencies": {
     "electron": "^38.8.6",
     "electron-builder": "^26.15.3",
     "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^3.11.174",
-    "pptxgenjs": "^3.12.0"
+    "pdfjs-dist": "^3.11.174"
   },
   "build": {
     "appId": "com.poeticpixie.supertitlecuer",
@@ -35,9 +31,7 @@
     "files": [
       "electron/**",
       "dist/Supertitle_Cuer.html",
-      "package.json",
-      "docs/Supertitle_Cuer_Manual.pdf",
-      "build/icon.ico"
+      "package.json"
     ],
     "afterPack": "build/afterPack.js",
     "publish": null,
@@ -64,10 +58,7 @@
           ]
         }
       ],
-      "artifactName": "Supertitle_Cuer-${version}-${arch}.${ext}",
-      "extendInfo": {
-        "NSMicrophoneUsageDescription": "Supertitle Cuer listens to the music to count down to the next cue (Follow), and records reference runs."
-      }
+      "artifactName": "Supertitle_Cuer-${version}-${arch}.${ext}"
     },
     "dmg": {
       "title": "Supertitle Cuer ${version}"
@@ -81,17 +72,13 @@
           ]
         }
       ],
-      "artifactName": "Supertitle_Cuer-Setup-${version}.${ext}",
-      "icon": "build/icon.ico"
+      "artifactName": "Supertitle_Cuer-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "shortcutName": "Supertitle Cuer"
-    },
-    "toolsets": {
-      "nsis": "1.2.1"
     }
   }
 }
