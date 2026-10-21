@@ -12,6 +12,7 @@ on:
       - package-lock.json
       - .github/workflows/release.yml
       - scripts/verify-release-inputs.cjs
+      - 'tests/**'
       - build/release-2.9.5-manifest.json
       - RELEASE-NOTES-2.9.5.md
   workflow_dispatch:

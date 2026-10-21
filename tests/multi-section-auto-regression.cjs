@@ -14,10 +14,20 @@ for (const key of ['userData', 'sessionData', 'documents', 'crashDumps']) { cons
 app.setAppLogsPath(path.join(profile, 'logs')); app.commandLine.appendSwitch('disable-background-networking');
 app.commandLine.appendSwitch('enable-precise-memory-info');
 execFileSync(process.execPath, [path.join(root, 'scripts/build-html.js')], { cwd: root, env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, stdio: 'inherit' });
-const checks = [], errors = [], observations = [], scenarios = []; let win, lastScenario;
+const checks = [], errors = [], layoutNotifications = [], observations = [], scenarios = []; let win, lastScenario;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function js(code) { const value = await win.webContents.executeJavaScript(`(async()=>{try{${code}}catch(e){return {__error:String(e.stack||e)}}})()`, true); if (value?.__error) throw new Error(value.__error); return value; }
 async function until(code, label, timeout = 5000) { const end = Date.now() + timeout; while (Date.now() < end) { if (await js(`return !!(${code});`)) return; await delay(20); } throw new Error('Timeout: ' + label); }
+async function layoutSettles() {
+  await js('await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));');
+  const deadline = Date.now() + 2000; let count = layoutNotifications.length, quietSince = Date.now();
+  while (Date.now() < deadline) {
+    await delay(50);
+    if (layoutNotifications.length !== count) { count = layoutNotifications.length; quietSince = Date.now(); }
+    if (Date.now() - quietSince >= 300) return;
+  }
+  assert.fail('ResizeObserver notifications continued after the project settled');
+}
 async function test(name, fn) { const start = performance.now(); await fn(); checks.push({ name, pass: true, elapsedMs: +(performance.now() - start).toFixed(2) }); console.log('PASS ' + name); }
 async function shot(name) { await js('await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));'); await delay(60); fs.writeFileSync(path.join(qa, name + '.png'), (await win.capturePage()).toPNG()); }
 function wav(pitch) { const rate = 8000, count = Math.round(rate * 1.2), out = Buffer.alloc(44 + count * 2); out.write('RIFF'); out.writeUInt32LE(out.length - 8, 4); out.write('WAVEfmt ', 8); out.writeUInt32LE(16, 16); out.writeUInt16LE(1, 20); out.writeUInt16LE(1, 22); out.writeUInt32LE(rate, 24); out.writeUInt32LE(rate * 2, 28); out.writeUInt16LE(2, 32); out.writeUInt16LE(16, 34); out.write('data', 36); out.writeUInt32LE(count * 2, 40); for (let i = 0; i < count; i++) out.writeInt16LE(Math.round(Math.sin(2 * Math.PI * (pitch + Math.floor(i / 3200) * 55) * i / rate) * 3000), 44 + i * 2); return out.toString('base64'); }
@@ -104,7 +114,14 @@ async function persistenceAndReorder(spec) {
 const watchdog = setTimeout(() => { console.error('Mixed section regression timed out'); app.exit(1); }, 240000);
 (async () => {
   await app.whenReady(); session.defaultSession.setPermissionRequestHandler((_, __, done) => done(false)); session.defaultSession.webRequest.onBeforeRequest({ urls: ['http://*/*', 'https://*/*'] }, (_, done) => done({ cancel: true }));
-  win = new BrowserWindow({ show: false, width: 1440, height: 960, webPreferences: { contextIsolation: true, nodeIntegration: false, backgroundThrottling: false } }); win.webContents.setAudioMuted(true); win.webContents.on('console-message', event => { if (event.level === 'error' || event.level >= 3) errors.push(event.message); });
+  win = new BrowserWindow({ show: false, width: 1440, height: 960, webPreferences: { contextIsolation: true, nodeIntegration: false, backgroundThrottling: false } }); win.webContents.setAudioMuted(true);
+  win.webContents.on('console-message', event => {
+    if (event.level !== 'error' && !(event.level >= 3)) return;
+    // Chromium reports a deferred ResizeObserver delivery as an ErrorEvent.
+    // Record that exact scheduling notice; application errors still fail below.
+    if (event.message === 'ResizeObserver loop completed with undelivered notifications.') layoutNotifications.push({ message: event.message, at: Date.now(), scenario: lastScenario || null });
+    else errors.push(event.message);
+  });
   await win.loadFile(path.join(root, 'dist/Supertitle_Cuer.html')); await js(`await idbGet('doc');await idbGet('follow');await idbGet('score');`);
   for (const count of [10, 20]) {
     let spec; await test(count + ' actual PDF sections load with isolated mixed references', async () => { spec = await fixture(count); assert.equal(await js('return pdfDoc.numPages;'), count * 3); });
@@ -172,11 +189,16 @@ const watchdog = setTimeout(() => { console.error('Mixed section regression time
     await test(count + ' sections survive serialization, reverse order, PDF copy and reopen without reference leakage', () => persistenceAndReorder(spec));
     await shot('mixed-' + count + '-sections');
   }
+  await test('layout observers settle with the final multi-PDF project still loaded', async () => {
+    await js('await stopProjectActivity();'); await layoutSettles();
+  });
   await test('reset disposes every retained score-page canvas and the live PDF DOM',async()=>{
     await js('window.__retiredPages=[...pageEls];await stopProjectActivity();setDirty(false);resetProject();');
     await delay(60);assert.equal(await js('return pageEls.length===0&&document.querySelectorAll("#pages canvas").length===0&&window.__retiredPages.every(p=>p.canvas.width===0&&p.canvas.height===0);'),true);
   });
-  await js('await stopProjectActivity();'); assert.deepEqual(errors, []);
-  const report = { checks, randomSeed: '0x2940a17', deterministicScenarios: scenarios, observations, errors, source: root, profile, generatedPdfAndAudioOnly: true, distinctAudioFixtures: 2, audioFixtureSeconds: 1.2, audioOutputMuted: true, hardwareMicrophone: false, networkDenied: true };
+  await js('await stopProjectActivity();');
+  await test('layout observers settle after reset', layoutSettles);
+  assert.deepEqual(errors, []);
+  const report = { checks, randomSeed: '0x2940a17', deterministicScenarios: scenarios, observations, errors, layoutNotifications, source: root, profile, generatedPdfAndAudioOnly: true, distinctAudioFixtures: 2, audioFixtureSeconds: 1.2, audioOutputMuted: true, hardwareMicrophone: false, networkDenied: true };
   fs.writeFileSync(path.join(qa, 'multi-section-auto-report.json'), JSON.stringify(report, null, 2)); clearTimeout(watchdog); console.log(checks.length + ' checks and ' + scenarios.length + ' deterministic randomized scenarios passed. QA: ' + qa); win.destroy(); app.exit(0);
-})().catch(async error => { console.error(error.stack); try { await shot('failure'); fs.writeFileSync(path.join(qa, 'failure.json'), JSON.stringify({ error: String(error.stack), lastScenario, checks, scenarios, observations, errors }, null, 2)); } catch (_) {} clearTimeout(watchdog); app.exit(1); });
+})().catch(async error => { console.error(error.stack); try { await shot('failure'); fs.writeFileSync(path.join(qa, 'failure.json'), JSON.stringify({ error: String(error.stack), lastScenario, checks, scenarios, observations, errors, layoutNotifications }, null, 2)); } catch (_) {} clearTimeout(watchdog); app.exit(1); });
