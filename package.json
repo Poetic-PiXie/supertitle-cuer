@@ -1,7 +1,7 @@
 {
   "name": "supertitle-cuer",
   "productName": "Supertitle Cuer",
-  "version": "2.8.0",
+  "version": "2.9.5",
   "description": "Cue opera supertitles from the score: number the cues on your PDF score, pair them with slides, and run them to a projector with one key.",
   "author": "Poetic PiXie",
   "homepage": "https://github.com/poetic-pixie/supertitle-cuer",
@@ -12,7 +12,10 @@
     "build:html": "node scripts/build-html.js",
     "start": "npm run build:html && electron .",
     "dist:mac": "npm run build:html && electron-builder --mac",
-    "dist:win": "npm run build:html && electron-builder --win"
+    "dist:win": "npm run build:html && electron-builder --win",
+    "test": "node tests/flow-regression.js && node scripts/section-ui-checks.js && node tests/import-regression.js && node tests/persistence-regression.js && node tests/follow-lifecycle-regression.js && node tests/follow-display-regression.js && node tests/auto-cue-regression.js && node tests/quit-regression.cjs --pure",
+    "test:electron": "electron tests/electron-regression.cjs && electron tests/transfer-regression.cjs && electron tests/auto-ui-regression.cjs && electron tests/multi-section-auto-regression.cjs && electron tests/cue-focus-regression.cjs",
+    "test:quit": "node tests/quit-regression.cjs --native"
   },
   "devDependencies": {
     "electron": "^38.8.6",
@@ -24,7 +27,7 @@
   "build": {
     "appId": "com.poeticpixie.supertitlecuer",
     "productName": "Supertitle Cuer",
-    "copyright": "© Poetic PiXie",
+    "copyright": "\u00a9 Poetic PiXie",
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -86,6 +89,9 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "shortcutName": "Supertitle Cuer"
+    },
+    "toolsets": {
+      "nsis": "1.2.1"
     }
   }
 }

@@ -14,7 +14,12 @@ const libs = {
   PDFLIB: nm('pdf-lib/dist/pdf-lib.min.js'),
   PPTXGEN: nm('pptxgenjs/dist/pptxgen.bundle.js'),
   FOLLOWJS: path.join(root, 'src', 'follow.js'),
+  FOLLOWDISPLAYJS: path.join(root, 'src', 'follow-display.js'),
+  AUTOCUEJS: path.join(root, 'src', 'auto-cue.js'),
+  RECORDINGREFERENCEJS: path.join(root, 'src', 'recording-reference.js'),
   GUIDEPRINTJS: path.join(root, 'src', 'guide-print.js'),
+  TEXTLAYOUTJS: path.join(root, 'src', 'text-layout.js'),
+  SLIDETRANSFERJS: path.join(root, 'src', 'slide-transfer.js'),
 };
 for (const [key, file] of Object.entries(libs)) {
   const code = fs.readFileSync(file, 'utf8').replace(/\n\/\/# sourceMappingURL=\S+\s*$/, '\n');

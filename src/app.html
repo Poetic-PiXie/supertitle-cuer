@@ -225,7 +225,7 @@ body:not(.native) .native-only{display:none}
 .hint b{color:var(--text)}
 .counts{font-size:13px;color:var(--dim);padding:4px 12px;border-radius:999px;background:var(--well-bg);box-shadow:var(--field-sh)}
 .counts.mismatch{color:var(--warn)}
-main{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);min-height:0}
+main{display:grid;grid-template-columns:minmax(0,2fr) minmax(380px,1fr);min-height:0}
 aside{min-width:0}
 /* score */
 #score{overflow:auto;position:relative;background:var(--score-bg);border-right:1px solid var(--line)}
@@ -280,7 +280,7 @@ body.edit .mk{cursor:grab}
 aside{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
 .pvwrap{padding:12px;border-bottom:1px solid var(--line)}
 .pvhead{display:flex;position:relative;min-height:34px;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
-body.swapped main{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+body.swapped main{grid-template-columns:minmax(380px,1fr) minmax(0,2fr)}
 body.swapped aside{order:-1;border-right:1px solid var(--line)}
 body.swapped #score{border-right:0}
 .swapbtn{position:relative;display:inline-flex;align-items:center;padding:3px 7px;text-transform:none;letter-spacing:0}
@@ -314,6 +314,8 @@ body.swapped .swapbtn::after{left:auto;right:0}
 .stext{font-family:var(--font);color:var(--sfg,#fff);font-size:calc(var(--fs,4) * 1cqw);text-align:center;white-space:pre-wrap;line-height:1.22;max-height:100%}
 .bo{position:absolute;top:6px;left:8px;font:600 10px system-ui;color:#ff6b6b;letter-spacing:.08em;display:none}
 .screen.blackout .bo{display:block}
+.section-end{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);max-width:calc(100% - 16px);padding:5px 12px;border:1px solid #e5484d;border-radius:999px;background:#361416;color:#ff8a85;box-shadow:0 0 12px rgba(229,72,77,.5);font:700 12px/1.3 system-ui;text-align:center;pointer-events:none}
+.section-end[hidden]{display:none}
 .pvguide{position:absolute;box-sizing:border-box;border:0 solid rgba(255,255,255,.4);pointer-events:none}
 .nextline{margin-top:8px;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nextline b{color:var(--text);font-weight:500}
@@ -334,7 +336,7 @@ body.swapped .swapbtn::after{left:auto;right:0}
 .emojipop .tip{font-size:11.5px;color:var(--dim);margin:6px 2px 0;text-align:center}
 .slidehead button{height:30px;min-width:0;padding:0 12px;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 #slides{flex:1;overflow:auto;padding:4px 12px 40px;display:flex;flex-direction:column;gap:6px}
-.slide{display:grid;grid-template-columns:14px 34px 1fr auto auto;gap:8px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-sh);transition:border-color .15s,box-shadow .15s;padding:7px 8px;position:relative}
+.slide{display:grid;grid-template-columns:14px 34px minmax(0,1fr) auto;gap:8px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-sh);transition:border-color .15s,box-shadow .15s;padding:7px 8px;position:relative}
 .lockbtn{font-size:12px;padding:3px 9px}
 #slides{position:relative}
 .slide .grip{white-space:nowrap;letter-spacing:-3px;text-indent:-2px;cursor:grab;color:#5b5f6b;font-size:13px;line-height:1;padding-top:5px;user-select:none;text-align:center;touch-action:none}
@@ -370,6 +372,16 @@ button.danger:hover:not(:disabled){background:linear-gradient(180deg,#f0594d,#cf
 body.flow #slides{gap:0}
 .pdiv{flex-shrink:0;line-height:22px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);padding:12px 4px 2px 3px;display:flex;align-items:center;gap:8px;white-space:nowrap;min-width:0}
 .pdiv .pdn{font-size:16.5px;color:var(--soft);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
+.pdiv input.pdn{width:100%;max-width:100%;padding:2px 4px;margin-left:-4px;border:1px solid transparent;border-radius:4px;background:transparent;font-family:inherit;font-weight:inherit;letter-spacing:inherit;text-transform:none;outline:none}
+.pdiv input.pdn:not([readonly]){cursor:text;border-bottom-color:var(--line)}
+.pdiv input.pdn:not([readonly]):hover,.pdiv input.pdn:focus{border-color:var(--accent);background:var(--raised)}
+.pdiv input.pdn[readonly]{cursor:default}
+.pdiv button.section-name{padding:2px 4px;margin-left:-4px;border:1px solid transparent;border-radius:4px;background:transparent;text-align:left;font-family:inherit;font-weight:inherit;letter-spacing:inherit;text-transform:none;box-shadow:none}
+.pdiv button.section-name:hover,.pdiv button.section-name:focus-visible,.pdiv button.section-name[aria-expanded="true"]{border-color:var(--accent);background:var(--raised);color:var(--text);outline:none}
+.section-menu{position:fixed;inset:auto;margin:0;padding:5px;max-width:calc(100vw - 16px);min-width:240px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:1000}
+.section-menu button{display:block;width:100%;padding:9px 12px;border:0;border-radius:5px;background:transparent;text-align:left;font-size:13px;box-shadow:none}
+.section-menu hr{border:0;border-top:1px solid var(--line);margin:5px 6px}
+.section-menu button:hover:not(:disabled),.section-menu button:focus-visible{background:var(--hover-wash);color:var(--accent);outline:none}
 .pdiv[style*="--sc"] .pdn{color:color-mix(in srgb,var(--sc) 70%,var(--text))}
 .pdiv .pdc{font-size:11px;flex:0 0 auto;white-space:nowrap}
 .pdiv .pdc::before{content:"· "}
@@ -381,7 +393,7 @@ body.order-locked .gring, body.show .gring{display:none}
 .slide.tinted.inh .sring{background:transparent;border-color:var(--sc)}
 .pdiv::after{content:'';flex:1;height:1px;background:var(--line)}
 .pdiv:first-child{padding-top:2px}
-.slide.spare{border-style:dashed;background:transparent;box-shadow:none}
+.slide.spare{border-style:dashed;background:transparent;box-shadow:none;grid-template-columns:14px 34px minmax(0,1fr) auto auto}
 .slide.spare textarea{opacity:.62}
 .slide.spare .num{color:var(--dim);cursor:default}
 .slide.spare .num::after{content:"waiting";display:block;font-size:9px;font-weight:500;color:var(--dim)}
@@ -396,20 +408,22 @@ body.flow .slide.fixed{opacity:.75}
 #flowBtn.on{border-color:#7f9cf5;color:#a9bcff;background:rgba(127,156,245,.12)}
 .flowhelp{display:none;margin:0 12px 8px;padding:8px 10px;border-radius:8px;background:#1b2033;border:1px solid #3a4a80;font-size:12.5px;color:#c9d3f5;line-height:1.45}
 body.flow.edit .flowhelp{display:block}
-.addBelowRow{display:flex;justify-content:center;margin:-2px 0 2px}
+.addBelowRow{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:-2px 0 2px}
 .addBelowRow button{font-size:12px;padding:3px 12px;border-style:dashed;color:var(--accent);border-color:#8a4622;background:transparent}
 .delpv .n{display:block;font:600 11px system-ui;color:var(--dim);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
 .slide .num{font-weight:700;font-size:15px;color:var(--dim);text-align:center;padding-top:3px;cursor:pointer;border-radius:5px}
 .slide .num:hover{background:var(--hover-wash);color:var(--text)}
 .slide textarea{width:100%;resize:none;background:transparent;border:0;color:var(--strong);font:15px/1.35 Georgia,serif;text-align:var(--talign,left);outline:none;padding:3px 0;overflow:hidden;min-height:24px}
 .slide textarea, .slide .mirror{grid-column:3;grid-row:1}
-.slide .mirror{display:none;pointer-events:none;font:15px/1.35 Georgia,serif;text-align:var(--talign,left);padding:3px 0;white-space:pre-wrap;overflow-wrap:break-word;color:var(--strong);min-width:0}
+.slide .mirror{display:none;pointer-events:none;font:15px/1.35 Georgia,serif;text-align:var(--talign,left);padding:3px 0;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--strong);min-width:0}
 .slide .mirror .ovf{opacity:.5}
 .slide textarea, .slide .mirror{font-family:var(--cardff,Georgia,serif);font-size:var(--cardfs,15px);font-style:var(--cardfst,normal);font-weight:var(--cardfw,400);width:var(--cardw,100%);justify-self:start}
 .slide.over .mirror{display:block}
 .slide.over textarea{color:transparent;caret-color:var(--strong);position:relative;z-index:1}
+.slide textarea{white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;tab-size:4;min-width:0;letter-spacing:normal}
 .slide textarea::placeholder{color:#555;font-style:italic}
-.slide .tools{display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .1s}
+.slide .tools{display:none}
+.slide.spare .tools{display:flex}
 .slide:hover .tools,.slide:focus-within .tools{opacity:1}
 .slide .tools button{padding:0 6px;font-size:11px;line-height:18px;background:transparent;border-color:transparent;color:var(--dim)}
 .slide .tools button:hover{color:var(--text);border-color:var(--line)}
@@ -418,7 +432,7 @@ body.flow.edit .flowhelp{display:block}
 .slide.next{border-color:#6b2a26}
 .slide.nocue .num::after{content:"no cue";display:block;font-size:9px;font-weight:500;color:var(--warn)}
 .slide.nocue{background:repeating-linear-gradient(135deg,var(--nocue-a) 0 8px,var(--nocue-b) 8px 16px);border-style:dashed;border-color:var(--btn-line)}
-.slide.nocue textarea{color:#8e9099;font-style:italic}
+.slide.nocue textarea{color:#8e9099}
 .slide.nocue .num{color:#6a6d78}
 /* Selected supertitles (shift-click) all look selected, whatever else they are: blank, uncued, waiting, colored or next. */
 .slide.picked:is(.nocue,.next,.tinted,.spare,.hardb){background:var(--pick-bg);border-color:#4a82d6;box-shadow:0 0 0 1px rgba(74,130,214,.55),0 0 14px rgba(74,130,214,.45)}
@@ -431,7 +445,7 @@ body.day .slide.picked.nocue textarea{color:#4a4f5c}
 .slide.picked.cur{border-color:var(--cur);box-shadow:0 0 0 1px var(--cur),0 0 14px rgba(74,130,214,.45)}
 .slide.nocue.cur{border-style:solid}
 body.show .slide .tools{display:none}
-body.show .slide, body.order-locked .slide{grid-template-columns:34px 1fr auto}
+body.show .slide, body.order-locked .slide{grid-template-columns:34px minmax(0,1fr) auto}
 body.show .slide textarea, body.show .slide .mirror, body.order-locked .slide textarea, body.order-locked .slide .mirror{grid-column:2}
 .addrow{display:flex;gap:6px;margin-top:4px}
 .addrow button{flex:1 0 auto;border-style:dashed;background:transparent;color:var(--dim)}
@@ -522,14 +536,22 @@ body.native #setDlg .web-only{display:none}
 .meter{display:inline-block;width:120px;height:8px;background:var(--field);border:1px solid var(--line);border-radius:4px;overflow:hidden}
 .meter span{display:block;height:100%;width:0;background:#25aea9;transition:width .1s}
 .followbar{margin-top:8px;font-size:13px}
-.fbtext{display:flex;justify-content:space-between;color:var(--dim);gap:8px}
+.fbtext{display:grid;color:var(--dim);gap:3px;min-height:38px;line-height:1.35}
+.fbtext>span:first-child{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+.fbestimate{font-variant-numeric:tabular-nums;white-space:nowrap}
+.fbflag{display:inline-flex;align-items:center;gap:4px;padding:1px 6px;border:1px solid #887548;border-radius:5px;font-size:11px;line-height:1.3;color:#e0c681;white-space:nowrap}
+body.day .fbflag{color:#755417;border-color:#bc9d60}
 .fbtext b{color:var(--text);font-weight:600}
 .fbtrack{height:6px;background:var(--field);border-radius:3px;margin-top:5px;overflow:hidden}
 .fbfill{height:100%;width:0;background:#25aea9;border-radius:3px;transition:width .2s linear}
 .followbar.soon .fbfill{background:var(--cur)}
 .followbar.now .fbtext b{color:var(--cur)}
-.followbar.now .fbfill{background:var(--cur);animation:pulse 1s ease-in-out infinite}
+.followbar.now .fbfill{background:var(--cur)}
 .followbar.lost .fbfill{background:#6b6f7a}
+.followbar.tentative .fbfill,.followbar.paused .fbfill{background:#8b8f9d}
+#autoBtn.live{border-color:#25aea9;color:#6fd6d1}
+#autoMenu .items{min-width:260px}
+.autobar .autoState{max-width:360px;color:var(--soft)}
 #followBtn.live{border-color:#25aea9;color:#6fd6d1}
 #followBtn.rec{border-color:#e5484d;color:#ff8a8d}
 .runbar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:10px;background:var(--side-bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;box-shadow:0 10px 30px rgba(0,0,0,.5);font-size:13px;max-width:94vw;flex-wrap:wrap}
@@ -630,7 +652,7 @@ body.day .lockbtn[data-lock]:not(.unlocked):hover:not(:disabled){color:#a81f18}
 @media (max-width:1300px){ header .brand .bnf, header .brand .by{display:none} }
 @media (max-width:1180px){ .counts{display:none} }
 /* color rings (slides) and the palette */
-.slide .sring{position:absolute;left:10px;top:max(calc(50% - 7px), 28px);width:14px;height:14px;padding:0;border-radius:50%;border:1.5px solid var(--dim);background:var(--sc,transparent);box-shadow:none;z-index:2}
+.slide .sring{position:absolute;left:10px;top:max(calc(50% - 7px), 26px);width:14px;height:14px;padding:0;border-radius:50%;border:1.5px solid var(--dim);background:var(--sc,transparent);box-shadow:none;z-index:2}
 .slide .sring:hover:not(:disabled){border-color:var(--text);background:var(--sc,var(--hover-wash));box-shadow:0 0 6px var(--sc,rgba(255,255,255,.25))}
 .slide.tinted .sring{border-color:color-mix(in srgb,var(--sc) 55%,#fff)}
 .slide.tinted{border-color:color-mix(in srgb,var(--sc) 70%,#fff 10%);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 0 10px color-mix(in srgb,var(--sc) 70%,transparent),0 0 2px color-mix(in srgb,var(--sc) 80%,transparent)}
@@ -681,7 +703,12 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
 <script>/*@@PDFLIB@@*/</script>
 <script>/*@@PPTXGEN@@*/</script>
 <script>/*@@FOLLOWJS@@*/</script>
+<script>/*@@FOLLOWDISPLAYJS@@*/</script>
+<script>/*@@AUTOCUEJS@@*/</script>
+<script>/*@@RECORDINGREFERENCEJS@@*/</script>
 <script>/*@@GUIDEPRINTJS@@*/</script>
+<script>/*@@TEXTLAYOUTJS@@*/</script>
+<script>/*@@SLIDETRANSFERJS@@*/</script>
 </head>
 <body class="edit">
 <div class="app">
@@ -717,6 +744,13 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
     <button data-mode="show" title="Run the show: arrow keys advance">Show</button>
   </div>
   <button id="followBtn" title="Follow the music: a countdown to the next cue (beta)">🎧 Follow</button>
+  <div class="menu" id="autoMenu">
+    <button id="autoBtn" type="button" data-menu disabled title="Link a reference recording and time this section's cues to enable Auto">▶ Auto ▾</button>
+    <div class="items">
+      <button type="button" id="autoRecord">Auto recording…</button>
+      <button type="button" id="autoLive">Auto live (beta)</button>
+    </div>
+  </div>
   <button id="settingsBtn" title="Settings: screen shape, font, colors, text size and position (⌘,)">⚙︎ Settings</button>
   <button type="button" id="themeSw" class="themesw" role="switch" aria-checked="false" aria-label="Day look" title="Switch between the Night (dark) and Day (light) look of the app"><svg class="moon" viewBox="0 0 20 20" width="15" height="15"><path d="M15.9 12.4A6.6 6.6 0 0 1 7.6 4.1a6.6 6.6 0 1 0 8.3 8.3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 20 20" width="15" height="15"><circle cx="10" cy="10" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.2v2.1M10 15.7v2.1M2.2 10h2.1M15.7 10h2.1M4.5 4.5L6 6M14 14l1.5 1.5M15.5 4.5L14 6M6 14l-1.5 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="knob"></span></button>
   <span class="counts" id="counts" title="How many cues are on the score, and how many slides there are"></span>
@@ -731,7 +765,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   </div>
 </header>
 <main>
-  <section id="score">
+  <section id="score" tabindex="-1" aria-label="Score">
     <div id="pages"></div>
     <div class="empty" id="scoreEmpty">
       <div class="big">Open a score PDF — or a project you saved</div>
@@ -742,13 +776,13 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   <aside>
     <div class="pvwrap">
       <div class="pvhead"><button type="button" class="swapbtn" id="swapBtn" aria-label="Swap sides" data-tip=""><svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h14M5.5 2.5 2 6l3.5 3.5M12.5 2.5 16 6l-3.5 3.5"/></svg></button><span class="pvlbl">Audience sees</span><div class="pvctl"><button type="button" id="boBtn" class="bobtn" hidden aria-pressed="false" title="Blackout: empty the projector screen right now (key B). Click again to bring the title back.">Blackout</button><button type="button" id="connHelp" class="connhelp" title="How to connect your projector" aria-label="How to connect your projector">?</button><button type="button" id="projBtn" class="projsw" role="switch" aria-checked="false" title="Open the audience window — the one that goes on the projector"><span class="pjl">Projector</span><span class="pjt"><span class="pjk"></span></span></button></div></div>
-      <div class="screen" id="pv"><div class="stage"><div class="stext" id="pvText"></div></div><div class="pvguide" id="pvGuide" hidden></div><div class="bo">BLACKOUT</div></div>
+      <div class="screen" id="pv"><div class="stage"><div class="stext" id="pvText"></div></div><div class="pvguide" id="pvGuide" hidden></div><div class="bo">BLACKOUT</div><div class="section-end" id="sectionEnd" role="status" hidden>Last Slide for this Section</div></div>
       <div class="nextline" id="nextLine"></div>
       <div class="followbar" id="followBar" hidden><div class="fbtext" id="fbText"></div><div class="fbtrack"><div class="fbfill" id="fbFill"></div></div></div>
     </div>
     <div class="slidehead"><button class="lockbtn" id="lockOrder" data-lock="lockOrder"></button><button class="lockbtn" id="spellBtn" title="Check spelling while typing">✓abc</button><button class="lockbtn emojibtn" id="emojiBtn" title="Insert an emoji into the slide you're typing in" aria-label="Emoji"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="8.2"/><circle cx="7.2" cy="8.2" r=".9" fill="currentColor" stroke="none"/><circle cx="12.8" cy="8.2" r=".9" fill="currentColor" stroke="none"/><path d="M6.4 11.9c.9 1.5 2.2 2.3 3.6 2.3s2.7-.8 3.6-2.3"/></svg></button><button class="lockbtn" id="flowBtn" title="Flow mode: write the libretto as one continuous text that fills slides by itself">¶ Flow</button><button data-act="importSlides" title="Bring in titles from a spreadsheet (CSV), a text file or a PDF of existing slides">Import…</button></div>
-    <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type freely — text flows from slide to slide and is re-fitted as you pause. <b>Return</b> starts a new slide; <b>Delete</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
-    <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button id="pickUp" title="Move the selected slides up one place">▲</button><button id="pickDown" title="Move the selected slides down one place">▼</button><button id="pickLink" title="Give the selected supertitles to a PDF: they join its section">🔗 Link to PDF…</button><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
+    <div class="flowhelp" id="flowhelp"><b>Flow mode.</b> Type or paste freely — extra text flows forward from the slide you edit. <b>Return</b> starts a new slide; <b>Shift+Return</b> starts a new line. <b>Backspace</b> at the start of a slide joins it to the one before. Flow mode switches off once you place the first cue on the score.</div>
+    <div class="pickbar" id="pickbar"><span id="pickInfo"></span><span class="sp"></span><button id="pickUp" title="Move the selected slides up one place">▲</button><button id="pickDown" title="Move the selected slides down one place">▼</button><button type="button" data-transfer="copy" title="Copy the selected slides with their colors">Copy slides</button><button id="pickLink" title="Give the selected supertitles to a PDF: they join its section">🔗 Link to PDF…</button><button class="danger" id="pickDel">🗑 Delete…</button><button id="pickClear">Clear</button></div>
     <div id="slides"></div>
   </aside>
 </main>
@@ -761,7 +795,7 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   <textarea id="impText" placeholder='"Libiamo, ne'' lieti calici",Let us drink from the joyful cups,That beauty adorns|with its blossoms'></textarea>
   <div class="row">
     <span class="lbl">Format</span>
-    <select id="impFmt"><option value="pptx">PowerPoint — each PowerPoint slide is a slide (.pptx)</option><option value="csv">CSV — each comma-separated value is a slide</option><option value="text">Text — each line is a slide</option></select>
+    <select id="impFmt"><option value="pptx">PowerPoint — each PowerPoint slide is a slide (.pptx)</option><option value="csv">CSV / TSV — each cell is a slide</option><option value="text">Text — each line is a slide</option></select>
   </div>
   <div class="row">
     <span class="lbl">Existing slides</span>
@@ -824,12 +858,14 @@ header :is(#saveBtn,#followBtn,#helpBtn,#settingsBtn,.menu>[data-menu]){width:96
   </div>
   <div class="fsec" id="fFollowSec"><div class="fhead">Follow</div>
     <div class="factions"><button type="button" id="fToggle" class="primary">Start following</button></div>
-    <p class="note" style="margin:6px 0 0">Every cue you press re-syncs it. If it loses its place (a restart, a cut), it finds it again on its own within a few seconds.</p>
+    <p class="note" style="margin:6px 0 0">The countdown stays visible when the match weakens: ⚠ Tentative means check the score. Quiet or unclear audio pauses the number. Timing can drift even without a warning; cue manually. Every timed cue you press re-syncs it.</p>
   </div>
   <div class="actions"><button value="close">Close</button></div>
 </form></dialog>
 <input type="file" id="fAudio" accept="audio/*,video/*,.mp3,.m4a,.wav,.aif,.aiff,.flac,.ogg,.webm,.mp4,.mov" hidden>
 <div class="runbar" id="runBar" hidden></div>
+<div class="runbar autobar" id="autoBar" hidden></div>
+<input type="file" id="autoAudio" accept="audio/*,video/*,.mp3,.m4a,.wav,.aif,.aiff,.flac,.ogg,.webm,.mp4,.mov" hidden>
 <dialog id="helpDlg"><div class="hwrap">
   <div class="hside">
     <div class="hsearch"><input type="search" id="helpQ" placeholder="Search the guide" autocomplete="off" spellcheck="false"></div>
@@ -930,15 +966,31 @@ const defaults = () => ({ transition:'cut', fontSize: 4.2, font: 'Georgia, "Time
 const state = { pdfName:null, parts:null, markers:[], slides:[], settings:defaults() };
 // parts: the PDFs that make up the score, in order: [{id, name, pages}]. The merged score is pdfBytes.
 let cur = -1, blackout = false, mode = 'edit';
+let autoRun=null, autoPending=null, autoPreparing=false, autoAdvancing=false, autoTicket=0;
 let fileHandle = null, docName = null, dirty = false;
 let atStart = false; // after deleting cue 1, the next click refills position 1
 let anchor = null;    // the cue you just added (blue ring); new cues go after it. null = go after the gold (selected) cue
 let fresh = -1;
 let pdfDoc = null, pdfBytes = null, pageEls = [], projWin = null, pageHW = [];
 let undoStack = [], redoStack = [];
+let editRevision = 0, projectGeneration = 0, activityGeneration = 0;
+let projectCommit=null;
+const hasProject = () => !!(pdfBytes || state.pdfName || state.markers.length || state.slides.length);
 
 /* ---------- persistence ---------- */
-function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({...state, cur, dirty, docName})); }catch(e){} }
+const SESSION_KEY = 'supertitle-cuer-session';
+function save(){ if(projectCommit) return; try{ localStorage.setItem(LS_KEY, JSON.stringify({...state, cur, dirty, docName})); }catch(e){} }
+function beginProjectCommit(message='Updating the score…'){
+  if(projectCommit) throw new Error('The project is already being updated');
+  let release; const promise=new Promise(resolve=>{ release=resolve; }), status={promise};
+  const dialog=document.createElement('dialog'), label=document.createElement('p'); label.textContent=message;
+  dialog.setAttribute('aria-label',message); dialog.style.maxWidth='min(480px,90vw)'; dialog.append(label);
+  dialog.addEventListener('cancel',e=>e.preventDefault()); document.body.append(dialog); projectCommit=status;
+  try{ dialog.showModal(); }catch(e){ projectCommit=null; dialog.remove(); release(); throw e; }
+  let finished=false;
+  return ()=>{ if(finished) return; finished=true; dialog.close(); dialog.remove(); if(projectCommit===status) projectCommit=null; release(); save(); };
+}
+async function waitForProjectCommit(){ while(projectCommit) await projectCommit.promise; }
 function loadLocal(){
   try{ const s = JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(!s) return;
     state.pdfName=s.pdfName||null; state.parts=Array.isArray(s.parts)?s.parts:null; state.markers=Array.isArray(s.markers)?s.markers:[]; state.slides=Array.isArray(s.slides)?s.slides:[];
@@ -946,27 +998,38 @@ function loadLocal(){
   }catch(e){}
   migrateCueColors();
 }
-function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open('supertitle-cuer',1); r.onupgradeneeded=()=>r.result.createObjectStore('files'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+let idbConnection=null;
+function idb(){ if(!idbConnection) idbConnection=new Promise((res,rej)=>{ const r=indexedDB.open('supertitle-cuer',1); r.onupgradeneeded=()=>r.result.createObjectStore('files'); r.onsuccess=()=>{ r.result.onversionchange=()=>{ r.result.close(); idbConnection=null; }; res(r.result); }; r.onerror=()=>{ idbConnection=null; rej(r.error); }; }); return idbConnection; }
 async function idbPut(k,v){ try{ const db=await idb(); await new Promise((res,rej)=>{ const t=db.transaction('files','readwrite'); t.objectStore('files').put(v,k); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }catch(e){} }
 async function idbGet(k){ try{ const db=await idb(); return await new Promise((res,rej)=>{ const r=db.transaction('files').objectStore('files').get(k); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }catch(e){ return null; } }
 
 /* ---------- undo ---------- */
 // An undo step remembers cues, slides, the list of PDFs and the merged score itself,
 // so adding, moving or removing PDFs can be undone too. (The score bytes are shared, not copied.)
-const snapState = (slides=state.slides) => ({d:JSON.stringify({m:state.markers, s:slides}), parts:JSON.stringify(state.parts), bytes:pdfBytes, name:state.pdfName});
+const snapState = (slides=state.slides) => ({d:JSON.stringify({m:state.markers, s:slides}), parts:JSON.stringify(state.parts), bytes:pdfBytes, name:state.pdfName, runs:typeof refRuns==='undefined'?null:{...refRuns}});
+function audioEditingBlocked(){
+  if(typeof autoRun!=='undefined' && (autoRun || autoPending || autoPreparing)){ toast('Stop Auto before editing'); return true; }
+  if((typeof run!=='undefined' && run) || (typeof stoppingRun!=='undefined' && stoppingRun)){
+    toast('Finish the current run with Done or Discard before editing'); return true;
+  }
+  return false;
+}
 function snap(){ undoStack.push(snapState()); if(undoStack.length>300) undoStack.shift(); redoStack=[]; }
 let restoring=false;
 async function restore(from,to,label){
-  if(!from.length || restoring) return; restoring=true;
+  if(audioEditingBlocked()) return;
+  if(projectCommit || !from.length || restoring) return; restoring=true;
   try{
+    if(typeof stopFollow==='function')stopFollow();
     to.push(snapState()); const x=from.pop(), d=JSON.parse(x.d);
-    if(x.bytes && x.bytes!==pdfBytes){                      // the PDFs changed: bring the old score back
+    if(x.bytes!==pdfBytes){                               // the PDFs changed, including undoing the first score
       state.parts=JSON.parse(x.parts); state.markers=d.m;
-      const sc=$('#score').scrollTop; await loadPdfBytes(x.name||state.pdfName, x.bytes); $('#score').scrollTop=sc;
-      idbPut('score',{name:state.pdfName, bytes:x.bytes});
+      if(x.bytes){ const sc=$('#score').scrollTop; await loadPdfBytes(x.name||state.pdfName, x.bytes); $('#score').scrollTop=sc; idbPut('score',{name:state.pdfName, bytes:x.bytes}); }
+      else { clearScore(); state.pdfName=x.name||null; updatePartsBtn(); idbPut('score',null); }
       if($('#partsDlg').open) renderParts();
     }
     if(x.parts) state.parts=JSON.parse(x.parts);
+    if(x.runs){ refRuns={...x.runs}; saveRuns(); }
     state.markers=d.m; state.slides=d.s; atStart=false; anchor=null; pickA=pickB=pickAnchor=null; cur=Math.min(cur,lastIndex()); changed(true); updatePicks(); toast(label);
   } finally { restoring=false; }
 }
@@ -989,37 +1052,59 @@ function changed(rebuildSlides){
 
 /* ---------- PDF score ---------- */
 async function openPdfFile(file, buf){
+  await waitForProjectCommit();
+  await stopProjectActivity();
+  projectGeneration++;
   buf = buf || new Uint8Array(await file.arrayBuffer());
   if(state.pdfName && state.pdfName!==file.name && state.markers.length){
     if(!confirm(`You have ${state.markers.length} cue markers placed on "${state.pdfName}".\n\nKeep them on "${file.name}"?\n\nOK = keep them   ·   Cancel = start with no markers`)){ snap(); state.markers=[]; cur=-1; }
   }
   state.parts=null;
-  await loadPdfBytes(file.name, buf);
-  idbPut('score', {name:file.name, bytes:buf});
+  if(!await loadPdfBytes(file.name, buf)) return false;
+  await idbPut('score', {name:file.name, bytes:buf}); return true;
 }
+let pdfGeneration=0, pdfLoadingTask=null, activePageRenders=0, pageRenderFrame=0;
+const MAX_PAGE_PIXELS=8000000, MAX_RENDERED_PAGES=8, MAX_PAGE_RENDERS=2;
+function releasePage(p){
+  p.wanted=false; if(p.renderTask) p.renderTask.cancel();
+  p.canvas.width=0; p.canvas.height=0; p.renderedW=0;
+  if(!p.rendering) p.page.cleanup();
+}
+function releaseScorePages(){ pageEls.forEach(p=>{ io.unobserve(p.wrap); releasePage(p); }); pageEls=[]; pageHW=[]; $('#pages').replaceChildren(); }
 async function loadPdfBytes(name, bytes){
-  pdfBytes = bytes; state.pdfName = name;
-  try{ pdfDoc = await pdfjsLib.getDocument({data: bytes.slice()}).promise; }
-  catch(e){ toast('Could not open that PDF'); console.error(e); return; }
+  const generation=++pdfGeneration;
+  if(pdfLoadingTask) pdfLoadingTask.destroy().catch(()=>{});
+  const task=pdfjsLib.getDocument({data: bytes.slice()}); pdfLoadingTask=task;
+  let doc;
+  try{ doc=await task.promise; }
+  catch(e){ if(generation===pdfGeneration){ pdfLoadingTask=null; toast('Could not open that PDF'); console.error(e); } return false; }
+  if(generation!==pdfGeneration){ await doc.destroy(); return false; }
+  pdfLoadingTask=null;
+  const old=pdfDoc; releaseScorePages(); pdfDoc=doc; pdfBytes=bytes; state.pdfName=name;
+  if(old) old.destroy().catch(()=>{});
   document.title = 'Supertitle Cuer — ' + name;
   $('#scoreEmpty').hidden = true; $('#zoomCtl').hidden = false;
   if(!Array.isArray(state.parts) || !state.parts.length || state.parts.reduce((a,x)=>a+x.pages,0)!==pdfDoc.numPages)
     state.parts=[{id:partId(), name, pages:pdfDoc.numPages}];
   updatePartsBtn();
-  await buildPages(); sortMarkers(); changed(false);
+  try{ if(!await buildPages(doc, generation)) return false; }
+  catch(e){ if(generation===pdfGeneration){ toast('Could not display that PDF'); console.error(e); } return false; }
+  sortMarkers(); changed(false); return true;
 }
-const io = new IntersectionObserver(es=>es.forEach(e=>{ const p=pageEls[e.target.dataset.page-1]; if(!p) return; p.visible=e.isIntersecting; if(p.visible) renderPage(p); }), {root:$('#score'), rootMargin:'1500px 0px'});
-async function buildPages(){
-  const host=$('#pages'); host.innerHTML=''; pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[]; pageHW=[];
-  for(let i=1;i<=pdfDoc.numPages;i++){
-    const page = await pdfDoc.getPage(i); const vp = page.getViewport({scale:1}); pageHW[i-1]=vp.height/vp.width;
+const io = new IntersectionObserver(es=>{ es.forEach(e=>{ const p=pageEls[e.target.dataset.page-1]; if(p && p.wrap===e.target) p.visible=e.isIntersecting; }); schedulePageRenders(); }, {root:$('#score'), rootMargin:'1500px 0px'});
+async function buildPages(doc=pdfDoc, generation=pdfGeneration){
+  const host=$('#pages');
+  for(let i=1;i<=doc.numPages;i++){
+    const page = await doc.getPage(i); if(generation!==pdfGeneration || pdfDoc!==doc) return false;
+    const vp = page.getViewport({scale:1}); pageHW[i-1]=vp.height/vp.width;
     const wrap=document.createElement('div'); wrap.className='page'; wrap.dataset.page=i; wrap.style.aspectRatio = vp.width+' / '+vp.height;
     const canvas=document.createElement('canvas'), overlay=document.createElement('div'); overlay.className='overlay';
     const pno=document.createElement('div'); pno.className='pno'; pno.textContent='p. '+i;
     wrap.append(canvas, overlay, pno); host.append(wrap);
-    const p={page, wrap, canvas, overlay, vw:vp.width, renderedW:0, visible:false}; pageEls.push(p); io.observe(wrap);
+    const p={page, wrap, canvas, overlay, vw:vp.width, hw:vp.height/vp.width, generation, renderedW:0, visible:false, wanted:false}; pageEls.push(p); io.observe(wrap);
+    if(i===1 || i%16===0){ layoutPages(); await new Promise(requestAnimationFrame); if(generation!==pdfGeneration) return false; }
   }
-  layoutPages();
+  layoutPages(); return true;
 }
 function layoutPages(keep){
   if(!pageEls.length) return;
@@ -1029,20 +1114,29 @@ function layoutPages(keep){
     p.wrap.style.width=w+'px'; p.wrap.style.setProperty('--mk', (w*st.markerSize/100)+'px'); });
   showZoom();
   if(ratio!=null) sc.scrollTop = ratio*sc.scrollHeight;
-  pageEls.forEach(p=>{ if(p.visible) renderPage(p); });
+  schedulePageRenders();
 }
+function pageTargetWidth(p){ return Math.min(Math.round(p.wrap.clientWidth*(window.devicePixelRatio||1)*1.25), Math.floor(Math.sqrt(MAX_PAGE_PIXELS/p.hw))); }
+function schedulePageRenders(){ if(pageRenderFrame) return; pageRenderFrame=requestAnimationFrame(()=>{ pageRenderFrame=0;
+  const box=$('#score').getBoundingClientRect(), middle=(box.top+box.bottom)/2;
+  const nearby=pageEls.filter(p=>p.visible).sort((a,b)=>Math.abs((a.wrap.getBoundingClientRect().top+a.wrap.getBoundingClientRect().bottom)/2-middle)-Math.abs((b.wrap.getBoundingClientRect().top+b.wrap.getBoundingClientRect().bottom)/2-middle)).slice(0,MAX_RENDERED_PAGES);
+  const wanted=new Set(nearby); pageEls.forEach(p=>{ if(!wanted.has(p)){ if(p.wanted || p.renderedW || p.renderTask) releasePage(p); } else p.wanted=true; });
+  nearby.forEach(p=>renderPage(p));
+}); }
 async function renderPage(p){
-  const target = Math.round(p.wrap.clientWidth * (window.devicePixelRatio||1) * 1.25);
-  if(!target || p.renderedW===target || p.rendering) return;
-  p.rendering = true;
+  const target=pageTargetWidth(p);
+  if(!p.wanted || p.generation!==pdfGeneration || !target || p.renderedW===target || p.failedW===target || p.rendering || activePageRenders>=MAX_PAGE_RENDERS) return;
+  p.rendering=true; activePageRenders++;
+  const tmp=document.createElement('canvas');
   try{
     const vp = p.page.getViewport({scale: target/p.vw});
-    const tmp=document.createElement('canvas'); tmp.width=Math.floor(vp.width); tmp.height=Math.floor(vp.height);
-    await p.page.render({canvasContext:tmp.getContext('2d'), viewport:vp}).promise;
-    p.canvas.width=tmp.width; p.canvas.height=tmp.height; p.canvas.getContext('2d').drawImage(tmp,0,0); p.renderedW=target;
-  }catch(e){ console.error(e); }
-  p.rendering=false;
-  if(p.visible && Math.round(p.wrap.clientWidth*(window.devicePixelRatio||1)*1.25)!==p.renderedW) renderPage(p);
+    tmp.width=Math.floor(vp.width); tmp.height=Math.floor(vp.height);
+    p.renderTask=p.page.render({canvasContext:tmp.getContext('2d'), viewport:vp}); await p.renderTask.promise;
+    if(p.wanted && p.generation===pdfGeneration && target===pageTargetWidth(p)){
+      p.canvas.width=tmp.width; p.canvas.height=tmp.height; p.canvas.getContext('2d').drawImage(tmp,0,0); p.renderedW=target;
+    }
+  }catch(e){ if(e.name!=='RenderingCancelledException' && p.generation===pdfGeneration){ p.failedW=target; console.error(e); } }
+  finally { tmp.width=0; tmp.height=0; p.renderTask=null; p.rendering=false; activePageRenders--; if(!p.wanted) p.page.cleanup(); schedulePageRenders(); }
 }
 
 /* ---------- cue markers ---------- */
@@ -1159,7 +1253,7 @@ function linkLines(objs, pid){
 async function askLink(objs){
   const parts=partsList(); if(parts.length<2 || !objs.length) return;
   if(state.settings.lockOrder) return lockedNote('order');
-  const here=pdfInView()||parts[0], nm=p=>esc(p.name.replace(/\.pdf$/i,'')), n=objs.length;
+  const here=pdfInView()||parts[0], nm=p=>esc(sectionTitle(p)), n=objs.length;
   const r=await ask({ title:`Link ${n===1?'this supertitle':n+' supertitles'} to the current PDF?`,
     html:`<div style="margin-bottom:8px"><select id="linkPdf" style="width:100%">${parts.map(p=>`<option value="${p.id}"${p===here?' selected':''}>${nm(p)}</option>`).join('')}</select></div>`
       + objs.slice(0,6).map(o=>`<div style="margin:2px 0">${esc(o.text.replace(/\|/g,' / ').trim()) || '<i style="color:#777">(blank)</i>'}</div>`).join('') + (n>6?`<div style="color:var(--dim)">… and ${n-6} more</div>`:''),
@@ -1167,7 +1261,7 @@ async function askLink(objs){
     okText:'Link', danger:false, keep:true });
   if(!r.ok) return;
   linkLines(objs, r.value);
-  const p=parts.find(q=>q.id===r.value); toast(`Linked ${n===1?'1 supertitle':n+' supertitles'} to “${p.name.replace(/\.pdf$/i,'')}”`);
+  const p=parts.find(q=>q.id===r.value); toast(`Linked ${n===1?'1 supertitle':n+' supertitles'} to “${sectionTitle(p)}”`);
 }
 function insertIndex(){ if(atStart) return 0; const a = anchor!=null ? anchor : cur; return (a>=0 && a<state.markers.length) ? a+1 : state.markers.length; }
 function deleteMarker(i){
@@ -1177,14 +1271,21 @@ function deleteMarker(i){
   changed(partsList().length>1); toast(`Cue ${i+1} removed — the ones after it were renumbered`);
 }
 const pagesEl=$('#pages');
+function focusScore(){
+  // The score survives marker redraws. Leave text editing before selecting or placing a cue,
+  // so Delete and arrow keys address that cue, and a pending text edit gets its own undo step.
+  $('#score').focus({preventScroll:true});
+  clearPicks(); pickAnchor=null;
+}
 pagesEl.addEventListener('pointerdown', e=>{
   if(e.button!==0) return;
   const wrap=e.target.closest('.page'); if(!wrap) return;
+  e.preventDefault(); focusScore();
   const mk=e.target.closest('.mk');
   if(mk){
     const i=+mk.dataset.i;
     if(mode==='show'){ goTo(i); return; }
-    goTo(i,false); if(!state.settings.lockCues) startDrag(e,i,wrap,mk); return;
+    goTo(i,false); if(!state.settings.lockCues) startDrag(e,i,wrap,wrap.querySelector(`.mk[data-i="${i}"]`)); return;
   }
   if(mode!=='edit') return;
   if(state.settings.lockCues){ lockedNote('cues'); return; }
@@ -1207,15 +1308,68 @@ function startDrag(e,i,wrap,el){
   const up=()=>{ window.removeEventListener('pointermove',mv); window.removeEventListener('pointerup',up); if(moved){ const before=state.markers.indexOf(m); sortMarkers(); const after=state.markers.indexOf(m); changed(false); if(before!==after) toast(`Cue ${before+1} is now cue ${after+1} — numbers follow the position on the page`); } };
   window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up);
 }
-pagesEl.addEventListener('contextmenu', e=>{ const mk=e.target.closest('.mk'); if(!mk||mode!=='edit') return; e.preventDefault(); if(state.settings.lockCues) return lockedNote('cues'); deleteMarker(+mk.dataset.i); });
+pagesEl.addEventListener('contextmenu', e=>{ const mk=e.target.closest('.mk'); if(!mk||mode!=='edit') return; e.preventDefault(); focusScore(); if(state.settings.lockCues) return lockedNote('cues'); deleteMarker(+mk.dataset.i); });
 
 /* ---------- slides ---------- */
+function sectionTitle(p){ return p ? (typeof p.title==='string' && p.title.trim() || String(p.name||'').replace(/\.pdf$/i,'')) : ''; }
+function setSectionTitle(id, value){
+  const p=partsList().find(p=>p.id===id); if(!p || mode!=='edit' || state.settings.lockOrder) return false;
+  const title=String(value||'').replace(/\s+/g,' ').trim(), fallback=String(p.name||'').replace(/\.pdf$/i,''), next=title||fallback;
+  if(next===sectionTitle(p)) return false;
+  snap(); if(title && title!==fallback) p.title=title; else delete p.title;
+  setDirty(true); save(); updateOutput(); if($('#partsDlg').open) renderParts(); return true;
+}
+function commitSectionEdit(){ const t=document.activeElement; if(t && t.matches('input[data-section]')) t.blur(); }
+function sectionHeading(p){
+  const a=document.createElement('button'); a.type='button'; a.className='pdn section-name'; a.dataset.sectionMenu=p.id; a.textContent=sectionTitle(p);
+  a.title=`${p.name}\nSection actions — click or right-click; double-click to rename`; a.setAttribute('aria-haspopup','menu'); a.setAttribute('aria-expanded','false'); return a;
+}
+function editSectionTitle(id){
+  closeSectionMenu(); if(mode!=='edit' || state.settings.lockOrder) return lockedNote('order');
+  const p=partsList().find(p=>p.id===id), old=[...document.querySelectorAll('button[data-section-menu]')].find(b=>b.dataset.sectionMenu===id); if(!p || !old) return;
+  const t=document.createElement('input'); t.type='text'; t.className='pdn'; t.dataset.section=id; t.value=sectionTitle(p); t.spellcheck=false; t.setAttribute('aria-label','Section title'); t.title='Return to keep the section title · Esc to cancel';
+  old.replaceWith(t); t.focus(); t.select();
+}
+function closeSectionMenu(refocus=false){
+  document.removeEventListener('pointerdown',sectionMenuOutside,true); document.removeEventListener('keydown',sectionMenuKeys,true);
+  const p=$('#sectionMenu'); if(!p) return; const a=p._anchor; if(a) a.setAttribute('aria-expanded','false'); try{ p.hidePopover(); }catch(_){} p.remove(); if(refocus && a && a.isConnected) a.focus();
+}
+function sectionMenuOutside(e){ const p=$('#sectionMenu'); if(p && !p.contains(e.target)) closeSectionMenu(); }
+function sectionMenuKeys(e){
+  const p=$('#sectionMenu'); if(!p) return;
+  if(e.key==='Escape' || e.key==='Tab'){ if(e.key==='Escape') e.preventDefault(); e.stopPropagation(); closeSectionMenu(true); return; }
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(e.key)) return;
+  e.preventDefault(); e.stopPropagation(); const bs=[...p.querySelectorAll('button:not(:disabled)')], at=bs.indexOf(document.activeElement);
+  const i=e.key==='Home' ? 0 : e.key==='End' ? bs.length-1 : (at+(e.key==='ArrowDown'?1:-1)+bs.length)%bs.length; bs[i]?.focus();
+}
+function openSectionMenu(anchor){
+  commitSectionEdit(); closeSectionMenu(); closePalette(); const id=anchor.dataset.sectionMenu, p=partsList().find(p=>p.id===id); if(!p) return;
+  const pop=document.createElement('div'); pop.id='sectionMenu'; pop.className='section-menu'; pop.setAttribute('popover','manual'); pop.setAttribute('role','menu'); pop.setAttribute('aria-label',sectionTitle(p)+' actions'); pop._anchor=anchor;
+  const section=autoSection(id), busy=!!(run || stoppingRun || autoPreparing || projectCommit);
+  const options=[['autoRecord','Auto recording…',busy || !section.ok || !(section.reference.audio || section.reference.fileId)],
+    ['autoLive','Auto live (beta)',busy || !section.ok],
+    ['rename','Rename section…',mode!=='edit' || state.settings.lockOrder],['slides','Copy all slides',false],['pdf','Copy all slides + associated PDF',!pdfBytes]];
+  for(const [action,label,disabled] of options){
+    const b=document.createElement('button'); b.type='button'; b.dataset.sectionAction=action; b.textContent=label; b.disabled=disabled; b.setAttribute('role','menuitem');
+    if(action==='autoLive' || action==='autoRecord'){
+      b.title=busy ? 'Finish the current audio operation first' : !section.ok ? section.reason : action==='autoRecord' && !(section.reference.audio || section.reference.fileId) ? 'This reference has no verified playable recording' : 'Run '+sectionTitle(p);
+    }
+    b.onclick=async()=>{ closeSectionMenu(); try{ if(action==='autoLive') await startAutoLive(id); else if(action==='autoRecord') await startAutoRecording(id); else if(action==='rename') editSectionTitle(id); else if(action==='slides') await copySectionSlides(id); else await copySectionWithPdf(id); }catch(e){ toast('Could not complete this section action: '+e.message); } };
+    if(action==='rename') pop.append(document.createElement('hr'));
+    pop.append(b);
+  }
+  document.body.append(pop); try{ pop.showPopover(); }catch(_){} anchor.setAttribute('aria-expanded','true');
+  const r=anchor.getBoundingClientRect(); pop.style.left=Math.max(8,Math.min(r.left,innerWidth-pop.offsetWidth-8))+'px'; pop.style.top=Math.max(8,r.bottom+6+pop.offsetHeight>innerHeight-8 ? r.top-pop.offsetHeight-6 : r.bottom+6)+'px';
+  document.addEventListener('pointerdown',sectionMenuOutside,true); document.addEventListener('keydown',sectionMenuKeys,true); pop.querySelector('button:not(:disabled)')?.focus();
+}
 function renderSlides(){
+  closeSectionMenu();
   const list=$('#slides'); list.replaceChildren();
   const pl=partsList(), many=pl.length>1, ro = mode==='show' || !!state.settings.lockOrder;
   const head=(name,cnt,tip,p)=>{ const h=document.createElement('div'); h.className='pdiv'; if(tip) h.title=tip;
     if(p){ const r=document.createElement('button'); r.type='button'; r.className='gring'; r.dataset.g=p.id; r.title='Color this PDF’s supertitles and cues (a supertitle’s own color wins)'; if(p.color){ r.style.setProperty('--sc', p.color); r.classList.add('on'); } h.append(r); }
-    const a=document.createElement('span'); a.className='pdn'; a.textContent=name; const b=document.createElement('span'); b.className='pdc'; b.textContent=cnt; h.append(a,b);
+    const a=p ? sectionHeading(p) : document.createElement('span'); a.className=p ? 'pdn section-name' : 'pdn'; if(!p) a.textContent=name;
+    const b=document.createElement('span'); b.className='pdc'; b.textContent=cnt; h.append(a,b);
     if(p && p.color) h.style.setProperty('--sc', p.color);
     list.append(h); };
   const card=(s,i)=>{
@@ -1229,17 +1383,17 @@ function renderSlides(){
   const spareCard=(p,j)=>{
     const c=document.createElement('div'); c.className='slide spare nocue'; c.dataset.sp=p.id+':'+j;
     c.innerHTML=`<div class="grip"></div><div class="num" title="Not cued yet — the next cue you place in this PDF takes this line">–</div><textarea rows="1" placeholder="(blank — shows nothing)"></textarea><div class="mirror" aria-hidden="true"></div><div class="tools"><button data-s="unlink" title="Unlink from this PDF (moves to “Not cued yet” at the end)">↩</button></div><button class="trash" data-s="trash" title="Delete this line">🗑</button>`;
-    { const col=p.spare[j].color || p.color; if(col){ c.classList.add('tinted'); c.style.setProperty('--sc', col); } }
+    { const line=p.spare[j], col=line.keepColors ? line.color||'' : line.color||p.color; if(col){ c.classList.add('tinted'); c.style.setProperty('--sc', col); } }
     const ta=c.querySelector('textarea'); ta.value=p.spare[j].text; ta.readOnly = ro; ta.spellcheck = spellOn() && mode==='edit';
     list.append(c);
   };
-  if(!many){ state.slides.forEach((s,i)=>card(s,i)); }
+  if(!many){ if(pl[0]) head(sectionTitle(pl[0]), `${state.markers.length} cue${state.markers.length===1?'':'s'}`, 'The supertitles for this PDF.', pl[0]); state.slides.forEach((s,i)=>card(s,i)); }
   else {
     // With several PDFs, each PDF gets its own section: its cued lines, then the ones still waiting for a cue.
     const ids=state.markers.map(m=>(partOfPage(pl,m.page)||{}).id);
     for(const p of pl){
       const idx=ids.map((id,i)=>id===p.id && i<state.slides.length ? i : -1).filter(i=>i>=0), k=ids.filter(id=>id===p.id).length, w=(p.spare||[]).length;
-      head(p.name.replace(/\.pdf$/i,''), `${k ? k+' cue'+(k===1?'':'s') : 'no cues yet'}${w ? ' · '+w+' waiting' : ''}`, 'The supertitles for this PDF. Its cues take them in order; ones it has no cue for yet wait here, grayed.', p);
+      head(sectionTitle(p), `${k ? k+' cue'+(k===1?'':'s') : 'no cues yet'}${w ? ' · '+w+' waiting' : ''}`, 'The supertitles for this PDF. Its cues take them in order; ones it has no cue for yet wait here, grayed.', p);
       idx.forEach(i=>card(state.slides[i],i));
       (p.spare||[]).forEach((_,j)=>spareCard(p,j));
     }
@@ -1250,15 +1404,22 @@ function renderSlides(){
   add.innerHTML = state.slides.length ? `<button data-a="append">＋ Add slide</button>` : `<div class="empty slidesempty" tabindex="0" title="Click here, then paste titles (${keyName('⌘V')})" style="height:auto;padding:24px 8px"><div>No slides yet.</div><div style="font-size:13px">Import a PowerPoint file, a CSV, a text file or a PDF of existing slides — or click here and paste titles (<kbd>${keyName('⌘V')}</kbd>): each line becomes a slide. Or add them one at a time.</div><div style="display:flex;gap:8px"><button class="primary" data-act="importSlides">Import slides…</button><button data-a="append">＋ Add slide</button></div></div>`;
   if(mode==='edit' || !state.slides.length) list.append(add);
   cardFont(false); list.querySelectorAll('textarea').forEach(grow);
-  updateSlideClasses(); markOverflow();
+  updateSlideClasses(); markOverflow(); installSlideTransferControls();
 }
 // The slide boxes break their lines exactly like the screen: same font and style, and the same text width measured in font sizes.
-function cardFont(regrow=true){ const L=titleLayout(), r=L.availW/L.fsOfWidth, st=state.settings, el=slidesEl;
-  el.style.setProperty('--cardff', st.font); el.style.setProperty('--cardfst', st.italic?'italic':'normal'); el.style.setProperty('--cardfw', boldOn()?'700':'400');
-  el.style.setProperty('--cardw','100%'); const ta=el.querySelector('.slide textarea'); if(!ta) return; const cw=ta.getBoundingClientRect().width; if(!cw) return;
-  let fs=cw/r, w='100%'; if(fs>19){ fs=19; w=(fs*r)+'px'; } else if(fs<11){ fs=11; w=(fs*r)+'px'; }
-  el.style.setProperty('--cardfs', fs+'px'); el.style.setProperty('--cardw', w);
-  if(regrow) el.querySelectorAll('.slide textarea').forEach(grow); }
+function cardFont(regrow=true){
+  const L=titleLayout(), st=state.settings, width=FIT_W*L.availW, fs=FIT_W*L.fsOfWidth;
+  slidesEl.style.setProperty('--cardff', st.font); slidesEl.style.setProperty('--cardfst', st.italic?'italic':'normal'); slidesEl.style.setProperty('--cardfw', boldOn()?'700':'400');
+  document.querySelectorAll('.slide').forEach(c=>{
+    const ta=c.querySelector('textarea'); if(!ta) return;
+    const cols=getComputedStyle(c).gridTemplateColumns.split(' '), col=(mode==='show'||state.settings.lockOrder)?1:2;
+    const available=parseFloat(cols[col]); if(!available) return;
+    // CSS zoom preserves the exact canonical line layout while keeping native text editing/caret.
+    c.style.setProperty('--cardfs',fs+'px'); c.style.setProperty('--cardw',width+'px');
+    ta.style.zoom=available/width; const mirror=c.querySelector('.mirror'); if(mirror) mirror.style.zoom=available/width;
+    if(regrow) grow(ta);
+  });
+}
 function grow(ta){ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; }
 function updateSlideClasses(){
   document.querySelectorAll('.slide').forEach(c=>{ const i=+c.dataset.i;
@@ -1282,10 +1443,32 @@ function placeAddBelow(){
   document.querySelectorAll('.addBelowRow').forEach(x=>x.remove());
   if(mode!=='edit' || state.settings.lockOrder || cur<0 || cur>=state.slides.length) return;
   const card=document.querySelector(`.slide[data-i="${cur}"]`); if(!card) return;
-  const row=document.createElement('div'); row.className='addBelowRow'; row.innerHTML=`<button data-a="addBelow" data-i="${cur}">＋ Add below</button>`;
+  const row=document.createElement('div'); row.className='addBelowRow'; row.innerHTML=`<button type="button" data-a="up" data-i="${cur}" title="Move this slide up one place" aria-label="Move slide up"${cur===0?' disabled':''}>▲</button><button type="button" data-a="down" data-i="${cur}" title="Move this slide down one place" aria-label="Move slide down"${cur===state.slides.length-1?' disabled':''}>▼</button><button data-a="addAbove" data-i="${cur}">＋ Add above</button><button data-a="addBelow" data-i="${cur}">＋ Add below</button><button type="button" data-transfer="copy">Copy</button><button type="button" data-transfer="paste">Paste slides / section</button>`;
   card.after(row);
 }
 const slidesEl=$('#slides');
+slidesEl.addEventListener('click',e=>{ const b=e.target.closest('button[data-section-menu]'); if(b){ e.stopPropagation(); if(e.detail<2) openSectionMenu(b); } });
+slidesEl.addEventListener('contextmenu',e=>{ const b=e.target.closest('button[data-section-menu]'); if(b){ e.preventDefault(); e.stopPropagation(); openSectionMenu(b); } });
+slidesEl.addEventListener('dblclick',e=>{ const b=e.target.closest('button[data-section-menu]'); if(b){ e.preventDefault(); e.stopPropagation(); editSectionTitle(b.dataset.sectionMenu); } });
+slidesEl.addEventListener('focusin', e=>{ if(e.target.matches('input[data-section]')) e.target._before=e.target.value; });
+slidesEl.addEventListener('keydown', e=>{
+  const t=e.target; if(!t.matches('input[data-section]')) return;
+  if(e.key==='Enter' || e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); if(e.key==='Escape') t.value=t._before; t.blur(); }
+});
+slidesEl.addEventListener('focusout', e=>{
+  const t=e.target; if(!t.matches('input[data-section]')) return;
+  setSectionTitle(t.dataset.section, t.value); const p=partsList().find(p=>p.id===t.dataset.section); if(p && t.isConnected) t.replaceWith(sectionHeading(p));
+});
+function insertSectionSlide(i, above=false){
+  const selected=state.slides[i], o={text:'', b:'hard'}; if(!selected) return null;
+  if(partsList().length>1){
+    const p=cuePart(i), sections=sectionsNow(), group=p ? sections.groups[p.id] : sections.tail, at=group.indexOf(selected)+(above?0:1);
+    group.splice(at,0,o); if(group[at-1]) group[at-1].b='hard'; rebuildSections(sections);
+  } else {
+    const at=i+(above?0:1); state.slides.splice(at,0,o); if(state.slides[at-1]) state.slides[at-1].b='hard';
+  }
+  return o;
+}
 const SCORE_EMPTY_BIG = ($('#scoreEmpty .big')||{}).textContent || '';
 { let raf=0; new ResizeObserver(()=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>cardFont()); }).observe(slidesEl); }
 // Lines waiting in a PDF's section (no cue yet) have their own small set of actions.
@@ -1309,7 +1492,7 @@ const spareHandler = e=>{
 slidesEl.addEventListener('input', e=>{ if(e.target.tagName!=='TEXTAREA') return; const i=+e.target.closest('.slide').dataset.i; state.slides[i].text=e.target.value; delete state.slides[i].pad; grow(e.target);
   showOverflow(e.target.closest('.slide'), e.target.value);
   if(state.settings.flow && mode==='edit' && i>=state.markers.length){ setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); if(i===cur||i===cur+1) updateOutput();
-    if(/^insertFrom(Paste|Drop)/.test(e.inputType||'') || Date.now()-cleanPasteAt<200){ snap(); flowRefit(i, e.target.selectionStart); } else flowTyped(i, e.target.selectionStart);   // a pasted libretto gets laid out by sentences; typing stays exactly as typed
+    clearTimeout(flowT); flowTyped(i, e.target.selectionStart, e.target);   // local edits, including paste, flow only forward from this slide
     return; } if(i===cur||i===cur+1) updateOutput(); setDirty(true); clearTimeout(saveT); saveT=setTimeout(save,300); });
 slidesEl.addEventListener('mousedown', e=>{
   const card=e.target.closest('.slide'); if(!card || e.target.closest('button') || mode!=='edit') return;
@@ -1327,7 +1510,7 @@ slidesEl.addEventListener('click', e=>{
   const num=e.target.closest('.num'); if(num){ const i=+num.closest('.slide').dataset.i; clearPicks(); pickAnchor=i; goTo(i); return; }
   const b=e.target.closest('button[data-a]'); if(!b) return;
   const a=b.dataset.a, card=b.closest('.slide'), i=card? +card.dataset.i : (b.dataset.i!=null ? +b.dataset.i : -1);
-  if(a==='color'){ if(state.settings.lockOrder || mode==='show') return lockedNote('order'); const sl=state.slides[i]; return openPalette(b, sl && sl.color, {clear: groupColor(i) ? 'Same as its PDF' : 'No color', cueBox:true, cueOn: sl && sl.color ? !!sl.colorCue : null, onPick:(c,also)=>setSlideColor(i,c,also)}); }
+  if(a==='color'){ if(state.settings.lockOrder || mode==='show') return lockedNote('order'); const sl=state.slides[i]; return openPalette(b, sl && sl.color, {clear: !sl.keepColors && groupColor(i) ? 'Same as its PDF' : 'No color', cueBox:true, cueOn: sl && sl.color ? !!sl.colorCue : null, onPick:(c,also)=>setSlideColor(i,c,also)}); }
   if(state.settings.lockOrder) return lockedNote('order');
   if(a==='trash') return (pickA!=null && pickB>pickA && i>=pickA && i<=pickB) ? askDeleteRange(pickA,pickB) : askDeleteSlide(i);
   if((a==='up'||a==='down') && inPick(i)) return nudgePick(a==='up'?-1:1);
@@ -1335,7 +1518,7 @@ slidesEl.addEventListener('click', e=>{
   if(a==='down' && i<state.slides.length-1) return moveSlide(i,i+1);
   snap();
   if(a==='append'){ state.slides.push({text:''}); changed(true); focusSlide(state.slides.length-1); return; }
-  if(a==='add' || a==='addBelow'){ const fix=keepPdfsPaired(), o={text:'', b:'hard'}, curObj=state.slides[cur]; state.slides.splice(i+1,0,o); if(state.slides[i]) state.slides[i].b='hard'; fix(); if(curObj) cur=state.slides.indexOf(curObj); changed(true); focusLine(o); return; }
+  if(a==='add' || a==='addBelow' || a==='addAbove'){ const curObj=state.slides[cur], o=insertSectionSlide(i,a==='addAbove'); if(curObj) cur=state.slides.indexOf(curObj); changed(true); if(o) focusLine(o); return; }
   if(a==='del'){ state.slides.splice(i,1); if(cur>i) cur--; else if(cur===i) cur=Math.min(cur,state.slides.length-1); changed(true); toast(`Slide ${i+1} deleted — the ones after it were renumbered`); return; }
   undoStack.pop();
 });
@@ -1483,20 +1666,21 @@ function flowRefit(i, caret){
   const t=state.slides[k].text; let pos=0, n=0; while(pos<t.length && n<left){ if(!/[\s…]/.test(t[pos])) n++; pos++; }
   const ta=document.querySelector(`.slide[data-i="${k}"] textarea`); if(ta){ ta.focus(); ta.setSelectionRange(pos,pos); }
 }
-// Typing in Flow mode works like a word processor: the text stays exactly as typed (every space and line break).
+// Local edits in Flow mode work like a word processor: typing and pasted line breaks stay in this slide.
 // Only when a slide holds more than the screen shows does the part that doesn't fit move to the start of the
 // next slide of the same text (or a new slide), like a new page; the caret follows it there.
 function flowPush(i, caret){
   let k=i, ck=i, cp=caret, moved=false;
   while(k<state.slides.length && canFlow(k)){
     const sl=state.slides[k], cut=overflowCut(sl.text.replace(/\|/g,'\n'));
-    if(cut<0) break;
+    if(cut<=0 || cut>=sl.text.length) break;                  // a fitter must make progress, even with an oversized word
     if(!moved){ moved=true; }
-    const keep=sl.text.slice(0,cut).replace(/\s+$/,''), over=sl.text.slice(cut);
+    const keep=sl.text.slice(0,cut).replace(/\s+$/,''); let over=sl.text.slice(cut);
     if(ck===k){ if(cp>=cut){ ck=k+1; cp-=cut; } else if(cp>keep.length) cp=keep.length; }
     const next=state.slides[k+1];
     if(next && canFlow(k+1) && (sl.b||'hard')!=='hard'){             // the text continues on the next slide: put it in front
-      const join = !next.text || /^\s/.test(next.text) || /\s$/.test(over) ? '' : ' ';
+      if(sl.b==='split'){ over=over.replace(/[ \t]*…[ \t]*$/,''); next.text=next.text.replace(/^[ \t]*…[ \t]*/,''); sl.b='soft'; if(ck===k+1) cp=Math.min(cp,over.length); }
+      const join = !over || !next.text || /^\s/.test(next.text) || /\s$/.test(over) ? '' : ' ';
       next.text = over + join + next.text;
     } else {                                                         // start a new slide for it
       state.slides.splice(k+1, 0, {text:over, b:sl.b||'hard'}); sl.b='soft'; if(cur>k) cur++;
@@ -1505,12 +1689,20 @@ function flowPush(i, caret){
   }
   return moved ? {k:ck, pos:Math.max(0,cp)} : null;
 }
-function flowTyped(i, caret){
-  const before=JSON.stringify(state.slides);
+function focusFlowCaret(k, pos){
+  const ta=document.querySelector(`.slide[data-i="${k}"] textarea`); if(!ta) return;
+  ta.focus(); ta._before=ta.value; pos=Math.max(0,Math.min(ta.value.length,pos)); ta.setSelectionRange(pos,pos);
+  ta.closest('.slide').scrollIntoView({block:'nearest'});
+}
+function flowTyped(i, caret, source){
+  const sl=state.slides[i]; if(!sl) return;
+  const cut=overflowCut(sl.text.replace(/\|/g,'\n')); if(cut<=0 || cut>=sl.text.length) return; // normal typing needs no whole-project snapshot
+  const before=snapState(source && source._before!==undefined ? state.slides.map((s,j)=>j===i?{...s,text:source._before}:s) : state.slides);
   const r=flowPush(i, caret); if(!r) return;
-  undoStack.push(snapState(JSON.parse(before))); redoStack=[];
+  undoStack.push(before); if(undoStack.length>300) undoStack.shift(); redoStack=[];
+  if(source) delete source._before;                         // the reflow snapshot includes this edit; focusout must not add it twice
   changed(true);
-  const ta=document.querySelector(`.slide[data-i="${r.k}"] textarea`); if(ta){ ta.focus(); ta._before=ta.value; ta.setSelectionRange(r.pos,r.pos); ta.closest('.slide').scrollIntoView({block:'nearest'}); }
+  focusFlowCaret(r.k,r.pos);
 }
 function flowRefitAll(){ for(let i=state.markers.length;i<state.slides.length;){ const [,e]=flowBlock(i); flowRefit(i,null); i=flowBlock(i)[1]+1; } }
 function caretLine(ta){ // which visual line the caret is on, and how many lines the box has
@@ -1533,20 +1725,23 @@ slidesEl.addEventListener('keydown', e=>{
   nt.closest('.slide').scrollIntoView({block:'nearest'});
 });
 slidesEl.addEventListener('keydown', e=>{
-  if(!state.settings.flow || mode!=='edit' || e.target.tagName!=='TEXTAREA') return;
+  if(!state.settings.flow || mode!=='edit' || e.target.tagName!=='TEXTAREA' || e.target.readOnly || state.settings.lockOrder || e.isComposing || e.metaKey || e.ctrlKey || e.altKey) return;
   const i=+e.target.closest('.slide').dataset.i; if(!canFlow(i)) return;
   const ta=e.target, p=ta.selectionStart;
+  const commitEdit=()=>{ if(ta._before!==undefined && ta._before!==ta.value){ undoStack.push(snapState(state.slides.map((s,j)=>j===i?{...s,text:ta._before}:s))); redoStack=[]; } delete ta._before; };
   if(e.key==='Enter' && !e.shiftKey){                        // Return = new slide here
-    e.preventDefault(); clearTimeout(flowT); snap();
+    e.preventDefault(); clearTimeout(flowT); commitEdit(); snap();
     const sl=state.slides[i], tail={text:'', b:sl.b||'hard'};
-    sl.text=ta.value.slice(0,p).replace(/\s+$/,''); sl.b='hard'; tail.text=ta.value.slice(p).replace(/^\s+/,''); state.slides.splice(i+1,0,tail); if(cur>i) cur++;
-    changed(true); const nt=document.querySelector(`.slide[data-i="${i+1}"] textarea`); if(nt){ nt.focus(); nt.setSelectionRange(0,0); nt.closest('.slide').scrollIntoView({block:'nearest'}); }
-  } else if(e.key==='Backspace' && p===0 && ta.selectionEnd===0 && i>0 && canFlow(i-1) && (state.slides[i-1].b||'hard')==='hard'){
-    e.preventDefault(); clearTimeout(flowT); snap();            // Delete at the start = join with the slide before
-    const prev=state.slides[i-1], here=state.slides[i], join = prev.text && here.text && !/\s$/.test(prev.text) ? ' ' : '', at=prev.text.length+join.length;
+    sl.text=ta.value.slice(0,p); sl.b='hard'; tail.text=ta.value.slice(ta.selectionEnd); state.slides.splice(i+1,0,tail); if(cur>i) cur++;
+    changed(true); focusFlowCaret(i+1,0);
+  } else if(e.key==='Backspace' && !e.shiftKey && p===0 && ta.selectionEnd===0 && i>0 && canFlow(i-1)){
+    e.preventDefault(); clearTimeout(flowT); commitEdit(); snap(); // Delete at the start = join with the slide before, including an automatic boundary
+    const prev=state.slides[i-1], here=state.slides[i];
+    if(prev.b==='split'){ prev.text=prev.text.replace(/[ \t]*…[ \t]*$/,''); here.text=here.text.replace(/^[ \t]*…[ \t]*/,''); }
+    const join=prev.text && here.text && !/\s$/.test(prev.text) && !/^\s/.test(here.text) ? ' ' : '', at=prev.text.length+join.length;
     prev.text=prev.text+join+here.text; prev.b=here.b||'hard'; state.slides.splice(i,1); if(cur>=i) cur=Math.max(0,cur-1);
     const r=flowPush(i-1, at)||{k:i-1, pos:at}; changed(true);
-    const nt=document.querySelector(`.slide[data-i="${r.k}"] textarea`); if(nt){ nt.focus(); nt.setSelectionRange(r.pos,r.pos); }
+    focusFlowCaret(r.k,r.pos);
   }
 });
 // Flow mode is for writing before cueing: once any cue is on the score it is switched off and locked.
@@ -1582,14 +1777,16 @@ function updateLocks(){
   b.textContent = st.lockOrder ? '🔒 Slides locked' : '🔓 Slides unlocked'; b.classList.toggle('unlocked', !st.lockOrder);
   { const tt = st.lockOrder ? 'Slides are locked: no typing, moving, adding or deleting. Click to unlock' : 'Click to lock the slides — their text and their order — so nothing changes by accident'; if(b.dataset.ttl!=null) b.dataset.ttl=tt; else b.title=tt; }
   document.querySelectorAll('#slides .slide textarea').forEach(t=>{ t.readOnly = mode==='show' || !!st.lockOrder; });
+  document.querySelectorAll('#slides input[data-section]').forEach(t=>{ t.readOnly = mode==='show' || !!st.lockOrder; });
   updateHint();
   if(typeof placeAddBelow==='function') placeAddBelow();
 }
-document.addEventListener('click', e=>{ const b=e.target.closest('[data-lock]'); if(!b) return; const k=b.dataset.lock; state.settings[k]=!state.settings[k]; updateLocks(); save(); });
+document.addEventListener('click', e=>{ const b=e.target.closest('[data-lock]'); if(!b) return; if(audioEditingBlocked())return; const k=b.dataset.lock; state.settings[k]=!state.settings[k]; updateLocks(); save(); });
 
 /* ---------- cueing ---------- */
 function lastIndex(){ return Math.max(state.slides.length, state.markers.length) - 1; }
 function goTo(i, scroll=true){
+  if(typeof autoRun!=='undefined' && (autoRun || autoPending || autoPreparing) && !autoAdvancing) stopAuto({keepFollowing:true});
   atStart=false; anchor=null;
   const was=cur, wasBo=blackout; cur = Math.max(-1, Math.min(i, lastIndex())); blackout=false;
   if(cur!==was && !wasBo) transNext=true;      // a cue move (not leaving a blackout) gets the chosen transition
@@ -1597,9 +1794,12 @@ function goTo(i, scroll=true){
   renderMarkers(); updateSlideClasses(); updateOutput(); updateHint(); save();
   if(scroll) scrollToCue();
 }
-const next=()=>{ if(cur<lastIndex()) goTo(cur+1); else toast('That was the last cue'); };
+const next=()=>{
+  if(autoRun || autoPending || autoPreparing) stopAuto({keepFollowing:true});
+  if(cur<lastIndex()) goTo(cur+1); else toast('That was the last cue');
+};
 const prev=()=>goTo(cur-1);
-function toggleBlackout(){ blackout=!blackout; updateOutput(); toast(blackout?'Blackout — screen is empty (B to restore)':'Restored'); }
+function toggleBlackout(){ if(autoRun || autoPending || autoPreparing) stopAuto({keepFollowing:true}); blackout=!blackout; updateOutput(); toast(blackout?'Blackout — screen is empty (B to restore)':'Restored'); }
 function scrollToCue(){
   const sc=$('#score'); const watch = document.querySelector(`.mk[data-i="${cur+1}"]`) || document.querySelector(`.mk[data-i="${cur}"]`);
   if(watch){
@@ -1668,50 +1868,43 @@ function titleLayout(){
     px:(W,H)=>titleFrame(W, H, 6, 137*H/1080, 137*H/10800, 47*H/540, k) };
 }
 function applyAlign(){ const al=state.settings.align||'left'; document.body.style.setProperty('--talign', al); pseg($('#sAlign'), b=>b.dataset.al===al); }
+function screenColors(sl=state.slides[cur]){ return sl && sl.screenColors || {fg:state.settings.fg,bg:state.settings.bg}; }
 function styleVars(el){
-  const st=state.settings;
+  const st=state.settings, colors=screenColors();
   el.style.setProperty('--fs', st.fontSize); el.style.setProperty('--font', st.font);
-  el.style.setProperty('--sfg', st.fg); el.style.setProperty('--sbg', st.bg); el.style.setProperty('--va', st.va);
+  el.style.setProperty('--sfg', colors.fg); el.style.setProperty('--sbg', blackout?'#000000':colors.bg); el.style.setProperty('--va', st.va);
 }
 function fit(stage, text){
   const W=stage.clientWidth, H=stage.clientHeight; if(!W || !H) return;
-  const m=titleLayout().px(W,H);
+  const m=titleLayout().px(W,H), full=text.dataset.sourceText!=null ? text.dataset.sourceText : text.textContent;
+  const visible=titleTextLayout(full).lines.slice(0,titleLayout().lines).map(l=>l.text).join('\n');
   stage.style.padding=`${m.padY}px ${m.padX}px`;
-  text.style.width='100%'; text.style.textAlign=state.settings.align||'left';
-  text.style.lineHeight=m.lh; text.style.fontStyle=state.settings.italic?'italic':'normal'; text.style.fontWeight=boldOn()?'700':'400';
-  // The type size comes only from Settings. Text beyond the shape's lines (2 on 6:1, 6 otherwise)
-  // is not shown on the screens at all (the slide box in the list grays it out instead).
-  const fs=m.font, lineH=fs*m.lh, maxLines=titleLayout().lines;
-  const availH=H-2*m.padY;
-  text.style.fontSize=fs+'px'; text.style.maxHeight='none'; text.style.height='auto';
-  const full=text.textContent; text.textContent=full;
-  if(full && text.scrollHeight > maxLines*lineH+2){
-    const node=text.firstChild, top0=text.getBoundingClientRect().top, limit=top0+(maxLines-0.5)*lineH;
-    const r=text.ownerDocument.createRange(), topAt=i=>{ r.setStart(node,i); r.setEnd(node,i+1); const b=r.getClientRects(); return b.length? b[b.length-1].top : -1; };
-    let cut=full.length; const re=/\S+/g; let mm; // first word that starts on line maxLines+1
-    while((mm=re.exec(full))){ if(topAt(mm.index)>=limit){ cut=mm.index; break; } }
-    if(cut<full.length){
-      const d=text.ownerDocument, a=d.createElement('span'), b=d.createElement('span');
-      a.textContent=full.slice(0,cut); b.textContent=full.slice(cut); b.className='ovf';
-      b.style.cssText = 'visibility:hidden';
-      text.replaceChildren(a,b);
-      text.style.height=(maxLines*lineH)+'px'; // the frame keeps only the lines that fit
-    }
-  }
+  Object.assign(text.style,{width:'100%', textAlign:state.settings.align||'left', lineHeight:String(m.lh), fontStyle:state.settings.italic?'italic':'normal', fontWeight:boldOn()?'700':'400', fontSize:m.font+'px', maxHeight:'none', height:'auto', whiteSpace:'pre', overflowWrap:'normal'});
+  text.textContent=visible+(visible.endsWith('\n')?'\u200b':'');
   stage.style.alignItems='center';
-  const vp=(state.settings.vpos||0)/100, free=Math.max(0, availH-text.offsetHeight);
-  text.style.transform = titleLayout().shape==='6/1' ? 'none' : `translateY(${vp*free/2}px)`;
+  const vp=(state.settings.vpos||0)/100, free=Math.max(0,H-2*m.padY-text.offsetHeight);
+  text.style.transform=titleLayout().shape==='6/1' ? 'none' : `translateY(${vp*free/2}px)`;
+}
+function sectionEndAt(i){
+  if(i<0 || i>=state.markers.length || !state.slides[i]) return null;
+  const p=cuePart(i); if(!p) return null;
+  for(let k=i+1;k<state.markers.length;k++) if(cuePart(k)?.id===p.id) return null;
+  return p;
+}
+function updateSectionEnd(){
+  const el=$('#sectionEnd'), p=sectionEndAt(cur); el.hidden=!p;
+  el.title=p ? `${sectionTitle(p)} — this is the last cued slide in this section` : '';
 }
 function updateOutput(){
+  updateSectionEnd();
   const t=liveText(), pv=$('#pv'), txt=$('#pvText');
   const anim=transNext; transNext=false;
-  styleVars(pv); const trP=startTrans(txt, t, anim); txt.textContent=t; pv.classList.toggle('blackout', blackout);
+  styleVars(pv); const trP=startTrans(txt, t, anim); txt.textContent=t; txt.dataset.sourceText=t; pv.classList.toggle('blackout', blackout);
   placePreview(pv);
   fit(pv.querySelector('.stage'), txt); endTrans(txt, trP);           // right away, so overflowing text is never painted, not even for one frame
-  requestAnimationFrame(()=>fit(pv.querySelector('.stage'), txt));   // and again once the layout has settled
   const n = state.slides[cur+1];
   $('#nextLine').innerHTML = cur+1<=lastIndex() ? `Next <span class="kbd">→</span> <b>${cur+2}</b>: ${n? esc(n.text.replace(/[|\n]+/g,' / ')) || '<i>(blank)</i>' : '<i>(no slide)</i>'}` : (cur>=0? 'End of cues' : '');
-  if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=state.settings.bg; placeProjStage(d); const pt=d.getElementById('t'); const trJ=startTrans(pt, t, anim); pt.textContent=t; fit(d.getElementById('stage'), pt); endTrans(pt, trJ); }catch(e){} }
+  if(projOpen()){ try{ const d=projWin.document; styleVars(d.documentElement); d.body.style.background=blackout?'#000000':screenColors().bg; placeProjStage(d); const pt=d.getElementById('t'); const trJ=startTrans(pt, t, anim); pt.textContent=t; pt.dataset.sourceText=t; fit(d.getElementById('stage'), pt); endTrans(pt, trJ); }catch(e){} }
   { const bo=$('#boBtn'), on=projOpen(); bo.hidden=!on; bo.classList.toggle('on', !!blackout); bo.setAttribute('aria-pressed', !!blackout); bo.textContent = blackout ? 'Blackout on' : 'Blackout';
     const tt = blackout ? 'The screen is blacked out — click (or press B) to bring the title back' : 'Blackout: empty the projector screen right now (key B). Click again to bring the title back'; if(bo.dataset.ttl!=null) bo.dataset.ttl=tt; else bo.title=tt;
     document.querySelector('.pvhead').classList.toggle('live', on); }
@@ -1798,7 +1991,7 @@ document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='y' && !typing){ e.preventDefault(); redo(); return; }
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveDoc(e.shiftKey, e.shiftKey?'supertitles':undefined); return; }
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='o'){ e.preventDefault(); openDialog(); return; }
-  if(e.key==='Escape'){ if(typing){ t.blur(); return; } closeMenus(); if(pickA!=null && !document.querySelector('dialog[open]')){ clearPicks(); return; } if(mode==='edit' && !document.querySelector('dialog[open]')) goTo(-1,false); return; }
+  if(e.key==='Escape'){ if(autoRun || autoPending || autoPreparing){ e.preventDefault(); stopAuto(); return; } if(typing){ t.blur(); return; } closeMenus(); if(pickA!=null && !document.querySelector('dialog[open]')){ clearPicks(); return; } if(mode==='edit' && !document.querySelector('dialog[open]')) goTo(-1,false); return; }
   if(typing || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('dialog[open]')) return;
   handleKey(e.key, e);
 });
@@ -1820,6 +2013,7 @@ let kbZone='score';
 document.addEventListener('pointerdown', e=>{ if(e.target.closest('aside')) kbZone='slides'; else if(e.target.closest('#score')) kbZone='score'; }, true);
 function handleKey(k, e){
   const stop=()=>e && e.preventDefault();
+  if(k==='Escape' && (autoRun || autoPending || autoPreparing)){ stop(); stopAuto(); return; }
   if(e && kbZone==='slides' && (k==='ArrowUp'||k==='ArrowDown') && !e.shiftKey){
     stop(); const n=lastIndex()+1; if(!n) return;
     const to = cur<0 ? (k==='ArrowDown' ? 0 : n-1) : Math.max(0, Math.min(n-1, cur+(k==='ArrowDown'?1:-1)));
@@ -1841,6 +2035,8 @@ document.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b
 
 /* ---------- mode / hint / counts ---------- */
 function setMode(m){
+  if(m==='edit' && audioEditingBlocked()) return;
+  commitSectionEdit();
   if(m!==mode){ const lk = m==='show'; state.settings.lockCues=lk; state.settings.lockOrder=lk; save(); mode=m; updateLocks(); }   // Show locks cues and slides, Edit unlocks them
   mode=m; if(NATIVE) window.stc.keepAwake(m==='show');
   document.body.classList.toggle('edit', m==='edit'); document.body.classList.toggle('show', m==='show');
@@ -1851,6 +2047,7 @@ function setMode(m){
 
 document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 function updateHint(){
+  if(typeof updateAutoBtn==='function') updateAutoBtn();
   const h=$('#hint');
   if(mode==='show'){ h.innerHTML=`<span class="kbd">→</span>/<span class="kbd">Space</span> next · <span class="kbd">←</span> back · <span class="kbd">B</span> blackout · Cue <b>${cur+1}</b> of ${lastIndex()+1}`; return; }
   if(!state.pdfName){ h.textContent='Open a score PDF to start placing cues'; return; }
@@ -1888,68 +2085,72 @@ const actions = {
   printScore: ()=>printScore(),
   exportTxt: ()=>{ if(!allLines().length) return toast('No slides to export'); download(baseName()+' - slides.txt', allLines().map(s=>toBlank(s.text).replace(/\r?\n/g,'|')).join('\r\n')+'\r\n','text/plain;charset=utf-8'); toast('Saved the slides as text: one slide per line, | for a line break inside a slide'); },
   exportCsv: ()=>{ if(!allLines().length) return toast('No slides to export'); download(baseName()+' - slides.csv', '﻿'+allLines().map(s=>'"'+toBlank(s.text).replace(/"/g,'""')+'"').join('\r\n')+'\r\n','text/csv'); },
-  clearMarkers: ()=>{ if(state.markers.length && confirm(`Remove all ${state.markers.length} cue markers from the score?`)){ snap(); state.markers=[]; cur=-1; changed(false); } },
-  clearSlides: ()=>{ const n=allLines().length; if(n && confirm(`Remove all ${n} slides?`)){ snap(); state.slides=[]; partsList().forEach(p=>delete p.spare); changed(true); } },
+  clearMarkers: ()=>{ if(audioEditingBlocked())return; if(state.markers.length && confirm(`Remove all ${state.markers.length} cue markers from the score?`)){ snap(); state.markers=[]; cur=-1; changed(false); } },
+  clearSlides: ()=>{ if(audioEditingBlocked())return; const n=allLines().length; if(n && confirm(`Remove all ${n} slides?`)){ snap(); state.slides=[]; partsList().forEach(p=>delete p.spare); changed(true); } },
 };
 $('#fPdf').onchange=e=>{ const f=e.target.files[0]; if(f) openAny(f, null); e.target.value=''; };
 /* ---------- ONE-FILE SAVE: a PDF of the numbered score + cue sheet, with the original score and project data embedded ---------- */
 const PROJ_ATTACH='supertitle-cuer-project.json', ORIG_ATTACH='original-score.pdf';
 function setDirty(d){
+  if(d){ editRevision++; clearTimeout(saveT); saveT=setTimeout(save,150); }
   dirty=d; const el=$('#docName'); const has = !!(state.pdfName || state.slides.length || state.markers.length);
   el.innerHTML = '<span class="dn"><span class="dnt"></span></span>'; el.firstChild.firstChild.textContent = docName || (has ? 'Untitled project' : ''); el.removeAttribute('title'); el.classList.toggle('dirty', d && has);
   document.title = (d&&has?'• ':'') + (docName || 'Supertitle Cuer');
   if(NATIVE) window.stc.docState({path: (fileHandle && fileHandle.nativePath) || '', dirty: !!(d&&has)});
 }
 const projectData = () => ({app:'supertitle-cuer', version:4, savedAt:new Date().toISOString(), noScore: !pdfBytes, pdfName: pdfBytes ? state.pdfName : null, parts:state.parts, markers:state.markers, slides:state.slides, settings:state.settings, follow: {runs:Object.fromEntries(partsList().filter(p=>refRuns[p.id]).map(p=>[p.id, refMeta(refRuns[p.id])]))}});
-function drawCues(doc, font){
+function captureProject(){ return {data:JSON.parse(JSON.stringify(projectData())), bytes:pdfBytes, name:docName, colors:state.markers.map((_,i)=>cueColor(i)), runs:Object.fromEntries(partsList().filter(p=>refRuns[p.id]).map(p=>[p.id,{...refRuns[p.id]}])), revision:editRevision, generation:projectGeneration}; }
+function drawCues(doc, font, saved){
   const {rgb, degrees} = PDFLib;
-  state.markers.forEach((m,i)=>{ const red=hexRgb(cueColor(i)||'#dc1a1a');
+  const data=saved ? saved.data : state;
+  data.markers.forEach((m,i)=>{ const red=hexRgb((saved ? saved.colors[i] : cueColor(i))||'#dc1a1a');
     if(m.page-1 >= doc.getPageCount()) return; const page=doc.getPage(m.page-1);
     const cb=page.getCropBox(); const rot=(((page.getRotation().angle||0)%360)+360)%360;
     const W=cb.width, H=cb.height, x0=cb.x, y0=cb.y, dispW = rot%180 ? H : W;
     const toUser=(fx,fy)=> rot===90 ? {x:x0+fy*W, y:y0+fx*H} : rot===180 ? {x:x0+W-fx*W, y:y0+fy*H} : rot===270 ? {x:x0+W-fy*W, y:y0+H-fx*H} : {x:x0+fx*W, y:y0+(1-fy)*H};
     const off=(dx,dy)=> rot===90 ? {x:dy, y:dx} : rot===180 ? {x:-dx, y:dy} : rot===270 ? {x:-dy, y:-dx} : {x:dx, y:-dy};
-    const r=dispW*state.settings.markerSize/200, c=toUser(m.x,m.y);
+    const r=dispW*data.settings.markerSize/200, c=toUser(m.x,m.y);
     page.drawCircle({x:c.x, y:c.y, size:r, color:rgb(1,1,1), opacity:0.85, borderColor:red, borderWidth:Math.max(0.8,r*0.16)});
     const label=String(i+1), fs=r*(label.length>2?0.75:label.length>1?0.95:1.05), tw=font.widthOfTextAtSize(label,fs);
     const o=off(-tw/2, fs*0.36);
     page.drawText(label, {x:c.x+o.x, y:c.y+o.y, size:fs, font, color:red, rotate:degrees(rot)});
   });
 }
-function cueSheetName(){ const parts=state.parts||[]; if(parts.length>1) return docName ? docName.replace(/\.(supertitles|pdf)$/i,'') : parts.map(p=>p.name.replace(/\.pdf$/i,'')).join(' + '); return state.pdfName||''; }
-async function addCueSheet(doc, fb, title='Supertitles - cue sheet'){
-  if(!state.slides.length) return;
+function cueSheetName(saved){ const data=saved ? saved.data : state, name=saved ? saved.name : docName, parts=data.parts||[]; if(parts.length>1) return name ? name.replace(/\.(supertitles|pdf)$/i,'') : parts.map(p=>p.name.replace(/\.pdf$/i,'')).join(' + '); return data.pdfName||''; }
+async function addCueSheet(doc, fb, title='Supertitles - cue sheet', saved){
+  const data=saved ? saved.data : state;
+  if(!data.slides.length) return;
   const {rgb, StandardFonts}=PDFLib; const f=await doc.embedFont(StandardFonts.Helvetica);
   const safe=(t,font)=>{ let o=''; for(const ch of t){ try{ font.encodeText(ch); o+=ch; }catch(e){ o+='?'; } } return o; };
   const W=612, H=792, M=54, size=10.5, lh=14, textW=W-2*M-40; let page, y;
   const wrap=line=>{ const out=[]; let curL=''; for(const w of line.split(/\s+/).filter(Boolean)){ const t=curL?curL+' '+w:w; if(f.widthOfTextAtSize(t,size)>textW && curL){ out.push(curL); curL=w; } else curL=t; } out.push(curL); return out; };
-  const newPage=()=>{ page=doc.addPage([W,H]); y=H-M; page.drawText(safe(title + (cueSheetName() ? '   (' + cueSheetName() + ')' : ''), fb), {x:M, y, size:13, font:fb}); y-=28; };
+  const newPage=()=>{ page=doc.addPage([W,H]); y=H-M; page.drawText(safe(title + (cueSheetName(saved) ? '   (' + cueSheetName(saved) + ')' : ''), fb), {x:M, y, size:13, font:fb}); y-=28; };
   newPage();
-  state.slides.forEach((s,i)=>{
+  data.slides.forEach((s,i)=>{
     const txt=s.text.replace(/\|/g,'\n').trim();
     const lines = txt ? txt.split('\n').flatMap(l=>wrap(safe(l,f))) : ['(blank)'];
     const block=lines.length*lh+7; if(y-block<M) newPage();
-    page.drawText(String(i+1), {x:M, y, size, font:fb, color: i<state.markers.length ? hexRgb(cueColor(i)||'#dc1a1a') : rgb(.55,.55,.55)});
+    page.drawText(String(i+1), {x:M, y, size, font:fb, color: i<data.markers.length ? hexRgb((saved ? saved.colors[i] : cueColor(i))||'#dc1a1a') : rgb(.55,.55,.55)});
     lines.forEach((ln,k)=>page.drawText(ln, {x:M+40, y:y-k*lh, size, font:f, color: txt ? rgb(0,0,0) : rgb(.55,.55,.55)}));
     y-=block;
   });
 }
-async function buildProjectPdf(){
+async function buildProjectPdf(saved=captureProject()){
   const {PDFDocument, StandardFonts} = PDFLib;
-  if(!pdfBytes){ // no score yet: the file is a list of the titles (readable in any PDF viewer) with the project inside
+  if(!saved.bytes){ // no score yet: the file is a list of the titles (readable in any PDF viewer) with the project inside
     const doc=await PDFDocument.create(), fb=await doc.embedFont(StandardFonts.HelveticaBold);
-    await addCueSheet(doc, fb, 'Supertitles (no score yet)');
+    await addCueSheet(doc, fb, 'Supertitles (no score yet)', saved);
     if(!doc.getPageCount()){ const pg=doc.addPage([612,792]); pg.drawText('Supertitles (no score yet)', {x:54, y:738, size:13, font:fb}); }
-    await doc.attach(new TextEncoder().encode(JSON.stringify(projectData())), PROJ_ATTACH, {mimeType:'application/json', description:'Supertitle Cuer project: slides and settings (no score yet)'});
+    await doc.attach(new TextEncoder().encode(JSON.stringify(saved.data)), PROJ_ATTACH, {mimeType:'application/json', description:'Supertitle Cuer project: slides and settings (no score yet)'});
     doc.setSubject('Supertitle Cuer project'); doc.setProducer('Supertitle Cuer');
     return await doc.save();
   }
-  const doc=await PDFDocument.load(pdfBytes, {ignoreEncryption:true});
+  const doc=await PDFDocument.load(saved.bytes, {ignoreEncryption:true});
   const fb=await doc.embedFont(StandardFonts.HelveticaBold);
-  drawCues(doc, fb); await addCueSheet(doc, fb);
-  await doc.attach(pdfBytes, ORIG_ATTACH, {mimeType:'application/pdf', description:'Original score without cue numbers (used by Supertitle Cuer)'});
-  await doc.attach(new TextEncoder().encode(JSON.stringify(projectData())), PROJ_ATTACH, {mimeType:'application/json', description:'Supertitle Cuer project: cues, slides, settings'});
-  for(const p of partsList()){ const r=refRuns[p.id]; if(!r) continue;
+  drawCues(doc, fb, saved); await addCueSheet(doc, fb, 'Supertitles - cue sheet', saved);
+  await doc.attach(saved.bytes, ORIG_ATTACH, {mimeType:'application/pdf', description:'Original score without cue numbers (used by Supertitle Cuer)'});
+  await doc.attach(new TextEncoder().encode(JSON.stringify(saved.data)), PROJ_ATTACH, {mimeType:'application/json', description:'Supertitle Cuer project: cues, slides, settings'});
+  for(const p of saved.data.parts||[]){ const r=saved.runs[p.id]; if(!r) continue;
     await doc.attach(r.feat, FOLLOW_REF+p.id+'.bin', {mimeType:'application/octet-stream', description:`Supertitle Cuer reference run for ${p.name}: the music as 12-note frames, for Follow`});
     if(r.audio) await doc.attach(r.audio, FOLLOW_AUDIO+p.id, {mimeType:r.audioType||'audio/webm', description:`Supertitle Cuer reference run for ${p.name}: the recording`});
   }
@@ -1967,24 +2168,36 @@ async function readProjectFromPdf(bytes){
       let m=n.match(/supertitle-cuer-reference-(.+)\.bin$/); if(m) (follow[m[1]]=follow[m[1]]||{}).feat=new Uint8Array(a.content);
       m=n.match(/supertitle-cuer-recording-(.+)$/); if(m) (follow[m[1]]=follow[m[1]]||{}).audio=new Uint8Array(a.content); }
     return {project: JSON.parse(new TextDecoder().decode(pj.content)), original: org ? new Uint8Array(org.content) : null, follow};
-  } finally { d.destroy(); }
+  } finally { await d.destroy(); }
 }
 const PROJ_EXT='.supertitles';
 function projectFileName(ext){ let n = docName ? docName.replace(/\.(pdf|supertitles)$/i,'') : baseName(); n=n.replace(/ - supertitles$/i,''); return ext==='.pdf' ? n+' - supertitles.pdf' : n+(ext||PROJ_EXT); } // never suggest the score's own file name
 // kind: 'supertitles' or 'pdf'. Both hold the same thing — the merged score with the cues drawn on,
 // plus the project data inside — a .pdf one also opens in any PDF viewer.
-async function saveDoc(as, kind){
+let saveQueue=Promise.resolve();
+function saveDoc(as, kind){ commitSectionEdit(); const generation=projectGeneration, pending=saveQueue.then(()=>generation===projectGeneration ? performSaveDoc(as,kind) : false); saveQueue=pending.catch(()=>false); return pending; }
+function finishSave(saved, handle, name, message){
+  if(saved.generation!==projectGeneration){ toast(message); return false; }
+  fileHandle=handle; docName=name; setDirty(saved.revision!==editRevision); save(); idbPut('doc',{name:docName, handle:fileHandle});
+  toast(message+(dirty ? ' — newer edits still need saving' : '')); return true;
+}
+async function performSaveDoc(as, kind){
+  await waitForProjectCommit();
+  await stopRun(true);
   if(!pdfBytes && !allLines().length){ toast('Nothing to save yet — add some slides or open a score PDF'); return false; }
+  const generation=projectGeneration;
   const curKind = docName && /\.pdf$/i.test(docName) ? 'pdf' : 'supertitles';
   kind = kind || curKind; if(kind!==curKind) as = true;
   const ext = kind==='pdf' ? '.pdf' : PROJ_EXT, suggested = projectFileName(ext);
   if(NATIVE){
     const p = (!as && fileHandle && fileHandle.nativePath) || await window.stc.saveDialog({suggestedName:suggested, kind: kind==='pdf' ? 'pdf' : 'project'});
-    if(!p) return false;
+    await waitForProjectCommit();
+    if(!p || generation!==projectGeneration) return false;
     toast('Saving…');
-    try{ const bytes=await buildProjectPdf(); await window.stc.writeFile(p, bytes); }
+    const saved=captureProject();
+    try{ const bytes=await buildProjectPdf(saved); await window.stc.writeFile(p, bytes); }
     catch(e){ console.error(e); toast('Could not save: '+e.message); return false; }
-    fileHandle={nativePath:p}; docName=p.split(/[\\/]/).pop(); setDirty(false); save(); idbPut('doc',{name:docName, handle:fileHandle}); toast(`Saved “${docName}”`); return true;
+    const name=p.split(/[\\/]/).pop(); return finishSave(saved,{nativePath:p},name,`Saved “${name}”`);
   }
   let h=null, usePicker='showSaveFilePicker' in window;
   if(usePicker){
@@ -1996,21 +2209,23 @@ async function saveDoc(as, kind){
         : {description:'Supertitles project', accept:{'application/x-supertitles':[PROJ_EXT]}} ]});
     }catch(e){ if(e.name==='AbortError') return false; console.warn(e); usePicker=false; h=null; }
   }
+  await waitForProjectCommit(); if(generation!==projectGeneration) return false;
   toast('Saving…');
-  let bytes; try{ bytes=await buildProjectPdf(); }catch(e){ console.error(e); toast('Could not save: '+e.message); return false; }
+  const saved=captureProject();
+  let bytes; try{ bytes=await buildProjectPdf(saved); }catch(e){ console.error(e); toast('Could not save: '+e.message); return false; }
   const blob=new Blob([bytes],{type: kind==='pdf' ? 'application/pdf' : 'application/octet-stream'});
   if(h){
     try{ const w=await h.createWritable(); await w.write(blob); await w.close();
-      fileHandle=h; docName=h.name; setDirty(false); save(); idbPut('doc',{name:docName, handle:h}); toast(`Saved “${docName}”`); return true;
+      return finishSave(saved,h,h.name,`Saved “${h.name}”`);
     }catch(e){ console.warn(e); }
   }
-  download(suggested, blob); docName=suggested; fileHandle=null; setDirty(false); save(); toast(`Saved “${suggested}” to your Downloads folder`); return true;
+  download(suggested, blob); return finishSave(saved,null,suggested,`Saved “${suggested}” to your Downloads folder`);
 }
 async function buildPrintablePdf(){
   const {PDFDocument, StandardFonts} = PDFLib;
-  const doc=await PDFDocument.load(pdfBytes, {ignoreEncryption:true});
+  const saved=captureProject(), doc=await PDFDocument.load(saved.bytes, {ignoreEncryption:true});
   const fb=await doc.embedFont(StandardFonts.HelveticaBold);
-  drawCues(doc, fb); await addCueSheet(doc, fb); doc.setSubject('Score with supertitle cues'); doc.setProducer('Supertitle Cuer');
+  drawCues(doc, fb, saved); await addCueSheet(doc, fb, 'Supertitles - cue sheet', saved); doc.setSubject('Score with supertitle cues'); doc.setProducer('Supertitle Cuer');
   return await doc.save();
 }
 async function exportPrintable(){
@@ -2031,12 +2246,14 @@ async function exportPrintable(){
   download(name, blob); toast(`Saved “${name}” to your Downloads folder`);
 }
 function openNativeFile(f){
+  if(typeof stopAuto==='function') stopAuto();
   const bytes=f.bytes;
   const file={ name:f.name, arrayBuffer: async()=>bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset+bytes.byteLength), text: async()=>new TextDecoder().decode(bytes) };
   return openAny(file, {nativePath:f.path});
 }
 async function openDialog(){
-  if(NATIVE){ const f=await window.stc.openDialog(); if(f) openNativeFile(f); return; }
+  if(typeof stopAuto==='function') stopAuto();
+  if(NATIVE){ const f=await window.stc.openDialog(); if(f) return openNativeFile(f); return; }
   if('showOpenFilePicker' in window){
     try{ const [h]=await window.showOpenFilePicker(); // no type filter: macOS grays out files under Chrome's filters
       return openAny(await h.getFile(), h);
@@ -2045,15 +2262,18 @@ async function openDialog(){
   $('#fPdf').click();
 }
 async function openAny(file, handle){
+  if(typeof stopAuto==='function') stopAuto();
+  await waitForProjectCommit();
   if(/\.json$/i.test(file.name)) return openProjectFile(file);
   const bytes=new Uint8Array(await file.arrayBuffer());
   if(!(bytes[0]===0x25 && bytes[1]===0x50 && bytes[2]===0x44 && bytes[3]===0x46)){ if(/\.(csv|txt|tsv|pptx)$/i.test(file.name)){ if(!openImport()) return; return loadImportFile(file); } return toast('That isn’t a PDF — open a score PDF or a project you saved'); }
   let proj=null; try{ proj=await readProjectFromPdf(bytes); }catch(e){ console.warn(e); }
   if(!proj){ // a plain score: use it in the current project
     const slidesOnly = !pdfBytes && !!docName;            // a saved project that had no score yet keeps its file
-    await openPdfFile(file, bytes); if(!slidesOnly){ fileHandle=null; docName=null; } setDirty(true); save(); return;
+    if(!await openPdfFile(file, bytes)) return; if(!slidesOnly){ fileHandle=null; docName=null; } setDirty(true); save(); return;
   }
   if(!await askSaveFirst()) return;
+  projectGeneration++;
   const p=proj.project, orig=proj.original||bytes;
   undoStack=[]; redoStack=[]; cur=-1; blackout=false; atStart=false; anchor=null;
   state.parts=Array.isArray(p.parts)?p.parts:null;
@@ -2067,16 +2287,21 @@ async function openAny(file, handle){
 }
 // Before closing or replacing the project: offer to save unsaved changes. Resolves true when it's fine to go on.
 async function askSaveFirst(){
-  if(!dirty || !(state.markers.length||state.slides.length||pdfDoc)) return true;
-  if(NATIVE && window.stc.askSave){ const r=await window.stc.askSave(); if(r===2) return false; if(r===0) return !!(await saveDoc(false)); return true; }
+  await waitForProjectCommit();
+  commitSectionEdit();
+  await stopProjectActivity();
+  if(!dirty || !hasProject()) return true;
+  if(NATIVE && window.stc.askSave){ const r=await window.stc.askSave(); if(r===2) return false; if(r===0) return !!(await saveDoc(false)) && !dirty; return true; }
   return confirm('This project has unsaved changes. Close it anyway? (Cancel to go back and save.)');
 }
 function clearScore(){
-  pdfBytes=null; pdfDoc=null; state.parts=null;
-  pageEls.forEach(p=>io.unobserve(p.wrap)); pageEls=[]; $('#pages').replaceChildren(); $('#scoreEmpty').hidden=false; $('#zoomCtl').hidden=true;
+  pdfGeneration++; if(pdfLoadingTask){ pdfLoadingTask.destroy().catch(()=>{}); pdfLoadingTask=null; }
+  releaseScorePages(); const old=pdfDoc; pdfBytes=null; pdfDoc=null; state.parts=null; if(old) old.destroy().catch(()=>{});
+  $('#scoreEmpty').hidden=false; $('#zoomCtl').hidden=true;
   $('#scoreEmpty .big') && ($('#scoreEmpty .big').textContent = SCORE_EMPTY_BIG);
 }
 function resetProject(){
+  projectGeneration++; blackout=false; atStart=false; anchor=null; fresh=-1; pickA=pickB=pickAnchor=null;
   state.settings.lockCues=false; state.settings.lockOrder=false;
   state.markers=[]; state.slides=[]; state.pdfName=null; cur=-1; undoStack=[]; redoStack=[];
   clearScore();
@@ -2090,6 +2315,7 @@ async function closeProject(){ if(!state.markers.length && !state.slides.length 
 async function openProjectFile(f){
   try{
     const p=JSON.parse(await f.text()); if(!Array.isArray(p.slides) && !Array.isArray(p.markers)) throw 0;
+    if(!await askSaveFirst()) return; projectGeneration++;
     snap(); state.markers=p.markers||[]; state.slides=p.slides||[]; migrateCueColors(); state.settings=migrateSettings(Object.assign(defaults(), p.settings||{}));
     const hadPdf=state.pdfName; state.pdfName = hadPdf || p.pdfName; cur=-1;
     if(p.pdfName && hadPdf && p.pdfName!==hadPdf) toast(`Project was made for "${p.pdfName}" — markers placed on the open score`);
@@ -2108,26 +2334,16 @@ let _mctx=null;
 function measureCtx(){ if(!_mctx) _mctx=document.createElement('canvas').getContext('2d'); const st=state.settings;
   _mctx.font=`${st.italic?'italic ':''}${boldOn()?700:400} ${titleLayout().fsOfWidth*FIT_W}px ${st.font}`; return _mctx; }
 const maxLines = () => titleLayout().lines;
-function lineCount(text, ctx){
-  const avail=FIT_W*titleLayout().availW; let n=0;
-  for(const para of text.split('\n')){ const words=para.split(/\s+/).filter(Boolean); n++; let line='';
-    for(const w of words){ const t=line?line+' '+w:w; if(!line || ctx.measureText(t).width<=avail) line=t; else { n++; line=w; } } }
-  return n;
+function titleTextLayout(text){
+  const L=titleLayout(), st=state.settings;
+  return STCTextLayout.layout(String(text).replace(/\|/g,'\n'), {width:FIT_W*L.availW, fontSize:FIT_W*L.fsOfWidth, font:st.font, bold:boldOn(), italic:!!st.italic});
 }
-const fitsSlide = (text, ctx=measureCtx()) => lineCount(text, ctx) <= maxLines();
-// Index of the first character that falls past the screen's last line (-1 if it all fits). Same wrapping as lineCount.
-function overflowCut(text, ctx=measureCtx()){
-  const avail=FIT_W*titleLayout().availW, max=maxLines(); let n=0, off=0;
-  for(const para of text.split('\n')){
-    n++; let line='';
-    const re=/\S+/g; let mm;
-    while((mm=re.exec(para))){ const w=mm[0], t=line?line+' '+w:w;
-      if(!line || ctx.measureText(t).width<=avail) line=t; else { n++; line=w; }
-      if(n>max) return off+mm.index; }
-    if(n>=max && para!==undefined && off+para.length<text.length && n+1>max) return off+para.length+1; // a further paragraph starts past the last line
-    off+=para.length+1;
-  }
-  return -1;
+function lineCount(text, ctx){ return titleTextLayout(text).lines.length; }
+const fitsSlide = (text, ctx) => lineCount(text, ctx) <= maxLines();
+// Character offsets refer to the original text (including deliberate newlines).
+function overflowCut(text, ctx){
+  const lines=titleTextLayout(text).lines;
+  return lines.length>maxLines() ? lines[maxLines()].start : -1;
 }
 const joinToks = t => t.join(' ').replace(/ ?\n ?/g,'\n').trim();
 // one segment of text (no slide breaks inside) -> slides
@@ -2164,13 +2380,25 @@ function fitSegment(seg, ctx=measureCtx()){
 const fitSegments = segs => { const ctx=measureCtx(); return segs.flatMap(sg=>fitSegment(sg, ctx)); };
 
 /* ---------- import slides ---------- */
-function parseCSV(text){
+function csvDelimiter(text){
+  let field='', quoted=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(quoted){ if(c==='"'){ if(text[i+1]==='"') i++; else quoted=false; } continue; }
+    if(c==='"' && field.trim()===''){ quoted=true; continue; }
+    if(c==='\t') return '\t';
+    if(c===',' || c==='\r' || c==='\n') field=''; else field+=c;
+  }
+  return ',';
+}
+function parseCSV(text, delimiter){
+  delimiter=delimiter||csvDelimiter(text);
   text=text.replace(/^﻿/,''); const rows=[]; let row=[], f='', q=false, quoted=false;
   for(let i=0;i<text.length;i++){
     const c=text[i];
     if(q){ if(c==='"'){ if(text[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; continue; }
     if(c==='"' && f.trim()===''){ q=true; quoted=true; f=''; continue; }
-    if(c===','){ row.push(f); f=''; quoted=false; continue; }
+    if(c===delimiter){ row.push(f); f=''; quoted=false; continue; }
     if(c==='\r') continue;
     if(c==='\n'){ row.push(f); rows.push(row); row=[]; f=''; quoted=false; continue; }
     f+=c;
@@ -2178,13 +2406,12 @@ function parseCSV(text){
   if(f!=='' || row.length) { row.push(f); rows.push(row); }
   return rows;
 }
-function csvToSlides(text){
-  let rows=parseCSV(text).filter(r=>r.some(c=>c.trim()!==''));
+function csvToSlides(text, delimiter){
+  let rows=parseCSV(text, delimiter).filter(r=>r.some(c=>c.trim()!==''));
   // "number,text" style sheets: use the text column
   const numbered = rows.length>1 && rows.filter(r=>/^\s*\d+\s*$/.test(r[0]||'')).length >= Math.max(1, rows.length-1) && rows.every(r=>r.length>=2);
   if(numbered){ rows = rows.filter(r=>/^\s*\d+\s*$/.test(r[0])).map(r=>[r.slice(1).join(', ')]); }
-  let vals=rows.flat();
-  const nonEmpty=vals.filter(v=>v.trim()); if(nonEmpty.length>1 && nonEmpty.filter(v=>/,\s*$/.test(v)).length >= nonEmpty.length-1) vals=vals.map(v=>v.replace(/,\s*$/,''));
+  const vals=rows.flat();
   return vals.map(s=>s.replace(/\|/g,'\n').split('\n').map(l=>l.trim()).join('\n').trim()).filter(s=>s!=='').map(unBlank);
 }
 // "(blank)" stands for an empty slide (a blackout) in imported and exported lists
@@ -2193,7 +2420,7 @@ const textLines = t => t.replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(B
 function parsedImport(){ const t=$('#impText').value, segs = $('#impFmt').value!=='text' ? csvToSlides(t) : textLines(t);   // a PowerPoint file arrives as a CSV list
   return $('#impFit').checked ? fitSegments(segs) : segs.map(text=>({text, b:'hard'})); }
 function updateImpInfo(){ const n=parsedImport().length; $('#impInfo').textContent = n ? `→ ${n} slide${n===1?'':'s'}, numbered ${ $('input[name=impMode]:checked').value==='append' ? (state.slides.length+1)+'–'+(state.slides.length+n) : '1–'+n }` : ''; $('#impGo').disabled=!n; }
-function openImport(){ if(state.settings.lockOrder){ lockedNote('order'); return false; } $('#impText').value=''; $('#impFmt').value='csv'; $('#impFit').checked=state.settings.fit!==false; impFitNote(); updateImpInfo(); $('#importDlg').showModal();  return true; }
+function openImport(){ if(audioEditingBlocked())return false; if(state.settings.lockOrder){ lockedNote('order'); return false; } $('#impText').value=''; $('#impFmt').value='csv'; $('#impFit').checked=state.settings.fit!==false; impFitNote(); updateImpInfo(); $('#importDlg').showModal();  return true; }
 function impFitNote(){ const shp={'4/3':'4:3','16/9':'16:9','6/1':'6:1 strip'}[normShape(state.settings.shape)]; $('#impFitNote').textContent=`Fits each slide to ${maxLines()} lines on the ${shp} screen at the current title size (change both in ⚙︎ Settings). Sentences are kept together where they fit.`; }
 ['input','change'].forEach(ev=>{ $('#impText').addEventListener(ev,updateImpInfo); $('#impFmt').addEventListener(ev,updateImpInfo); });
 // Picking "PowerPoint" with nothing loaded yet opens the file chooser, for .pptx files
@@ -2230,13 +2457,16 @@ async function loadImportFile(f){
     $('#impText').value=out.filter(Boolean).map(t=>t.replace(/\s*\n\s*/g,' ')).join('\n'); $('#impFmt').value='text';
     toast(`Read ${doc.numPages} pages — check the text, then Import`);
   } else {
-    const t=await f.text(); $('#impText').value=t; $('#impFmt').value = /\.txt$/i.test(f.name) ? 'text' : 'csv';
+    const t=await f.text();
+    $('#impText').value=/\.(csv|tsv)$/i.test(f.name) ? slidesToCsv(csvToSlides(t,/\.tsv$/i.test(f.name)?'\t':',')) : t;
+    $('#impFmt').value = /\.txt$/i.test(f.name) ? 'text' : 'csv';
   }
   if(!$('#importDlg').open) $('#importDlg').showModal();
   updateImpInfo();
 }
 $('#importDlg').addEventListener('close', ()=>{
   if($('#importDlg').returnValue!=='ok') return;
+  if(audioEditingBlocked())return;
   const list=parsedImport(); if(!list.length) return;
   snap(); const append=$('input[name=impMode]:checked').value==='append';
   const items=list;
@@ -2316,7 +2546,7 @@ function setView(view, pct){ if(!pageEls.length) return; const st=state.settings
 $('#zoomCtl').addEventListener('click', e=>{ const b=e.target.closest('[data-view]'); if(!b) return; setView(b.dataset.view, b.dataset.view==='pct' ? 100 : null); });
 $('#zSlider').addEventListener('input', e=>{ setView('pct', zFromSlider(+e.target.value)); });
 var zDrag=false; $('#zSlider').addEventListener('pointerdown', ()=>{ zDrag=true; }); addEventListener('pointerup', ()=>{ if(zDrag){ zDrag=false; showZoom(); } });
-$('#score').addEventListener('scroll', ()=>{ if(state.settings.view!=='pct') { clearTimeout(window.__zT); window.__zT=setTimeout(showZoom,120); } });
+$('#score').addEventListener('scroll', ()=>{ schedulePageRenders(); if(state.settings.view!=='pct') { clearTimeout(window.__zT); window.__zT=setTimeout(showZoom,120); } });
 (()=>{ const k=IS_MAC?'⌘':'Ctrl+'; $('#z100').title='Actual size (100%) — '+k+'0'; $('#zFitH').title='Fit the page height — '+k+'1'; $('#zFitW').title='Fit the page width — '+k+'2'; $('#zSlider').title='Zoom'; })();
 document.addEventListener('keydown', e=>{ if(NATIVE || !(e.metaKey||e.ctrlKey) || e.altKey || e.shiftKey || !/^[012]$/.test(e.key) || document.querySelector('dialog[open]')) return;
   e.preventDefault(); setView(['pct','height','width'][+e.key], e.key==='0' ? 100 : null); });
@@ -2361,12 +2591,14 @@ async function mergeSegments(segs){
 }
 // newParts: the parts in their new order (may include one new part carrying .src bytes)
 async function applyParts(newParts, removedId, noSnap){
+  if(audioEditingBlocked())return false;
   if(!noSnap) snap();
   const old=state.parts, oldStart=partStarts(old);
   const segs=newParts.map(p=> p.src ? {src:p.src, from:0, count:p.pages} : {src:pdfBytes, from:oldStart[p.id]-1, count:p.pages});
   $('#partsDlg').classList.add('busy'); $('#partsInfo').textContent='Merging…';
   try{
     const merged=new Uint8Array(await mergeSegments(segs));
+    if(audioEditingBlocked())return false;
     const clean=newParts.map(({src,...p})=>p), newStart=partStarts(clean);
     state.markers = state.markers.filter(m=>{ const op=partOfPage(old,m.page); return op && op.id!==removedId; })
       .map(m=>{ const op=partOfPage(old,m.page); return {...m, _k: state.markers.indexOf(m), page: newStart[op.id] + (m.page-oldStart[op.id])}; });
@@ -2389,11 +2621,12 @@ async function applyParts(newParts, removedId, noSnap){
     renderSlides(); updateCounts();
     $('#score').scrollTop=sc;
     idbPut('score',{name:state.pdfName, bytes:merged}); setDirty(true); save(); renderParts();
-  }catch(e){ console.error(e); if(!noSnap) undoStack.pop(); toast('Could not merge: '+e.message); }
-  $('#partsDlg').classList.remove('busy'); $('#partsInfo').textContent='';
+    return true;
+  }catch(e){ console.error(e); if(!noSnap) undoStack.pop(); toast('Could not merge: '+e.message); return false; }
+  finally{ $('#partsDlg').classList.remove('busy'); $('#partsInfo').textContent=''; }
 }
 let partInsertAt=0;
-function addPartAt(i){ if(state.settings.lockCues) return lockedNote('cues'); partInsertAt=i; $('#fPart').click(); }
+function addPartAt(i){ if(audioEditingBlocked())return; if(state.settings.lockCues) return lockedNote('cues'); partInsertAt=i; $('#fPart').click(); }
 $('#fPart').onchange=async e=>{
   const f=e.target.files[0]; e.target.value=''; if(!f) return;
   let bytes=new Uint8Array(await f.arrayBuffer());
@@ -2404,25 +2637,27 @@ $('#fPart').onchange=async e=>{
   await applyParts(np);
   toast(`Added “${f.name}” (${pages} page${pages===1?'':'s'}) — cue numbers updated`);
 };
-function movePart(i,j){ if(j<0||j>=state.parts.length||i===j) return; const np=[...state.parts]; const [x]=np.splice(i,1); np.splice(j,0,x); applyParts(np); }
+function movePart(i,j){ if(audioEditingBlocked())return; if(j<0||j>=state.parts.length||i===j) return; const np=[...state.parts]; const [x]=np.splice(i,1); np.splice(j,0,x); applyParts(np); }
 async function removePart(i){
+  if(audioEditingBlocked())return;
   const p=state.parts[i], st=partStarts(state.parts)[p.id];
   const idx=state.markers.map((m,k)=>(m.page>=st && m.page<st+p.pages)?k:-1).filter(k=>k>=0);
   const a=idx[0], b=idx[idx.length-1], sb=Math.min(b, state.slides.length-1), waiting=(p.spare||[]).length, hasSlides = (idx.length && sb>=a) || waiting>0;
   $('#partsDlg').close();
-  const r=await ask({ title:`Remove “${p.name}” from the score?`,
+  const r=await ask({ title:`Remove “${sectionTitle(p)}” from the score?`,
     html: idx.length ? `Its pages hold cue${idx.length>1?'s':''} <b>${rangeTxt(a,b)}</b>, which will be removed with it.` : 'No cues are placed on it.',
     checkLabel: hasSlides ? `Also delete its supertitles${idx.length && sb>=a ? ' ('+rangeTxt(a,sb)+(waiting?' and '+waiting+' waiting':'')+')' : ' ('+waiting+' waiting)'}` : null,
     note: hasSlides ? 'Leave the box unchecked to keep those supertitles: they move to “Not cued yet” at the end of the list. The other PDFs keep theirs.' : '', okText:'Remove' });
   renderParts(); $('#partsDlg').showModal();
   if(!r.ok) return;
+  if(audioEditingBlocked())return;
   snap();                                                  // one undo step brings back the PDF, its cues and its supertitles
   const sec=sectionsNow(), gone=[...(sec.groups[p.id]||[]), ...(p.spare||[])]; delete sec.groups[p.id];
   if(!r.checked) sec.tail.push(...gone.filter(x=>x.text.trim()));
-  await applyParts(state.parts.filter((_,k)=>k!==i), p.id, true);
+  if(!await applyParts(state.parts.filter((_,k)=>k!==i), p.id, true)){ undoStack.pop(); renderParts(); return; }
   rebuildSections(sec);
   renderSlides();
-  toast(`Removed “${p.name}”${r.checked && hasSlides ? ' with its cues and supertitles' : ''} — ${keyName('⌘Z')} brings it back`);
+  toast(`Removed “${sectionTitle(p)}”${r.checked && hasSlides ? ' with its cues and supertitles' : ''} — ${keyName('⌘Z')} brings it back`);
 }
 async function renderParts(){
   const grid=$('#partsGrid'), locked=!!state.settings.lockCues, parts=state.parts||[], st=partStarts(parts);
@@ -2438,7 +2673,7 @@ async function renderParts(){
       <div class="pname"></div><div class="pmeta">pages ${st[p.id]}–${st[p.id]+p.pages-1} · ${cues} cue${cues===1?'':'s'}</div>
       <div class="prow"><button type="button" data-pa="before">+ Before</button><button type="button" data-pa="after">+ After</button></div>
       <div class="prow"><button type="button" data-pa="left" ${i===0?'disabled':''} title="Move earlier">◀</button><button type="button" data-pa="right" ${i===parts.length-1?'disabled':''} title="Move later">▶</button><button type="button" class="trashP" data-pa="del" ${parts.length<2?'disabled':''} title="Remove this PDF">🗑</button></div>`;
-    c.querySelector('.pname').textContent=p.name;
+    c.querySelector('.pname').textContent=sectionTitle(p); c.querySelector('.pname').title=p.name;
     const r=refRuns[p.id], tc=timedIn(p.id), mu=document.createElement('div'); mu.className='pmusic';
     mu.innerHTML=`<div class="pmeta">${r ? `♪ ${fmtT(r.duration||0)} recording · ${tc} of ${cues} cues timed` : '♪ no recording yet (for Follow)'}</div>
       <div class="pmrow"><button type="button" data-pm="record" title="Record this PDF's music through the microphone while you cue it"><span class="recdot">●</span> ${r?'Re-record':'Record'}</button><button type="button" data-pm="link" title="Link an existing recording of this PDF's music and cue along with it once">🔗 Link…</button></div>`;
@@ -2472,18 +2707,22 @@ $('#partsGrid').addEventListener('drop', e=>{ const c=e.target.closest('.pcard')
   const r=c.getBoundingClientRect(); let to=+c.dataset.i + (e.clientX>r.left+r.width/2 ? 1 : 0); if(to>dragPart) to--;
   const from=dragPart; dragPart=-1; movePart(from,to); });
 $('#partsBrowse').onclick=()=>addPartAt((state.parts||[]).length);
-$('#partsUnlock').onclick=()=>{ state.settings.lockCues=false; updateLocks(); save(); renderParts(); toast('Cues unlocked — lock them again with the button over the score'); };
+$('#partsUnlock').onclick=()=>{ if(audioEditingBlocked())return; state.settings.lockCues=false; updateLocks(); save(); renderParts(); toast('Cues unlocked — lock them again with the button over the score'); };
 $('#partsBtn').onclick=()=>{ if(!pdfBytes) return toast('Open a score PDF first'); renderParts(); $('#partsDlg').showModal(); };
 
 /* ---------- desktop app hooks ---------- */
-window.__stcIsDirty = () => !!(dirty && (state.markers.length || state.slides.length));
+window.__stcIsDirty = () => !!((dirty && hasProject()) || run || stoppingRun);
+window.__stcPrepareClose = async () => { await waitForProjectCommit(); return stopProjectActivity(); };
+window.__stcCleanClose = () => { save(); try{ localStorage.setItem(SESSION_KEY,'clean'); }catch(_){} };
 /* ---------- Follow: reference runs (one per PDF) and live following ---------- */
 const FOLLOW_REF='supertitle-cuer-reference-', FOLLOW_AUDIO='supertitle-cuer-recording-';
 let refRuns={};             // by PDF part id: {feat: packed frames, audio: bytes|null, audioType, name, source:'recorded'|'file', duration}
 let follow=null;            // live following: {stream, tap, part, f (follower), st (latest state)}
 let run=null;               // a recording or cue-along in progress (for one PDF)
+let stoppingRun=null;
+let audioRequest=0;        // only the latest asynchronous audio start may become active
 const FPSF = STCFollow.FPS, LAG = STCFollow.N / STCFollow.SR;
-const refMeta = r => ({name:r.name, source:r.source, duration:r.duration, audioType:r.audioType||null});
+const refMeta = r => ({name:r.name, source:r.source, duration:r.duration, audioType:r.audioType||null, fileId:r.fileId||null});
 const partsList = () => state.parts || [];
 function cuePart(i){ const m=state.markers[i]; return m ? partOfPage(partsList(), m.page) : null; }
 const cuesOf = id => state.markers.map((m,i)=>i).filter(i=>{ const p=cuePart(i); return p && p.id===id; });
@@ -2531,74 +2770,110 @@ function micError(e){ toast(e && e.name==='NotAllowedError' ? 'No microphone acc
 function onCue(i, was=-1){
   if(i<0 || i>=state.markers.length) return;
   const p=cuePart(i);
-  if(run){ /* only moving forward stamps a time; going back to fix one leaves times alone */ if(p && p.id===run.part && i>was){ state.markers[i].t=Math.round(run.time()*100)/100; run.timed.add(i); setDirty(true); paintRun(); } return; }
-  if(follow) followCue(i);
+  if(run){ /* Commit the new timeline together with its reference only when kept. */ if(p && p.id===run.part && i>was){ run.times.set(state.markers[i],Math.round(run.time()*100)/100); run.timed.add(i); setDirty(true); paintRun(); } return; }
+  if(follow && !(typeof autoAdvancing!=='undefined' && autoAdvancing)) followCue(i);
 }
 
 // ----- making a reference run for one PDF -----
 function startAtPart(id){ const c=cuesOf(id); goTo(c.length ? c[0]-1 : -1, false); if(c.length) scrollToCue(); }
 async function startRecording(id){
+  if(typeof autoRun!=='undefined' && (autoRun || autoPending || autoPreparing)) return toast('Stop Auto before making a reference run');
+  if(run || stoppingRun) return toast('Finish the current run with Done or Discard first');
+  const generation=activityGeneration, request=++audioRequest;
+  const valid=()=>generation===activityGeneration && request===audioRequest;
   const part=partsList().find(p=>p.id===id); if(!part) return;
-  if(!cuesOf(id).length) return toast(`Place the cues for “${part.name}” first — the run records the moment of each one`);
-  if(refRuns[id] && !confirm(`Replace the reference run for “${part.name}”? Its cue times will be overwritten as you cue.`)) return;
+  if(!cuesOf(id).length) return toast(`Place the cues for “${sectionTitle(part)}” first — the run records the moment of each one`);
+  if(refRuns[id] && !confirm(`Replace the reference run for “${sectionTitle(part)}”? Stop & keep will replace its analysis and cue times. Discard will keep the previous run.`)) return;
   stopFollow(); $('#followDlg').close();
   let stream; try{ stream=await getMic(); }catch(e){ return micError(e); }
+  if(!valid()){ stream.getTracks().forEach(t=>t.stop()); return; }
   const frames=[], push=STCFollow.extractor(f=>frames.push(f));
   let tap; try{ tap=await audioTap(ctx=>ctx.createMediaStreamSource(stream), push); }catch(e){ stream.getTracks().forEach(t=>t.stop()); return toast('Could not start recording: '+e.message); }
+  if(!valid()){ tap.close(); stream.getTracks().forEach(t=>t.stop()); return; }
   let rec=null, chunks=[], type='';
   try{ type=['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||''; rec=new MediaRecorder(stream, type?{mimeType:type, audioBitsPerSecond:32000}:{}); rec.ondataavailable=e=>e.data.size&&chunks.push(e.data); rec.start(2000); }catch(_){ rec=null; }
-  run={kind:'record', part:id, partName:part.name, stream, tap, rec, chunks, type, frames, timed:new Set(), time:()=>frames.length/FPSF};
-  setMode('show'); startAtPart(id); updateFollowBtn(); paintRun();
+  run={kind:'record', part:id, partName:sectionTitle(part), stream, tap, rec, chunks, type, frames, timed:new Set(), times:new Map(), cues:cuesOf(id).map(i=>state.markers[i]), reuse:false, time:()=>frames.length/FPSF};
+  setDirty(true); setMode('show'); startAtPart(id); updateFollowBtn(); paintRun();
   run.timer=setInterval(paintRun, 500);
-  toast(`Recording “${part.name}” — cue it as usual with → or Space`);
+  toast(`Recording “${sectionTitle(part)}” — cue it as usual with → or Space`);
 }
 async function startCueAlong(id, file){
+  if(typeof autoRun!=='undefined' && (autoRun || autoPending || autoPreparing)) return toast('Stop Auto before making a reference run');
+  if(run || stoppingRun) return toast('Finish the current run with Done or Discard first');
+  const generation=activityGeneration, request=++audioRequest;
+  const valid=()=>generation===activityGeneration && request===audioRequest;
   const part=partsList().find(p=>p.id===id); if(!part) return;
-  if(!cuesOf(id).length) return toast(`Place the cues for “${part.name}” first — you'll cue along the recording`);
+  if(!cuesOf(id).length) return toast(`Place the cues for “${sectionTitle(part)}” first — you'll cue along the recording`);
+  const url=URL.createObjectURL(file), media=new Audio(); media.preservesPitch=true;
+  const release=()=>{ media.pause(); URL.revokeObjectURL(url); };
+  let fileId=null;
+  try{
+    await new Promise((res,rej)=>{ media.onloadedmetadata=res; media.onerror=()=>rej(new Error('this file can’t be played here')); media.src=url; });
+    if(!Number.isFinite(media.duration) || media.duration<=0) throw new Error('this file has no finite audio duration');
+    if(!valid()){ release(); return; }
+    fileId=await STCRecordingReference.fileIdentity(file);
+  }catch(e){ release(); return toast('Could not open the recording: '+e.message); }
+  if(!valid()){ release(); return; }
+  const reuse=STCRecordingReference.canReuse(refRuns[id],fileId,media.duration);
+  if(refRuns[id] && !reuse && !confirm(`Replace the reference run for “${sectionTitle(part)}”? This recording has not been verified as the same file. Keep will replace its analysis and cue times; Discard will keep the previous run.`)){ release(); return; }
   stopFollow(); $('#followDlg').close();
-  const url=URL.createObjectURL(file), media=new Audio(); media.src=url; media.preservesPitch=true;
-  try{ await new Promise((res,rej)=>{ media.onloadedmetadata=res; media.onerror=()=>rej(new Error('this file can’t be played here')); }); }catch(e){ URL.revokeObjectURL(url); return toast('Could not open the recording: '+e.message); }
   const frames=[]; let push=null, last=-1; // at faster playback one frame covers more than one step of the recording: fill the gap
   const reset=()=>{ push=STCFollow.extractor(f=>{ const k=Math.round((media.currentTime-LAG)*FPSF); if(k<0) return;
     for(let j = last>=0 && k-last<=4 ? last+1 : k; j<=k; j++) frames[j]=f; last=k; }); };
   reset(); media.addEventListener('seeking', ()=>{ last=-1; reset(); });
   let tap; try{ tap=await audioTap(ctx=>ctx.createMediaElementSource(media), a=>{ if(!media.paused) push(a); }, true); }catch(e){ URL.revokeObjectURL(url); return toast('Could not play the recording: '+e.message); }
-  run={kind:'along', part:id, partName:part.name, media, url, tap, frames, name:file.name, timed:new Set(), time:()=>Math.max(0, media.currentTime-LAG)};
-  setMode('show'); startAtPart(id); updateFollowBtn(); paintRun(true);
+  if(!valid()){ tap.close(); release(); return; }
+  run={kind:'along', part:id, partName:sectionTitle(part), media, url, tap, frames, name:file.name, fileId, reuse, cues:cuesOf(id).map(i=>state.markers[i]), times:new Map(), timed:new Set(), time:()=>Math.max(0, media.currentTime-LAG)};
+  setDirty(true); setMode('show'); startAtPart(id); updateFollowBtn(); paintRun(true);
   run.timer=setInterval(paintRun, 250); media.onended=()=>paintRun();
   toast('Press ▶, then cue along with → or Space');
 }
-async function stopRun(keep=true){
+function stopRun(keep=true){ if(stoppingRun) return stoppingRun; if(!run) return Promise.resolve(); stoppingRun=finishRun(keep).catch(e=>{ updateFollowBtn(); setDirty(true); save(); toast('Could not finish the reference run: '+e.message); }).finally(()=>{ stoppingRun=null; }); return stoppingRun; }
+async function finishRun(keep=true){
   if(!run) return; const r=run; run=null; clearInterval(r.timer); $('#runBar').hidden=true;
   if(r.kind==='record'){
     let audio=null;
-    if(r.rec && r.rec.state!=='inactive'){ await new Promise(res=>{ r.rec.onstop=res; r.rec.stop(); }); audio=new Uint8Array(await new Blob(r.chunks,{type:r.type}).arrayBuffer()); }
-    r.tap.close(); r.stream.getTracks().forEach(t=>t.stop());
+    try{ if(r.rec && r.rec.state!=='inactive'){ await new Promise((res,rej)=>{ r.rec.onstop=res; r.rec.onerror=e=>rej(e.error||new Error('Recording stopped unexpectedly')); r.rec.stop(); }); if(keep) audio=new Uint8Array(await new Blob(r.chunks,{type:r.type}).arrayBuffer()); } }
+    finally { r.tap.close(); r.stream.getTracks().forEach(t=>t.stop()); }
     if(keep && r.frames.length>FPSF*5){
       const feat=new Float32Array(r.frames.length*STCFollow.NB); r.frames.forEach((f,i)=>feat.set(f,i*STCFollow.NB));
+      snap();
+      STCRecordingReference.commitTimes(r);
       setRun(r.part, {feat:STCFollow.pack(feat), audio, audioType:(r.type||'audio/webm').split(';')[0], name:'Recorded '+new Date().toLocaleString(), source:'recorded', duration:r.frames.length/FPSF});
       toast(`Reference run for “${r.partName}” kept — ${fmtT(r.frames.length/FPSF)}, ${r.timed.size} cue${r.timed.size===1?'':'s'} timed. Save the project to keep it.`);
-    }
+    } else if(keep) toast('This run was shorter than 5 seconds — the previous reference and cue times were kept');
   } else {
     r.media.pause(); r.tap.close(); URL.revokeObjectURL(r.url);
     if(keep){
       const n=Math.ceil(r.media.duration*FPSF)||r.frames.length, feat=new Float32Array(n*STCFollow.NB); let have=0;
       for(let k=0;k<n;k++) if(r.frames[k]){ feat.set(r.frames[k], k*STCFollow.NB); have++; }
+      if(!have){ toast('No music was played — the previous reference and cue times were kept'); updateFollowBtn(); save(); return; }
       const packed=STCFollow.pack(feat), old=refRuns[r.part], NB=STCFollow.NB;
       // the same recording linked again (to fix a few cues): keep the analysis of everything not replayed
-      const same = old && old.feat && !old.audio && Math.abs((old.duration||0)-r.media.duration)<1;
+      const same = r.reuse && old && old.feat && STCRecordingReference.canReuse(old,r.fileId,r.media.duration);
+      snap();
+      STCRecordingReference.commitTimes({...r,reuse:same});
       if(same){ const m=old.feat.slice(0, Math.max(old.feat.length, packed.length)); const merged=new Uint8Array(Math.max(old.feat.length, packed.length)); merged.set(m);
         for(let k=0;k<n;k++) if(r.frames[k]) merged.set(packed.subarray(k*NB,(k+1)*NB), k*NB);
         setRun(r.part, {...old, feat:merged, name:r.name});
         toast(`Reference run for “${r.partName}” updated — ${r.timed.size} cue${r.timed.size===1?'':'s'} re-timed, everything else kept. Save the project to keep it.`);
       } else {
-        setRun(r.part, {feat:packed, audio:null, audioType:null, name:r.name, source:'file', duration:r.media.duration});
+        setRun(r.part, {feat:packed, audio:null, audioType:null, name:r.name, fileId:r.fileId, source:'file', duration:r.media.duration});
         const pct=Math.round(have/n*100);
         toast(`Reference run for “${r.partName}” kept from “${r.name}” — ${r.timed.size} cue${r.timed.size===1?'':'s'} timed`+(pct<95?`, ${pct}% of it listened to (Follow needs the parts you skipped too)`:'')+'. Save the project to keep it.');
       }
     }
   }
-  updateFollowBtn(); setDirty(true);
+  updateFollowBtn(); setDirty(true); save();
+}
+async function stopProjectActivity(){
+  if(typeof stopAuto==='function') stopAuto();
+  activityGeneration++; stopFollow();
+  clearInterval(meterT); if(meterTap){ meterTap.close(); meterTap.stream.getTracks().forEach(t=>t.stop()); meterTap=null; }
+  loadFor=null; if($('#followDlg').open) $('#followDlg').close();
+  await stopRun(true);
+  blackout=false; atStart=false; anchor=null; fresh=-1; pickA=pickB=pickAnchor=null; cur=-1;
+  setMode('edit'); updateOutput(); save();
 }
 function paintRun(build){
   const b=$('#runBar'); if(!run){ b.hidden=true; return; } b.hidden=false;
@@ -2623,7 +2898,7 @@ function paintRun(build){
 $('#runBar').addEventListener('click', e=>{
   const a=e.target.closest('[data-run]'); if(!a || !run) return; const k=a.dataset.run, m=run.media;
   if(k==='stop') stopRun(true);
-  else if(k==='cancel'){ if(confirm(run.kind==='record' ? 'Discard this recording? (Cue times you pressed stay on the cues.)' : 'Stop without keeping a reference run? (Cue times you pressed stay on the cues.)')) stopRun(false); }
+  else if(k==='cancel'){ if(confirm('Discard this run and its new cue times? The previous reference and cue times will be kept.')) stopRun(false); }
   else if(k==='play'){ m.paused ? m.play() : m.pause(); paintRun(); }
   else if(k==='back'){ m.currentTime=Math.max(0,m.currentTime-5); paintRun(); }
   else if(k==='fwd'){ m.currentTime=Math.min(m.duration,m.currentTime+5); paintRun(); }
@@ -2636,45 +2911,69 @@ $('#runBar').addEventListener('input', e=>{ if(!run || !run.media) return; const
 function followerFor(id){ const r=refRuns[id]; return r ? STCFollow.follower(STCFollow.unpack(r.feat)) : null; }
 function followCue(i){            // re-sync on a cue; change recordings when the cue is in another PDF
   const p=cuePart(i); if(!p) return; const m=state.markers[i];
-  if(p.id!==follow.part){ follow.part=p.id; follow.f=followerFor(p.id); follow.st=follow.f ? follow.f.state() : null; }
-  if(follow.f && typeof m.t==='number') follow.f.anchor(m.t);
+  if(p.id!==follow.part){ follow.part=p.id; follow.f=followerFor(p.id); follow.st=follow.f ? follow.f.state() : null; follow.anchored=false; if(follow.display) follow.display.reset(); }
+  if(follow.f && typeof m.t==='number') {
+    follow.f.anchor(m.t); follow.st=follow.f.state();
+    follow.anchor=(follow.anchor||0)+1; follow.anchored=true;
+    if(follow.display) follow.display.reset();
+  }
 }
-async function startFollow(){
+async function startFollow(fromAuto=false,partId=null){
+  if(!fromAuto && typeof autoRun!=='undefined' && (autoRun || autoPending || autoPreparing)) stopAuto({keepFollowing:true});
+  if(run || stoppingRun) return toast('Finish the current run with Done or Discard first');
+  const generation=activityGeneration, request=++audioRequest;
+  const valid=()=>generation===activityGeneration && request===audioRequest;
   if(!anyRun()) return toast('Make a reference run first (record one, or add a recording)');
+  stopFollow(true);
   let stream; try{ stream=await getMic(); }catch(e){ return micError(e); }
-  follow={stream, tap:null, part:null, f:null, st:null};
-  const at = cur>=0 ? cur : 0; const p=cuePart(at) || partsList()[0];
+  if(!valid()){ stream.getTracks().forEach(t=>t.stop()); return; }
+  follow={stream, tap:null, part:null, f:null, st:null, seq:0, sampledAt:null};
+  const at = cur>=0 ? cur : 0; const p=(partId ? partsList().find(p=>p.id===partId) : cuePart(at)) || partsList()[0];
   follow.part=p && p.id; follow.f=followerFor(follow.part); follow.st=follow.f && follow.f.state();
-  if(cur>=0) followCue(cur);
-  const push=STCFollow.extractor(fr=>{ if(follow && follow.f) follow.st=follow.f.step(fr); });
-  try{ follow.tap=await audioTap(ctx=>ctx.createMediaStreamSource(stream), push); }catch(e){ stream.getTracks().forEach(t=>t.stop()); follow=null; return toast('Could not start following: '+e.message); }
+  if(cur>=0 && !partId) followCue(cur);
+  const push=STCFollow.extractor(fr=>{ if(follow && follow.f){ follow.st=follow.f.step(fr); follow.seq++; follow.sampledAt=performance.now(); } });
+  const current=follow;
+  try{ const tap=await audioTap(ctx=>ctx.createMediaStreamSource(stream), push); if(!valid() || follow!==current){ tap.close(); stream.getTracks().forEach(t=>t.stop()); if(follow===current) follow=null; return; } follow.tap=tap; }catch(e){ stream.getTracks().forEach(t=>t.stop()); if(follow===current) follow=null; return toast('Could not start following: '+e.message); }
   follow.timer=setInterval(paintFollow, 200);
   updateFollowBtn(); paintFollow(); toast('Following — the countdown is under the preview');
 }
-function stopFollow(){
+function stopFollow(keepAuto=false){
+  if(!keepAuto && typeof autoRun!=='undefined' && (autoRun?.kind==='live' || autoPending?.kind==='live')) stopAuto({keepFollowing:true});
   if(!follow) return; clearInterval(follow.timer); if(follow.tap) follow.tap.close(); follow.stream.getTracks().forEach(t=>t.stop()); follow=null;
   $('#followBar').hidden=true; updateFollowBtn();
 }
 function paintFollow(){
   const bar=$('#followBar'); if(!follow){ bar.hidden=true; return; } bar.hidden=false;
+  follow.view=null;
   const st=follow.st, nx=state.markers[cur+1], np=cuePart(cur+1), txt=$('#fbText'), fill=$('#fbFill');
   const partName = id => (partsList().find(p=>p.id===id)||{}).name || 'this PDF';
   let cls='lost', left='', right='', pct=0;
   if(cur+1>=state.markers.length){ left='Following'; right='last cue reached'; cls=''; }
-  else if(np && np.id!==follow.part){ left=`Next cue <b>${cur+2}</b> starts “${esc(np.name)}”`; right= refRuns[np.id] ? 'Follow switches over when you cue it' : 'that PDF has no reference run'; }
+  else if(np && np.id!==follow.part){ left=`Next cue <b>${cur+2}</b> starts “${esc(sectionTitle(np))}”`; right= refRuns[np.id] ? 'Follow switches over when you cue it' : 'that PDF has no reference run'; }
   else if(!follow.f){ left='No reference run for'; right=`“${esc(partName(follow.part))}”`; }
   else if(!nx || typeof nx.t!=='number'){ left=`Next cue ${cur+2}`; right='has no time in the reference run'; }
-  else if(st.held>1.2){ left='Waiting for the music…'; }
-  else if(st.confidence<0.3){ left='Re-finding the place…'; }
   else {
-    const secs=(nx.t-st.refTime)/(st.tempo||1), pm=state.markers[cur], prevT = cur>=0 && cuePart(cur)===np && typeof pm.t==='number' ? pm.t : Math.max(0,nx.t-20);
-    pct=Math.max(0,Math.min(100,(st.refTime-prevT)/Math.max(0.5,nx.t-prevT)*100));
-    if(secs<=0.4){ cls='now'; left=`<b>Cue ${cur+2} now</b>`; right = secs< -2 ? `${Math.round(-secs)} s late` : ''; pct=100; }
-    else { cls = secs<4 ? 'soon' : ''; left=`Next cue <b>${cur+2}</b> in <b>${secs<10? secs.toFixed(1) : Math.round(secs)} s</b>`; right=`following · ${Math.round(st.tempo*100)}% tempo`; }
+    const pm=state.markers[cur], prevT=cur>=0 && cuePart(cur)===np && typeof pm.t==='number' ? pm.t : Math.max(0,nx.t-20);
+    const display=follow.display||(follow.display=STCFollowDisplay.create());
+    const view=display.update({state:st,reference:follow.f,cue:nx,anchor:follow.anchor||0,anchored:!!follow.anchored,continuous:typeof autoRun!=='undefined' && autoRun?.kind==='live',nextTime:nx.t,previousTime:prevT,now:performance.now()});
+    follow.view=view;
+    const secs=view.seconds, number=secs===null ? '—' : '~'+(secs<10 ? secs.toFixed(1) : Math.round(secs));
+    left=`<span class="fbestimate">Estimated cue <b>${cur+2}</b> in <b>${number} s</b></span>`;
+    pct=view.progress;
+    if(view.status==='tracking') {
+      if(secs<=0){ cls='now'; left=`<span class="fbestimate"><b>Estimated cue ${cur+2} reached</b></span>`; right='Confirm with the score'; pct=100; }
+      else { cls=secs<4 ? 'soon' : ''; right=`reference match · ${Math.round(st.tempo*100)}% tempo`; }
+    } else {
+      cls=view.status==='paused' ? 'paused' : 'tentative';
+      const label=view.status==='paused' ? 'Paused' : view.status==='waiting' ? 'Waiting' : 'Tentative';
+      left+=`<span class="fbflag"><span aria-hidden="true">⚠</span> ${label}</span>`;
+      right=view.status==='paused' ? 'Audio quiet or unclear — estimate paused' : view.status==='waiting' ? 'Waiting for music' : view.status==='unavailable' ? 'Position unavailable — check the score' : 'Reference match uncertain — confirm with the score';
+    }
   }
   bar.className='followbar '+cls; txt.innerHTML=`<span>${left}</span><span>${right}</span>`; fill.style.width=pct+'%';
 }
 function updateFollowBtn(){
+  if(typeof updateAutoBtn==='function') updateAutoBtn();
   const b=$('#followBtn'); b.classList.toggle('live', !!follow); b.classList.toggle('rec', !!run);
   b.textContent = run ? (run.kind==='record' ? '● Recording' : '● Cueing along') : follow ? '🎧 Following' : '🎧 Follow';
   if($('#followDlg').open) paintFollowDlg();
@@ -2688,7 +2987,7 @@ function paintFollowDlg(){
       <button type="button" data-f="record" title="Record this PDF's music through the microphone while you cue it"><span class="recdot">●</span> ${r?'Record again':'Record'}</button>
       <button type="button" data-f="load" title="Open an existing recording of this PDF's music and cue along with it once">🔗 ${r?'Link another recording':'Link a recording'}…</button>
       ${r?'<button type="button" data-f="remove" class="danger" title="Remove this reference run">✕</button>':''}</div>`;
-    row.querySelector('b').textContent=p.name;
+    row.querySelector('b').textContent=sectionTitle(p); row.querySelector('b').title=p.name;
     row.querySelector('.fstat').innerHTML = r ? ` · ${fmtT(r.duration||0)} ${r.source==='recorded'?'recorded here':'from “'+esc(r.name)+'”'} · ${tc} of ${n} cues timed` : ` · no reference run · ${n} cue${n===1?'':'s'}`;
     return row; }));
   $('#fFollowSec').hidden=!anyRun(); $('#fToggle').textContent = follow ? 'Stop following' : 'Start following';
@@ -2702,20 +3001,187 @@ $('#fParts').addEventListener('click', e=>{
   const b=e.target.closest('[data-f]'); if(!b) return; const id=b.closest('.frow').dataset.part, name=(partsList().find(p=>p.id===id)||{}).name;
   if(b.dataset.f==='record') startRecording(id);
   else if(b.dataset.f==='load'){ loadFor=id; $('#fAudio').click(); }
-  else if(b.dataset.f==='remove' && confirm(`Remove the reference run for “${name}”? Its cue times stay on the cues.`)){ if(follow && follow.part===id) stopFollow(); setRun(id,null); setDirty(true); paintFollowDlg(); }
+  else if(b.dataset.f==='remove' && confirm(`Remove the reference run for “${name}”? Its cue times stay on the cues.`)){ snap(); if(follow && follow.part===id) stopFollow(); setRun(id,null); setDirty(true); paintFollowDlg(); }
 });
 $('#followDlg').addEventListener('close', ()=>{ clearInterval(meterT); if(meterTap){ meterTap.close(); meterTap.stream.getTracks().forEach(t=>t.stop()); meterTap=null; } });
 $('#fMic').onchange=async()=>{ try{ localStorage.setItem('stc.mic', $('#fMic').value); }catch(_){}
   if(follow){ stopFollow(); await startFollow(); } toast('Microphone: '+$('#fMic').selectedOptions[0].textContent); testMic(); };
 async function testMic(){ // level meter while the window is open
+  const generation=activityGeneration;
   clearInterval(meterT); if(meterTap){ meterTap.close(); meterTap.stream.getTracks().forEach(t=>t.stop()); meterTap=null; }
   if(follow || run) return;
-  try{ const s=await getMic(); meterTap=await audioTap(ctx=>ctx.createMediaStreamSource(s), ()=>{}); meterTap.stream=s; fillMics(); }catch(e){ return; }
+  try{ const s=await getMic(); if(generation!==activityGeneration || !$('#followDlg').open){ s.getTracks().forEach(t=>t.stop()); return; } const tap=await audioTap(ctx=>ctx.createMediaStreamSource(s), ()=>{}); if(generation!==activityGeneration || !$('#followDlg').open){ tap.close(); s.getTracks().forEach(t=>t.stop()); return; } meterTap=tap; meterTap.stream=s; fillMics(); }catch(e){ return; }
   meterT=setInterval(()=>{ if(meterTap) $('#fMeter').style.width=Math.min(100, meterTap.level()*400)+'%'; },100);
 }
 $('#fMic').addEventListener('focus', ()=>{ if(!meterTap) testMic(); });
 $('#fAudio').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f && loadFor) startCueAlong(loadFor, f); };
 $('#fToggle').onclick=async()=>{ if(follow) stopFollow(); else { $('#followDlg').close(); await startFollow(); } paintFollowDlg(); };
+
+/* ---------- automatic cueing: playback clock or displayed live estimates ---------- */
+function autoSection(id=null){
+  const part=id!==null ? partsList().find(p=>p.id===id) : autoRun?.part || autoPending?.section?.part || cuePart(cur>=0 ? cur : 0) || partsList()[0];
+  if(!part) return {ok:false,reason:'Open a score and link a reference recording first'};
+  const reference=refRuns[part.id];
+  if(!reference) return {ok:false,part,reason:'This section has no reference recording'};
+  const timeline=STCAutoCue.timeline(state.markers,cuesOf(part.id));
+  if(!timeline.ok) return {...timeline,part,reference};
+  if(timeline.items.some(x=>x.index>=state.slides.length)) return {ok:false,part,reference,reason:'Every cue needs a matching slide'};
+  return {...timeline,part,reference};
+}
+function updateAutoBtn(){
+  const button=$('#autoBtn'); if(!button) return;
+  const section=autoSection(), busy=!!(run || stoppingRun || autoPreparing || projectCommit);
+  button.disabled=busy || !section.ok;
+  button.classList.toggle('live',!!autoRun);
+  button.textContent=autoRun ? '■ Auto ▾' : '▶ Auto ▾';
+  button.title=busy ? 'Finish the current audio operation first' : section.ok ? 'Automatically run '+sectionTitle(section.part) : section.reason;
+  const playback=section.ok && (section.reference.audio || section.reference.fileId);
+  $('#autoRecord').disabled=busy || !playback;
+  $('#autoRecord').title=playback ? 'Play the reference recording and advance at its saved cue times' : 'Link and cue a recording in Follow first so its file can be verified';
+  $('#autoLive').disabled=busy || !section.ok;
+}
+function autoGoTo(index,scroll=true){
+  autoAdvancing=true;
+  try{ goTo(index,scroll); }finally{ autoAdvancing=false; }
+}
+function stopAuto({keepFollowing=false}={}){
+  const active=autoRun, pending=autoPending;
+  autoRun=null; autoPending=null; autoPreparing=false; autoTicket++;
+  if(pending?.kind==='live') audioRequest++;
+  if(active){
+    clearInterval(active.timer);
+    if(active.cancelPending) active.cancelPending();
+    if(active.media){
+      active.media.onended=active.media.onerror=active.media.onloadedmetadata=active.media.onabort=null;
+      active.media.pause(); active.media.removeAttribute('src'); active.media.load();
+    }
+    if(active.url) URL.revokeObjectURL(active.url);
+  }
+  if(!keepFollowing && active?.kind==='live') stopFollow(true);
+  const bar=$('#autoBar'); if(bar) bar.hidden=true;
+  updateAutoBtn();
+}
+function paintAuto(){
+  const bar=$('#autoBar'), active=autoRun;
+  if(!active){ bar.hidden=true; return; }
+  bar.hidden=false;
+  const playback=active.kind==='recording', paused=playback ? active.media.paused : active.paused;
+  if(bar.dataset.ticket!==String(active.ticket)){
+    bar.dataset.ticket=String(active.ticket);
+    bar.innerHTML=`<b>${playback ? '▶ Auto recording' : '🎧 Auto live · beta'}</b><span class="autoName"></span>
+      <span class="autoState"></span><button type="button" class="primary" data-auto="pause"></button>
+      <button type="button" data-auto="stop">■ Stop Auto</button>`;
+    bar.querySelector('.autoName').textContent=sectionTitle(active.part);
+  }
+  bar.querySelector('[data-auto="pause"]').textContent=active.loading ? 'Loading…' : playback ? (paused ? 'Resume' : 'Pause') : (paused ? 'Resume Auto' : 'Pause Auto');
+  bar.querySelector('[data-auto="pause"]').disabled=!!active.loading;
+  const message=active.loading ? 'Loading the recording' : playback ? `${fmtT(active.media.currentTime)} / ${fmtT(active.media.duration)}${paused?' · paused':''}` : paused ? 'Automatic cueing paused' : active.status || 'Waiting for music';
+  bar.querySelector('.autoState').textContent=message;
+  bar.querySelector('.autoState').title=active.reason||'';
+}
+function tickAuto(){
+  const active=autoRun; if(!active || active.loading) return;
+  if(active.kind==='recording'){
+    if(!active.media.paused){
+      const due=STCAutoCue.playbackIndex(active.items,active.media.currentTime);
+      const index=due===null ? null : Math.max(active.items[0].index,due);
+      if(index!==null && index!==cur) autoGoTo(index);
+    }
+  } else if(!active.paused){
+    if(follow!==active.follow || follow.part!==active.part.id){ stopAuto(); return; }
+    paintFollow();
+    const st=follow.st||{};
+    const view=follow.view;
+    const estimateVisible=Number.isFinite(view?.seconds) && (view.status==='tracking' || view.status==='tentative');
+    const decision=active.controller.step({...st,seq:follow.seq,sampledAt:follow.sampledAt,estimateVisible,now:performance.now(),currentIndex:cur});
+    active.status=decision.status==='uncertain' ? (view?.status==='paused' ? 'Audio paused — holding title' : 'Waiting for a live estimate') : view?.warning ? 'Following estimate · ⚠ tentative' : 'Following live estimate';
+    active.reason=decision.reason||'';
+    if(decision.index!==null){ autoGoTo(decision.index); paintFollow(); }
+    if(decision.status==='complete'){ stopAuto(); toast('Auto live finished this section'); return; }
+  }
+  paintAuto();
+}
+async function beginAutoRecording(section,blob,ticket,fileId=null){
+  const valid=()=>ticket===autoTicket && section.reference===refRuns[section.part.id];
+  if(!valid()) return;
+  const media=new Audio(), url=URL.createObjectURL(blob);
+  const active={kind:'recording',ticket,part:section.part,items:section.items,media,url,loading:true};
+  autoRun=active; autoPreparing=false; autoPending=null; paintAuto(); updateAutoBtn();
+  try{
+    await new Promise((resolve,reject)=>{
+      active.cancelPending=()=>reject(Object.assign(new Error('Auto canceled'),{name:'AbortError'}));
+      media.onloadedmetadata=resolve;
+      media.onerror=()=>reject(new Error('Could not play that recording'));
+      media.onabort=()=>reject(Object.assign(new Error('Auto canceled'),{name:'AbortError'}));
+      media.src=url; media.load();
+    });
+    active.cancelPending=null;
+    if(!valid() || autoRun!==active) return;
+    if(!Number.isFinite(media.duration) || media.duration<section.items.at(-1).time) throw new Error('The recording ends before the last saved cue');
+    if(fileId && !STCRecordingReference.canReuse(section.reference,fileId,media.duration)) throw new Error('Choose the same recording used for this reference run');
+    active.loading=false; setMode('show'); autoGoTo(section.items[0].index); stopFollow(true);
+    active.timer=setInterval(tickAuto,30);
+    media.onended=()=>{ if(autoRun!==active) return; const index=STCAutoCue.playbackIndex(active.items,media.duration); if(index!==cur)autoGoTo(index); stopAuto(); toast('Auto recording finished this section'); };
+    media.onerror=()=>{ if(autoRun===active){ stopAuto(); toast('Auto recording stopped: audio playback failed'); } };
+    try{ await media.play(); }catch(e){ if(valid()) toast('Press Resume to start Auto recording'); }
+    if(valid()) paintAuto();
+  }catch(error){
+    if(valid() && autoRun===active){ stopAuto(); if(error.name!=='AbortError')toast(error.message); }
+  }
+}
+async function startAutoRecording(id=null){
+  if(run || stoppingRun || projectCommit) return toast('Finish the current operation before Auto');
+  const section=autoSection(id); if(!section.ok) return toast(section.reason);
+  if(!section.reference.audio && !section.reference.fileId) return toast('Link and cue this recording in Follow once so Auto can verify its file');
+  stopAuto(); stopFollow(true); closeMenus();
+  const ticket=autoTicket;
+  if(section.reference.audio) return beginAutoRecording(section,new Blob([section.reference.audio],{type:section.reference.audioType||'audio/webm'}),ticket);
+  autoPending={kind:'recording',section,ticket,generation:activityGeneration}; autoPreparing=true; updateAutoBtn();
+  $('#autoAudio').value=''; $('#autoAudio').click();
+}
+async function useAutoRecordingFile(file,pending=autoPending){
+  if(!file || !pending || pending.kind!=='recording') return;
+  const valid=()=>pending.ticket===autoTicket && pending.generation===activityGeneration && pending.section.reference===refRuns[pending.section.part.id];
+  try{
+    const identity=await STCRecordingReference.fileIdentity(file);
+    if(!valid()) return;
+    if(identity!==pending.section.reference.fileId) throw new Error('That is a different recording. Choose “'+pending.section.reference.name+'”.');
+    await beginAutoRecording(pending.section,file,pending.ticket,identity);
+  }catch(error){ if(valid()){ stopAuto(); toast(error.message); } }
+}
+async function startAutoLive(id=null){
+  if(run || stoppingRun || projectCommit) return toast('Finish the current operation before Auto');
+  const section=autoSection(id); if(!section.ok) return toast(section.reason);
+  stopAuto(); stopFollow(true); closeMenus();
+  const ticket=autoTicket;
+  autoPending={kind:'live',ticket,section}; autoPreparing=true; updateAutoBtn();
+  setMode('show'); autoGoTo(section.items[0].index);
+  if(section.items.length===1){ stopAuto(); toast('This section’s first and only title is now displayed'); return; }
+  await startFollow(true,section.part.id);
+  if(ticket!==autoTicket) return;
+  autoPending=null; autoPreparing=false;
+  if(!follow){ updateAutoBtn(); return; }
+  const remaining=section.items.slice(1);
+  autoRun={kind:'live',ticket,part:section.part,items:section.items,controller:STCAutoCue.createLive(remaining),follow,paused:false};
+  autoRun.timer=setInterval(tickAuto,100); paintAuto(); updateAutoBtn();
+}
+$('#autoRecord').onclick=()=>startAutoRecording();
+$('#autoLive').onclick=()=>startAutoLive();
+$('#autoAudio').onchange=e=>{ const file=e.target.files[0]; useAutoRecordingFile(file); e.target.value=''; };
+$('#autoAudio').addEventListener('cancel',()=>{ if(autoPending?.kind==='recording') stopAuto(); });
+$('#autoBar').addEventListener('click',async e=>{
+  const action=e.target.closest('[data-auto]'); if(!action || !autoRun) return;
+  if(action.dataset.auto==='stop') stopAuto();
+  else if(action.dataset.auto==='pause'){
+    const active=autoRun;
+    if(active.kind==='recording'){
+      if(active.media.paused){ try{ await active.media.play(); }catch(error){ toast('Could not resume the recording'); } }
+      else active.media.pause();
+    } else { active.controller.pause(); active.paused=!active.paused; }
+    paintAuto();
+  }
+  action.blur();
+});
 
 /* ---------- Help: the guide, searchable ---------- */
 let helpBuilt=false;
@@ -2874,6 +3340,7 @@ async function initSpellLang(){
   sel.onchange=()=>{ window.stc.setSpellLanguage(sel.value); toast('Spelling language: '+sel.selectedOptions[0].textContent); };
 }
 window.__stcMenu = (cmd) => {
+  if(projectCommit) return toast('The score is being updated — try again when it finishes');
   const ed = document.activeElement && document.activeElement.matches && document.activeElement.matches('textarea:not([readonly]), input[type=text]');
   const map = {
     new: newProject, close: closeProject, open: openDialog, save: ()=>saveDoc(false), saveAs: ()=>saveDoc(true,'supertitles'), saveAsPdf: ()=>saveDoc(true,'pdf'), exportPrintable,
@@ -2914,12 +3381,13 @@ const hexRgb=h=>{ const n=parseInt(String(h).replace('#',''),16); return PDFLib.
 // A slide and its cue share one color: the slide's own, or else the Cue color from Settings (when it isn't the standard red).
 const CUE_RED='#e0352b';
 // A PDF section can have a color too: its supertitles and cues take it unless they have their own.
-function groupColor(i){ if(partsList().length<2 || i>=state.markers.length) return ''; const p=cuePart(i); return (p && p.color) || ''; }
-function slideColor(i){ const s=state.slides[i]; return (s && s.color) || groupColor(i); }
+function groupColor(i){ const parts=partsList(); if(parts.length===1) return parts[0].color||''; if(i>=state.markers.length) return ''; const p=cuePart(i); return (p && p.color)||''; }
+function slideColor(i){ const s=state.slides[i]; return s && s.keepColors ? s.color||'' : (s && s.color)||groupColor(i); }
 // The cue linked to a slide (same number) shows the slide's color when the slide asks for it; otherwise the Cue color from Settings, or the standard red.
-function cueColor(i){ const s=state.slides[i]; return (s && s.color && s.colorCue) ? s.color : (groupColor(i) || state.settings.cueColor || ''); }
+function cueColor(i){ const s=state.slides[i]; return s && s.keepColors ? s.cueColorOverride||CUE_RED : (s && s.color && s.colorCue) ? s.color : (groupColor(i) || state.settings.cueColor || ''); }
 function setPartColor(pid, c){ const p=partsList().find(q=>q.id===pid); if(!p) return; snap(); if(c) p.color=c; else delete p.color; renderSlides(); renderMarkers(); setDirty(true); save(); }
 function setSlideColor(i, c, alsoCue){ const s=state.slides[i]; if(!s) return; snap(); if(c){ s.color=c; if(alsoCue) s.colorCue=true; else delete s.colorCue; } else { delete s.color; delete s.colorCue; }
+  if(s.keepColors) s.cueColorOverride=c && alsoCue ? c : state.settings.cueColor||CUE_RED;
   renderSlides(); renderMarkers(); setDirty(true); save(); }
 $('#sCue').addEventListener('input', e=>{ const v=e.target.value.toLowerCase(); if(v===CUE_RED) delete state.settings.cueColor; else state.settings.cueColor=v; renderMarkers(); setDirty(true); save(); });
 const colorCueToo=()=>{ try{ return localStorage.getItem('stq-colorcue')!=='0'; }catch(_){ return true; } };
@@ -2941,14 +3409,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#palette')){
 /* ---------- PowerPoint export ----------
    One slide per supertitle, laid out with the same geometry and line breaks as the projector
    (titleLayout / measureCtx), as editable text: a fixed text box, no autofit, no wrapping by PowerPoint. */
-function wrapTitle(text){ // the projector's own line breaking (same as lineCount)
-  const ctx=measureCtx(), avail=FIT_W*titleLayout().availW, out=[];
-  for(const para of String(text).replace(/\|/g,'\n').split('\n')){ let line='';
-    for(const w of para.split(/\s+/).filter(Boolean)){ const t=line?line+' '+w:w; if(!line || ctx.measureText(t).width<=avail) line=t; else { out.push(line); line=w; } }
-    out.push(line); }
-  while(out.length && !out[out.length-1].trim()) out.pop();
-  return out;
-}
+function wrapTitle(text){ return titleTextLayout(text).lines.map(l=>l.text); }
 // Everything in reading order, with what each line is: {sl, n (its number in the list, or null), cue (index or -1), part}
 function pptItems(){
   const parts=partsList(), items=[], cueItem=i=>({sl:state.slides[i], n:i+1, cue:i<state.markers.length?i:-1, part: i<state.markers.length ? cuePart(i) : null});
@@ -2986,11 +3447,11 @@ async function buildPptx(items){
   const col=c=>String(c||'#000000').replace('#','').toUpperCase(), face = isPalatino() ? (pptOs==='win' ? 'Palatino Linotype' : 'Palatino') : fontLabel(st.font);
   let cut=0;
   for(const it of items){
-    const s=pptx.addSlide(); s.background={color:col(st.bg)};
+    const s=pptx.addSlide(); s.background={color:col(screenColors(it.sl).bg)};
     let lines=wrapTitle(it.sl.text); const over=lines.length>L.lines; if(over){ lines=lines.slice(0,L.lines); cut++; }
     const blank=!lines.join('').trim(), notes=[];
-    if(it.cue>=0){ const mk=state.markers[it.cue], p=it.part; notes.push(`Cue ${it.cue+1} · page ${mk.page}${p && partsList().length>1 ? ' · '+p.name : ''}`); }
-    else notes.push(it.waiting ? `Not cued yet (waiting in ${it.part.name})` : 'Not cued yet');
+    if(it.cue>=0){ const mk=state.markers[it.cue], p=it.part; notes.push(`Cue ${it.cue+1} · page ${mk.page}${p && partsList().length>1 ? ' · '+sectionTitle(p) : ''}`); }
+    else notes.push(it.waiting ? `Not cued yet (waiting in ${sectionTitle(it.part)})` : 'Not cued yet');
     if(blank) notes.push('Blank: shows nothing.');
     if(over) notes.push(`Too long for the screen: like the projector, this slide shows only the first ${L.lines} lines. Full text: `+it.sl.text.replace(/\|/g,' / ').replace(/\n/g,' / '));
     s.addNotes(notes.join('\n'));
@@ -3002,7 +3463,7 @@ async function buildPptx(items){
     const n=lines.length, fsPt=Math.round(m.font*72*10)/10, gapPt=Math.max(0, Math.round((lineH*72 - 1.2*fsPt)*100)/100);
     s.addText(lines.map((l,i)=>({text:l||' ', options:{breakLine:i<n-1, paraSpaceBefore: i ? gapPt : 0}})), {
       x:m.padX, y:m.padY, w:W-2*m.padX, h:H-2*m.padY, margin:0, valign:'middle', align:st.align||'left',
-      fontFace:face, fontSize:fsPt, color:col(st.fg), bold:boldOn(), italic:!!st.italic,
+      fontFace:face, fontSize:fsPt, color:col(screenColors(it.sl).fg), bold:boldOn(), italic:!!st.italic,
       paraSpaceAfter:0, fit:'none', wrap:false });
   }
   return {bytes: await pptx.write({outputType:'uint8array'}), cut};
@@ -3035,7 +3496,7 @@ function htmlToLines(html){
     else if(c.nodeType===1){ if(c.tagName==='BR'){ cur+='|'; continue; } const b=BLOCK.test(c.tagName); if(b) flush(); walk(c); if(b) flush(); } } };
   walk(d.body); flush(); return out;
 }
-const cleanText = t => t.replace(/\r\n?/g,'\n').replace(/[\u000b\u2028]/g,'|').replace(/\u2029/g,'\n').replace(/[\u00a0\u2007\u202f]/g,' ').replace(/[\u200b\u200c\u200d\u00ad\ufeff]/g,'').replace(/^[ \t]*[\u00b7\u2022\u25e6\u25aa\u2023][ \t]+/gm,'');   // also Word's list bullets
+const cleanText = t => t.replace(/\r\n?/g,'\n').replace(/[\u000b\u2028]/g,'|').replace(/\u2029/g,'\n').replace(/[\u00a0\u2007\u202f]/g,' ').replace(/[\u200b\u00ad\ufeff]/g,'').replace(/^[ \t]*[\u00b7\u2022\u25e6\u25aa\u2023][ \t]+/gm,'');   // also Word's list bullets
 function clipText(dt){
   const html=dt.getData('text/html');
   if(html && /<(p|div|li|br|h\d|td)\b/i.test(html)){ const lines=htmlToLines(html); if(lines.length) return lines.join('\n'); }
@@ -3045,8 +3506,7 @@ function clipText(dt){
 slidesEl.addEventListener('paste', e=>{ const t=e.target; if(t.tagName!=='TEXTAREA' || t.readOnly) return;
   const html=e.clipboardData.getData('text/html'), raw=e.clipboardData.getData('text/plain');
   const txt = html && /<(p|div|li|br|h\d|td)\b/i.test(html) ? htmlToLines(html).join('\n').replace(/\|/g,'\n') : cleanText(raw||'').replace(/\|/g,'\n');
-  if(txt===raw) return; e.preventDefault(); cleanPasteAt=Date.now(); document.execCommand('insertText', false, txt); });
-let cleanPasteAt=0;   // a cleaned-up paste still counts as a paste (Flow mode lays it out by sentences)
+  if(txt===raw) return; e.preventDefault(); document.execCommand('insertText', false, txt); });
 // the same when pasting straight into the Import window's text box
 $('#impText').addEventListener('paste', e=>{
   const html=e.clipboardData.getData('text/html'); if(!html || !/<(p|div|li|br|h\d|td)\b/i.test(html)) { const t=e.clipboardData.getData('text/plain'); if(t && cleanText(t)!==t){ e.preventDefault(); document.execCommand('insertText', false, cleanText(t)); } return; }
@@ -3066,6 +3526,145 @@ document.addEventListener('paste', e=>{
   if(f){ loadImportFile(f); return; }
   $('#impText').value=txt; $('#impFmt').value = /\n/.test(txt.trim()) && !/^\s*"/.test(txt) ? 'text' : 'csv'; updateImpInfo();
   toast('Pasted — check the titles, then Import');
+});
+
+/* ---------- copying slides and complete score sections between projects ---------- */
+function copiedSlide(sl, index=-1, part=null){
+  const c={...sl, keepColors:true}, tag=index>=0 ? slideColor(index) : sl.color || (sl.keepColors?'':part && part.color) || '';
+  if(tag) c.color=tag; else delete c.color;
+  c.cueColorOverride=index>=0 ? cueColor(index)||CUE_RED : sl.cueColorOverride || (sl.color && sl.colorCue ? sl.color : part && part.color) || state.settings.cueColor || CUE_RED;
+  c.screenColors={...screenColors(sl)}; delete c.pad;
+  return STCSlideTransfer.validate({app:STCSlideTransfer.APP,version:1,kind:'slides',slides:[c]}).slides[0];
+}
+function selectedSlidePayload(){
+  const a=pickA!=null ? pickA : cur, b=pickA!=null ? pickB : cur;
+  if(a<0 || !state.slides[a]) return null;
+  return {app:STCSlideTransfer.APP,version:1,kind:'slides',slides:state.slides.slice(a,b+1).map((sl,k)=>copiedSlide(sl,a+k))};
+}
+function sectionPayload(id){
+  const part=partsList().find(p=>p.id===id); if(!part) return null;
+  const indices=cuesOf(id), slides=indices.map(i=>copiedSlide(state.slides[i]||{text:''},i,part));
+  slides.push(...(part.spare||[]).map(sl=>copiedSlide(sl,-1,part)));
+  if(partsList().length===1) slides.push(...state.slides.slice(state.markers.length).map((sl,k)=>copiedSlide(sl,state.markers.length+k,part)));
+  return {app:STCSlideTransfer.APP,version:1,kind:'slides',slides};
+}
+let pendingSlideCopy=null;
+async function writeSlidePayload(payload){
+  if(!payload || (payload.kind==='slides' && !payload.slides.length)) return toast('No slides to copy in this section');
+  try{
+    const data=STCSlideTransfer.encode(payload);
+    if(NATIVE && window.stc.writeClipboard) await window.stc.writeClipboard({text:data.text,html:data.html});
+    else if(navigator.clipboard && window.ClipboardItem) await navigator.clipboard.write([new ClipboardItem({'text/plain':new Blob([data.text],{type:'text/plain'}),'text/html':new Blob([data.html],{type:'text/html'})})]);
+    else { pendingSlideCopy=data; const ok=document.execCommand('copy'); pendingSlideCopy=null; if(!ok) throw new Error('Use the Copy keyboard shortcut after selecting slides'); }
+    toast(payload.kind==='section' ? 'Copied section with its PDF, cues and slides' : `Copied ${payload.slides.length} slide${payload.slides.length===1?'':'s'} with colors`);
+    return true;
+  }catch(e){ pendingSlideCopy=null; toast('Could not copy: '+e.message); return false; }
+}
+function copySectionSlides(id){ commitSectionEdit(); return writeSlidePayload(sectionPayload(id)); }
+async function copySectionWithPdf(id){
+  commitSectionEdit(); const part=partsList().find(p=>p.id===id), score=pdfBytes;
+  if(!part || !score) return toast('This section has no score PDF to copy');
+  const payload=sectionPayload(id), start=partStarts(partsList())[id]-1;
+  payload.kind='section'; payload.section={name:part.name,title:sectionTitle(part),color:part.color,pages:part.pages};
+  payload.cues=cuesOf(id).map(i=>{ const m=state.markers[i]; return {page:m.page-start,x:m.x,y:m.y}; });
+  try{
+    toast('Copying section PDF…');
+    const bytes=new Uint8Array(await mergeSegments([{src:score,from:start,count:part.pages}]));
+    if(bytes.length>64*1024*1024) throw new Error('This score section is too large for the clipboard (64 MB limit)');
+    payload.pdf=STCSlideTransfer.base64(bytes); return await writeSlidePayload(payload);
+  }catch(e){ toast('Could not copy section: '+e.message); return false; }
+}
+function installSlideTransferControls(){
+  if(mode!=='edit' || state.settings.lockOrder) return;
+  const row=slidesEl.querySelector('.addrow'); if(!row || row.querySelector('[data-transfer]')) return;
+  const b=document.createElement('button'); b.type='button'; b.dataset.transfer='paste'; b.textContent='Paste slides / section'; b.title='Paste copied STQ slides or a complete PDF section'; row.append(b);
+}
+function pasteCopiedSlides(payload){
+  if(audioEditingBlocked())return;
+  if(!payload.slides.length) return toast('There are no slides on the clipboard');
+  const clones=payload.slides.map(sl=>({...sl,screenColors:sl.screenColors && {...sl.screenColors}}));
+  snap(); clearTimeout(flowT); commitSectionEdit();
+  if(partsList().length>1){
+    const sec=sectionsNow(), part=cur>=0 && cur<state.markers.length ? cuePart(cur) : null;
+    if(part){ const group=sec.groups[part.id]||(sec.groups[part.id]=[]), here=group.indexOf(state.slides[cur]); group.splice(here+1,0,...clones); }
+    else { const at=cur>=state.markers.length ? cur-state.markers.length+1 : sec.tail.length; sec.tail.splice(at,0,...clones); }
+    rebuildSections(sec);
+  } else { const at=cur>=0 ? cur+1 : state.slides.length; state.slides.splice(at,0,...clones); }
+  clearPicks(); changed(true); focusLine(clones[0]);
+  toast(`Pasted ${clones.length} slide${clones.length===1?'':'s'} — source colors kept; excess text is grayed`);
+}
+let pastingSection=false;
+async function pasteCopiedSection(payload){
+  if(audioEditingBlocked())return;
+  if(pastingSection) return toast('A section is already being pasted');
+  if(state.settings.lockCues) return lockedNote('cues');
+  pastingSection=true;
+  try{
+    commitSectionEdit(); clearTimeout(flowT);
+    const generation=projectGeneration, revision=editRevision, oldParts=partsList(), starts=partStarts(oldParts), score=pdfBytes;
+    const sec=sectionsNow(), oldMarkers=state.markers, selected=cur>=0 ? cuePart(cur) : null;
+    const bytes=STCSlideTransfer.bytes(payload.pdf), d=await PDFLib.PDFDocument.load(bytes);
+    if(d.getPageCount()!==payload.section.pages) throw new Error('The copied PDF page count does not match its section');
+    const part={id:partId(),name:payload.section.name,title:payload.section.title,pages:payload.section.pages};
+    if(payload.section.color) part.color=payload.section.color;
+    const waiting=payload.slides.slice(payload.cues.length); if(waiting.length) part.spare=waiting;
+    const newParts=[...oldParts], at=selected ? oldParts.indexOf(selected)+1 : oldParts.length; newParts.splice(at,0,part);
+    const segs=newParts.map(p=>p.id===part.id ? {src:bytes,from:0,count:p.pages} : {src:score,from:starts[p.id]-1,count:p.pages});
+    toast('Pasting score section…'); const merged=new Uint8Array(await mergeSegments(segs));
+    if(generation!==projectGeneration || revision!==editRevision || mode!=='edit' || state.settings.lockOrder || state.settings.lockCues) return toast('The project changed while preparing the section — paste again');
+    const nextStarts=partStarts(newParts), markers=oldMarkers.map(m=>{ const p=partOfPage(oldParts,m.page); return {...m,page:nextStarts[p.id]+m.page-starts[p.id]}; });
+    const cueSlides=new Map();
+    payload.cues.forEach((m,i)=>{ const marker={...m,page:nextStarts[part.id]+m.page-1}; markers.push(marker); cueSlides.set(marker,payload.slides[i]); });
+    const rollback={parts:state.parts,markers:state.markers,slides:state.slides,bytes:pdfBytes,name:state.pdfName,cur,anchor,dirty,undo:[...undoStack],redo:[...redoStack]};
+    const finish=beginProjectCommit('Adding score section…');
+    try{
+    snap(); state.parts=newParts; state.markers=markers; cur=-1; anchor=null;
+    const loaded=await loadPdfBytes(state.pdfName||part.name,merged);
+    if(!loaded) throw new Error('The copied score section could not be displayed');
+    sec.groups[part.id]=state.markers.filter(m=>cueSlides.has(m)).map(m=>cueSlides.get(m)); rebuildSections(sec);
+    clearPicks(); changed(true); await idbPut('score',{name:state.pdfName,bytes:merged}); save();
+    const first=state.markers.findIndex(m=>partOfPage(newParts,m.page)?.id===part.id); if(first>=0) goTo(first);
+    else { renderSlides(); const heading=slidesEl.querySelector(`[data-section="${part.id}"]`); heading?.scrollIntoView({block:'nearest'}); }
+    toast(`Pasted “${sectionTitle(part)}” — ${part.pages} pages, ${payload.cues.length} cues, ${payload.slides.length} slides`);
+    }catch(e){
+      state.parts=rollback.parts; state.markers=rollback.markers; state.slides=rollback.slides;
+      if(rollback.bytes){ await loadPdfBytes(rollback.name,rollback.bytes); }
+      else { clearScore(); state.pdfName=rollback.name; updatePartsBtn(); }
+      state.parts=rollback.parts; state.markers=rollback.markers; state.slides=rollback.slides; cur=rollback.cur; anchor=rollback.anchor;
+      undoStack=rollback.undo; redoStack=rollback.redo; renderSlides(); renderMarkers(); updateCounts(); updateHint(); updateOutput(); setDirty(rollback.dirty);
+      await idbPut('score',rollback.bytes ? {name:rollback.name,bytes:rollback.bytes} : null);
+      throw e;
+    }finally{ finish(); }
+  }catch(e){ console.error(e); toast('Could not paste section: '+e.message); }
+  finally { pastingSection=false; }
+}
+function applySlideClipboard(payload){
+  if(mode!=='edit' || state.settings.lockOrder) return lockedNote('order');
+  return payload.kind==='section' ? pasteCopiedSection(payload) : pasteCopiedSlides(payload);
+}
+async function pasteSlideClipboard(){
+  try{
+    let data;
+    if(NATIVE && window.stc.readClipboard) data=await window.stc.readClipboard();
+    else { data={}; for(const item of await navigator.clipboard.read()) for(const type of ['text/html','text/plain']) if(item.types.includes(type)) data[type==='text/html'?'html':'text']=await (await item.getType(type)).text(); }
+    const payload=STCSlideTransfer.decode(data); if(!payload) return toast('Copy STQ slides or a score section first, then paste here');
+    await applySlideClipboard(payload);
+  }catch(e){ toast('Could not paste: '+e.message); }
+}
+document.addEventListener('copy',e=>{
+  const t=e.target, editing=t && t.closest && t.closest('textarea,input,[contenteditable],dialog');
+  const payload=pendingSlideCopy ? null : ((pickA!=null || !editing && mode==='edit') ? selectedSlidePayload() : null);
+  if(!pendingSlideCopy && !payload) return;
+  const data=pendingSlideCopy||STCSlideTransfer.encode(payload); e.preventDefault(); e.clipboardData.setData('text/plain',data.text); e.clipboardData.setData('text/html',data.html); e.clipboardData.setData(STCSlideTransfer.MIME,data.json);
+},true);
+document.addEventListener('paste',e=>{
+  if(e.target.closest?.('dialog,input[data-section]')) return;
+  let payload; try{ payload=STCSlideTransfer.decode(e.clipboardData); }catch(err){ e.preventDefault(); e.stopImmediatePropagation(); return toast('Could not read the copied slides: '+err.message); }
+  if(!payload) return; e.preventDefault(); e.stopImmediatePropagation(); applySlideClipboard(payload);
+},true);
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-transfer]'); if(!b) return;
+  if(b.dataset.transfer==='copy') writeSlidePayload(selectedSlidePayload()); else pasteSlideClipboard();
 });
 /* ---------- emoji ----------
    ☺ above the slides opens a small palette; a click inserts the emoji where the cursor is in the slide
@@ -3149,16 +3748,20 @@ document.addEventListener('mouseout', e=>{ if(fitAnim && (!e.relatedTarget || !f
 /* ---------- start ---------- */
 (async function init(){
   localizeKeys(document.body); wrapFlexText(); loadLocal();
-  // The desktop app always starts on the welcome screen; a project opens only when you open a file (double-click, Open…, or drop).
-  // (The browser version has no files to double-click, so it still picks up where you left off.)
-  const fresh = NATIVE; if(fresh){ state.markers=[]; state.slides=[]; state.pdfName=null; state.parts=null; docName=null; dirty=false; cur=-1; state.settings.lockCues=false; state.settings.lockOrder=false; save(); idbPut('score',null); idbPut('doc',null); }
+  // Clean desktop launches show the welcome screen. An interrupted session can recover
+  // its local draft and score; opening a project file never silently overwrites that draft.
+  let recover=false, interrupted=true; try{ interrupted=localStorage.getItem(SESSION_KEY)!=='clean'; }catch(_){}
+  if(NATIVE && interrupted && dirty && hasProject()) recover=window.stc.askRecovery ? await window.stc.askRecovery() : confirm('Recover unsaved work from the previous session?');
+  const freshStart=NATIVE && !recover;
+  if(freshStart){ state.markers=[]; state.slides=[]; state.pdfName=null; state.parts=null; docName=null; dirty=false; cur=-1; state.settings.lockCues=false; state.settings.lockOrder=false; save(); await Promise.all([idbPut('score',null),idbPut('doc',null),idbPut('follow',null)]); }
+  if(NATIVE) try{ localStorage.setItem(SESSION_KEY,'active'); }catch(_){}
   applyAlign(); sortMarkers(); if(state.markers.length) state.settings.flow=false; document.body.classList.toggle('flow', !!state.settings.flow); updateFlowBtn(); updateLocks(); const wasDirty=dirty; renderSlides(); applySpell(spellOn()); initSpellLang(); updateCounts(); updateHint(); updateOutput(); setDirty(wasDirty);
   const d = await idbGet('doc'); if(d && d.handle && d.name===docName) fileHandle=d.handle;
-  const fr = fresh ? null : await idbGet('follow'); if(fr && fr.runs) refRuns=fr.runs;
-  const rec = fresh ? null : await idbGet('score');
-  if(rec && rec.bytes && (!state.pdfName || rec.name===state.pdfName)){ await loadPdfBytes(rec.name, new Uint8Array(rec.bytes)); setDirty(wasDirty); toast(`Picked up where you left off`); }
+  const fr = freshStart ? null : await idbGet('follow'); if(fr && fr.runs) refRuns=fr.runs;
+  const rec = freshStart ? null : await idbGet('score');
+  if(rec && rec.bytes && (!state.pdfName || rec.name===state.pdfName)){ await loadPdfBytes(rec.name, new Uint8Array(rec.bytes)); setDirty(wasDirty); toast(recover ? 'Recovered unsaved work — save the project to keep it' : 'Picked up where you left off'); }
   else if(state.pdfName){ $('#scoreEmpty .big').textContent = `Open the score: ${state.pdfName}`; }
-  if(fresh) fontSwapped=null; else noteFontSwap();
+  if(freshStart) fontSwapped=null; else noteFontSwap();
   if(NATIVE){ window.stc.onOpenFile(f=>openNativeFile(f)); window.stc.ready(); }
 })();
 </script>

@@ -4,7 +4,7 @@
 // opening .supertitles files from Finder/Explorer, saving without prompts,
 // putting the projector window on the second screen, and keeping the
 // computer awake during a show.
-const { app, BrowserWindow, Menu, dialog, ipcMain, powerSaveBlocker, screen, shell, systemPreferences, nativeTheme } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, powerSaveBlocker, screen, shell, systemPreferences, nativeTheme, clipboard } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
@@ -16,6 +16,8 @@ let win = null;
 let projector = null;
 let rendererReady = false;
 let allowClose = false;
+let closePending = false, rendererDirty = false, flushingFiles = false;
+let quitRequested = false;
 let keepAwakeId = null;
 let lastDir = null;
 const pendingFiles = [];
@@ -34,24 +36,32 @@ function queueOpen(p) {
   flushPending();
 }
 
-function flushPending() {
-  if (!win || !rendererReady) return;
-  while (pendingFiles.length) {
-    const p = pendingFiles.shift();
-    try {
-      win.webContents.send('open-file', readPayload(p));
-    } catch (e) {
-      dialog.showErrorBox('Could not open file', `${p}\n\n${e.message}`);
+async function flushPending() {
+  if (!win || !rendererReady || flushingFiles) return;
+  flushingFiles = true;
+  try {
+    while (pendingFiles.length && win && rendererReady) {
+      const p = pendingFiles.shift(), target = win;
+      try {
+        const payload = await readPayload(p);
+        if (target !== win || target.isDestroyed() || !rendererReady) { pendingFiles.unshift(p); break; }
+        target.webContents.send('open-file', payload);
+      } catch (e) {
+        dialog.showErrorBox('Could not open file', `${p}\n\n${e.message}`);
+      }
     }
+    if (win && !win.isDestroyed()) { if (win.isMinimized()) win.restore(); win.focus(); }
+  } finally {
+    flushingFiles = false;
+    if (pendingFiles.length && win && rendererReady) flushPending();
   }
-  if (win.isMinimized()) win.restore();
-  win.focus();
 }
 
-function readPayload(p) {
+async function readPayload(p) {
+  const bytes = new Uint8Array(await fs.promises.readFile(p));
   lastDir = path.dirname(p);
   app.addRecentDocument(p);
-  return { name: path.basename(p), path: p, bytes: new Uint8Array(fs.readFileSync(p)) };
+  return { name: path.basename(p), path: p, bytes };
 }
 
 // macOS: double-clicked files arrive here (possibly before the window exists)
@@ -101,8 +111,10 @@ const matchCase = (orig, w) => (orig[0] === orig[0].toUpperCase() && orig[0] !==
 
 // ---------- main window ----------
 function createWindow() {
+  if (quitRequested) return;
   rendererReady = false;
   allowClose = false;
+  closePending = false; rendererDirty = false;
   // First launch: fill the usable screen (below the menu bar, above the Dock / taskbar) — not full-screen mode.
   // After that, open where and how big the window was last time, as long as that still fits on a screen.
   const wa = screen.getPrimaryDisplay().workArea, saved = readPrefs().windowBounds;
@@ -212,30 +224,46 @@ function createWindow() {
   win.on('close', async (e) => {
     if (allowClose) return;
     e.preventDefault();
-    let dirty = false;
+    if (closePending) return;
+    closePending = true;
+    const target = win;
+    let approved = false;
     try {
-      dirty = await win.webContents.executeJavaScript('window.__stcIsDirty ? window.__stcIsDirty() : false');
+      await target.webContents.executeJavaScript('window.__stcPrepareClose ? window.__stcPrepareClose() : undefined');
     } catch (_) {}
-    if (dirty) {
-      const { response } = await dialog.showMessageBox(win, {
-        type: 'warning',
-        buttons: ['Save', 'Don’t Save', 'Cancel'],
-        defaultId: 0,
-        cancelId: 2,
-        message: 'Save changes to this project before closing?',
-        detail: 'Cues and slides you haven’t saved will be lost.',
-      });
-      if (response === 2) return;
-      if (response === 0) {
-        let saved = false;
-        try {
-          saved = await win.webContents.executeJavaScript('saveDoc(false)');
-        } catch (_) {}
-        if (!saved) return;
+    let dirty = rendererDirty;
+    try {
+      dirty = await target.webContents.executeJavaScript('window.__stcIsDirty ? window.__stcIsDirty() : false');
+    } catch (_) {}
+    try {
+      if (dirty) {
+        const { response } = await dialog.showMessageBox(target, {
+          type: 'warning',
+          buttons: ['Save', 'Don’t Save', 'Cancel'],
+          defaultId: 0,
+          cancelId: 2,
+          message: 'Save changes to this project before closing?',
+          detail: 'Cues and slides you haven’t saved will be lost.',
+        });
+        if (response === 2) return;
+        if (response === 0) {
+          let saved = false;
+          try {
+            saved = await target.webContents.executeJavaScript('saveDoc(false).then(ok => ok && !window.__stcIsDirty())');
+          } catch (_) {}
+          if (!saved) return;
+        }
       }
+      if (target.isDestroyed() || target !== win) return;
+      try { await target.webContents.executeJavaScript('window.__stcCleanClose && window.__stcCleanClose()'); } catch (_) {}
+      allowClose = true;
+      approved = true;
+      if (quitRequested) app.quit();
+      else target.close();
+    } finally {
+      closePending = false;
+      if (!approved) quitRequested = false;
     }
-    allowClose = true;
-    win.close();
   });
 
   win.on('closed', () => {
@@ -380,6 +408,7 @@ ipcMain.handle('set-spell-language', (_e, lang) => {
 });
 ipcMain.on('doc-state', (_e, { path: p, dirty }) => {
   if (!win) return;
+  rendererDirty = !!dirty;
   if (isMac) win.setRepresentedFilename(p || '');
   win.setDocumentEdited(!!dirty);
 });
@@ -410,12 +439,34 @@ ipcMain.handle('save-dialog', async (_e, { suggestedName, kind }) => {
 });
 ipcMain.handle('write-file', async (_e, { path: p, bytes }) => {
   // write to a temporary file first, so a failed save never damages the old file
-  const tmp = `${p}.saving-${process.pid}`;
-  fs.writeFileSync(tmp, Buffer.from(bytes));
-  fs.renameSync(tmp, p);
+  const tmp = `${p}.saving-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  try {
+    await fs.promises.writeFile(tmp, Buffer.from(bytes));
+    await fs.promises.rename(tmp, p);
+  } catch (e) {
+    await fs.promises.unlink(tmp).catch(() => {});
+    throw e;
+  }
   lastDir = path.dirname(p);
   if (isOpenable(p)) app.addRecentDocument(p);
   return true;
+});
+const isMainRenderer = (event) => !!(win && !win.isDestroyed() && event.sender === win.webContents && event.senderFrame === win.webContents.mainFrame);
+const MAX_CLIPBOARD_BYTES = 128 * 1024 * 1024;
+ipcMain.handle('write-clipboard', (event, data) => {
+  if (!isMainRenderer(event) || !data || typeof data.text !== 'string' || typeof data.html !== 'string' || Buffer.byteLength(data.text) + Buffer.byteLength(data.html) > MAX_CLIPBOARD_BYTES) throw new Error('Invalid clipboard data');
+  clipboard.write({ text: data.text, html: data.html }); return true;
+});
+ipcMain.handle('read-clipboard', (event) => {
+  if (!isMainRenderer(event)) throw new Error('Clipboard access denied');
+  const text = clipboard.readText(), html = clipboard.readHTML();
+  if (Buffer.byteLength(text) + Buffer.byteLength(html) > MAX_CLIPBOARD_BYTES) throw new Error('Clipboard data is too large');
+  return { text, html };
+});
+ipcMain.handle('ask-recovery', async () => {
+  const { response } = await dialog.showMessageBox(win, { type: 'question', buttons: ['Recover', 'Start Fresh'], defaultId: 0, cancelId: 1,
+    message: 'Recover unsaved work from the previous session?', detail: 'Supertitle Cuer did not close normally. Recover the local draft, then save the project to keep it.' });
+  return response === 0;
 });
 
 // "Save changes before closing?" for File → Close Project / New Project: 0 Save, 1 Don't Save, 2 Cancel
@@ -513,6 +564,15 @@ function buildMenu() {
 }
 
 // ---------- lifecycle ----------
+// A prevented window close cancels Electron's original quit request. Remember
+// that intent while the renderer/save check runs, then resume app.quit().
+app.on('before-quit', e => {
+  quitRequested = true;
+  if (win && !win.isDestroyed() && !allowClose) {
+    e.preventDefault();
+    win.close();
+  }
+});
 app.whenReady().then(() => {
   buildMenu();
   if (!win || win.isDestroyed()) createWindow();
@@ -526,7 +586,7 @@ app.whenReady().then(() => {
 // the app is still starting, before 'ready' (when the screen size can't be read yet). The window made in
 // whenReady() covers that case, so only make one here once the app is ready and none exists.
 app.on('activate', () => {
-  if (app.isReady() && (!win || win.isDestroyed())) createWindow();
+  if (!quitRequested && app.isReady() && (!win || win.isDestroyed())) createWindow();
 });
 // Like Word: on a Mac, closing the window closes the project but STQ keeps running (Dock, menu bar);
 // ⌘Q quits. On Windows the app quits with its last window, as Windows apps do.

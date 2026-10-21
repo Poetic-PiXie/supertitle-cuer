@@ -26,7 +26,7 @@
 <ol class="steps">
 <li>Before placing any cues, click <span class="ui">¶ Flow</span> above the slides.</li>
 <li>Click <span class="ui">＋ Add slide</span> (or into the first slide) and paste the text.</li>
-<li>The text fills the slides by itself: sentences stay together, each fits the screen, and a long sentence continues on the next slide with “…”.</li>
+<li>The paste keeps your line breaks and fills the slides forward from where you pasted. Extra text continues into the following slides; earlier slides stay as they are.</li>
 </ol>
 <figure class="shot"><img src="shots/qs-2b-flow.webp" alt="Plain text pasted in Flow mode, filling the slides by itself"></figure>
 <div class="keybox"><div class="kbt">⌨ In Flow mode</div><div class="kbr"><span class="k"><kbd>Return</kbd></span><span>start a new slide here</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>+<kbd>Return</kbd></span><span>line break inside a slide</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd> at the start</span><span>join with the slide before</span></div></div>
@@ -101,7 +101,7 @@
 <li><b>? Help</b> — this guide, searchable.</li>
 <li><b>💾 Save</b> and the project's name. “• not saved” means there are unsaved changes.</li>
 <li><b>Edit / Show</b> — Edit to place cues and write titles, Show to run the performance.</li>
-<li><b>🎧 Follow</b> — listen to the music and count down to the next cue.</li>
+<li><b>🎧 Follow</b> — listen to the music and count down to the next cue. <b>▶ Auto ▾</b> beside it can advance prepared cues from a recording or live music.</li>
 <li><b>⚙︎ Settings</b> — the look of the titles, the screen shape and cue size.</li>
 <li>The <b>Night / Day switch</b> — dark or light look for the app.</li>
 <li>How many <b>cues</b> are on the score and how many <b>slides</b> there are.</li>
@@ -125,6 +125,7 @@
 <dt>💾 Save</dt><dd>Saves everything into the project file (<kbd>⌘S</kbd>). The first time, it asks where.</dd>
 <dt>Edit / Show</dt><dd>The two modes — the switch glows <b>orange</b> in Edit and <b>teal</b> in Show, so you can tell at a glance. In <b>Edit</b> a click on the score adds a cue and the slides can be typed in. In <b>Show</b> the keyboard runs the titles and nothing can be changed by accident. <kbd>⇧⌘E</kbd> and <kbd>⇧⌘R</kbd> switch in the desktop app.</dd>
 <dt>🎧 Follow</dt><dd>Reference recordings and the live countdown. While following it reads <span class="ui">🎧 Following</span>; while recording, <span class="ui">● Recording</span>.</dd>
+<dt>▶ Auto ▾</dt><dd><span class="ui">Auto recording…</span> or <span class="ui">Auto live (beta)</span> advances prepared cues automatically. It is available when the selected PDF section has a reference run and every cue is timed in order. See <a href="#follow">Follow and Auto</a>.</dd>
 <dt>⚙︎ Settings</dt><dd>Screen shape, transition, font, style, colors, alignment, text size, vertical position, side margins and cue circle size (see <a href="#settings">Making the titles look just right</a>).</dd>
 </dl>
 <dl>
@@ -185,14 +186,17 @@
 </ul>
 <p>The PDFs are merged into one score inside the project; Undo brings back a removed or moved PDF.</p>
 <h3>Each PDF has its own supertitles</h3>
-<p>With two or more PDFs, the slide list is divided into sections, one per PDF, each under a small heading with the PDF's name and number of cues. A PDF's cues take the lines in its section, in order, so <b>adding or removing a cue in one PDF never shifts the supertitles of another</b>.</p>
+<p>Each score PDF has a section heading in the slide list. With two or more PDFs, the list is divided into those sections, each with its title and number of cues. A PDF's cues take the lines in its section, in order, so <b>adding or removing a cue in one PDF never shifts the supertitles of another</b>.</p>
 <figure class="shot small"><img src="shots/pdf-sections.webp" alt="The slide list in two sections, one per PDF; part 1 has two lines waiting for a cue"><figcaption>Part 1 has two lines waiting for a cue. Part 2's cues keep their own supertitles.</figcaption></figure>
 <ul>
+<li><b>Section actions.</b> Click or right-click the section heading. The first choices, <span class="ui">Auto recording…</span> and <span class="ui">Auto live (beta)</span>, launch that section even when another cue is selected; they are disabled until the section is prepared. The menu also offers <span class="ui">Rename section…</span>, <span class="ui">Copy all slides</span> and <span class="ui">Copy all slides + associated PDF</span>. The last choice includes its score pages and cue links. Copying is available with slides locked, including in Show mode.</li>
+<li><b>Rename a section.</b> In Edit mode with slides unlocked, choose <span class="ui">Rename section…</span> or double-click the heading, type the new title and press <kbd>Return</kbd> (or click elsewhere). <kbd>Esc</kbd> cancels. Clearing the title brings back the PDF's name. The new title is saved in the project and appears in the PDFs and Follow panels; the original PDF filename stays the same.</li>
 <li><b>Lines waiting for a cue.</b> If a PDF's section has more lines than the PDF has cues, the extra ones wait at the end of its section, grayed and marked <i>waiting</i>. The next cue you place in that PDF takes the first of them. If a PDF has more cues than lines, its last cues get blank supertitles until you type them.</li>
 <li><b>Link to PDF.</b> To give lines to a PDF, select them (shift-click a supertitle; shift-click another to select a range) and click <span class="ui">🔗 Link to PDF…</span> in the bar above the list. It asks <i>Link to the current PDF?</i>, suggesting the PDF on screen in the score; choose another from the menu if needed. The lines join the end of that PDF's section.</li>
 <li><b>Not cued yet.</b> Lines after the last PDF's section belong to no PDF yet. Placing cues in the last PDF takes them in order, just as with a single PDF, so the usual way of working (type or import all the titles, then click the cues) still works. Use <span class="ui">↩</span> on a waiting line to send it back here.</li>
-<li>A line inserted with <span class="ui">＋</span>, or moved with <span class="ui">▲ ▼</span> or by dragging, joins the section it lands in.</li>
+<li>Use <span class="ui">Add above</span> or <span class="ui">Add below</span> beside the selected slide to insert a line in that slide's section. A line moved with <span class="ui">▲ ▼</span> or by dragging joins the section it lands in.</li>
 <li><b>Section color.</b> Click the ring before a PDF's name to pick a color for the whole section: all its supertitles and its cues on the score take it, including ones you add later. A supertitle's own color ring still wins; its ring shows the section color as an outline until you give it a color of its own, and <span class="ui">Same as its PDF</span> in its palette goes back to the section color.</li>
+<li><b>End of section.</b> The final cued slide of each PDF shows a red <span class="ui">Last Slide for this Section</span> label in the operator's preview. It stays off the audience screen and does not advance or blank the titles. Lines still waiting for cues do not count as extra cued slides.</li>
 </ul>
 <h3>Preparing PDFs with the PDF Toolkit</h3>
 <p>Scores rarely arrive exactly as you need them: the whole opera in one file when you only need Act 2, pages scanned sideways, an aria cut from the edition, or an insert from a different score. Supertitle Cuer adds and orders whole PDFs; the <b>PDF Toolkit</b>, poetic PiXie's free companion, prepares them first.</p>
@@ -242,13 +246,22 @@
 <li><b>🗑</b> — delete the slide.</li>
 </ol>
 <ul>
-<li><b>Add</b> slides with <span class="ui">＋ Add slide</span> at the end of the list, <span class="ui">＋</span> on a card, or <span class="ui">+ Add below</span> under the selected slide.</li>
+<li><b>Add</b> slides with <span class="ui">＋ Add slide</span> at the end of the list, <span class="ui">＋</span> on a card, or <span class="ui">Add above</span> / <span class="ui">Add below</span> beside the selected slide.</li>
 <li><b>Delete</b> with <span class="ui">🗑</span>. It asks first, and offers to delete the slide's cue too (unticked by default).</li>
 <li><b>Select</b> a slide by clicking it; the projector and the score follow. After clicking in the list, <kbd>↑</kbd> <kbd>↓</kbd> step through the slides. While typing, <kbd>↑</kbd> on a slide's first line and <kbd>↓</kbd> on its last line carry on into the neighboring slide.</li>
-<li><b>Several at once:</b> click one slide, then <kbd>Shift</kbd>-click another to select the range. <span class="ui">▲</span> / <span class="ui">▼</span> (on a selected card or in the selection bar) or dragging one of them moves the whole block; <span class="ui">🗑 Delete…</span> deletes them together. Any other click ends the selection.</li>
+<li><b>Several at once:</b> click one slide, then <kbd>Shift</kbd>-click another to select the range. <span class="ui">▲</span> / <span class="ui">▼</span> (on a selected card or in the selection bar) or dragging one of them moves the whole block; <span class="ui">🗑 Delete…</span> deletes them together. <span class="ui">Copy slides</span> or <kbd>⌘C</kbd> copies the range for reuse. Any other click ends the selection.</li>
 <li class="fig"><figure class="shot"><img src="shots/slides-range.webp" alt="Three slides selected as a block, with the selection bar"></figure></li>
 <li><b>Lock the slides</b> with <span class="ui">🔓 Slides unlocked</span> above the list. While it is red and reads <span class="ui">🔒 Slides locked</span>, nothing can change by accident: no typing, no moving, adding, deleting or importing. You can still look through them: click a slide to see its text in <span class="ui">Audience sees</span>, and use <kbd>↑</kbd> <kbd>↓</kbd> to step through the list. Click the button again to unlock.</li>
 </ul>
+<h3>Copy slides into another project</h3>
+<ol class="steps">
+<li>Click the first slide's number, then <kbd>Shift</kbd>-click the last slide in the range. Press <kbd>⌘C</kbd> (<kbd>Ctrl+C</kbd> on Windows), or click <span class="ui">Copy slides</span> in the selection bar.</li>
+<li>Open the destination project and unlock its slides in Edit mode. Click the number of the slide that should come immediately before the copied block.</li>
+<li>Press <kbd>⌘V</kbd> (<kbd>Ctrl+V</kbd> on Windows), or click <span class="ui">Paste slides</span> beside the selected slide. The copies are inserted after it, in their original order.</li>
+</ol>
+<p>The copies keep their slide tags, cue colors and source text/background colors. The destination project's font, screen shape and text size control the line wrapping. Each copied slide stays one slide: text that exceeds the destination's limit is grayed out in the list, just as for other long slides; copying does not split it automatically. When you select text inside a slide instead, the usual text-copy and text-paste shortcuts still apply.</p>
+<p>To copy an entire PDF section, use its heading menu's <span class="ui">Copy all slides</span>. This includes the lines waiting for a cue; in a single-PDF project, it also includes the uncued titles at the end. Slide-only copies go after the selected destination slide in its PDF's section. Without a selected cue, they go into the uncued end of the list; <span class="ui">Paste slides</span> at the end of the list is another way to put them there.</p>
+<p>Choose <span class="ui">Copy all slides + associated PDF</span> when the destination also needs the section's score pages and cue links. Select a cue in the destination section, then paste: STQ adds a new PDF section immediately after that section, with its title, section color, score pages, cues, linked titles and waiting lines. Without a selected cue, the copied section goes at the end. Reference recordings and rehearsal cue timings are not copied, so set up Follow separately for the new production.</p>
 <div class="keybox"><div class="kbt">⌨ Slides</div><div class="kbr"><span class="k"><kbd>↑</kbd> <kbd>↓</kbd></span><span>previous / next slide — after clicking in the slide list</span></div><div class="kbr"><span class="k"><kbd>↑</kbd> on the first line, <kbd>↓</kbd> on the last</span><span>while typing: carry on into the neighboring slide</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>-click</span><span>select a range of slides</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd></span><span>delete the selected range (asks first)</span></div><div class="kbr"><span class="k"><kbd>Esc</kbd></span><span>stop typing / clear the selection</span></div><div class="kbr"><span class="k">right-click a word</span><span>spelling suggestions, synonyms</span></div></div>
 <figure class="shot"><img src="shots/slides-states.webp" alt="A slide that is too long, and slides without cues"></figure>
 <h3>What you see is what the audience gets</h3>
@@ -278,10 +291,10 @@
 <figure class="shot"><img src="shots/import.webp" alt="The Import slides window"></figure>
 <ul>
 <li><b>Paste:</b> with no slides yet, click the empty slide list and paste (<kbd>⌘V</kbd>) — one title per line, or a CSV list, or a copied PowerPoint, CSV or text file. The Import window opens with them in it, ready to check. Text copied from Word, Pages or a web page comes in clean: each paragraph becomes a slide, a line break inside a paragraph (<kbd>Shift</kbd>+<kbd>Return</kbd>) stays a line break inside the slide, and list bullets and hidden formatting are left out.</li>
-<li><span class="ui">Choose a file…</span> opens a <b>.csv</b>, a <b>.txt</b>, a <b>PowerPoint file</b> (.pptx) or a <b>PDF of existing slides</b> (its text is read page by page) — or paste the text into the box. Dropping one of these files on the window, or opening it with <span class="ui">File → Open…</span>, brings it here too.</li>
+<li><span class="ui">Choose a file…</span> opens a <b>.csv</b>, a tab-separated <b>.tsv</b>, a <b>.txt</b>, a <b>PowerPoint file</b> (.pptx) or a <b>PDF of existing slides</b> (its text is read page by page) — or paste the text into the box. Dropping one of these files on the window, or opening it with <span class="ui">File → Open…</span>, brings it here too.</li>
 <li><b>From PowerPoint</b>, only the text comes in: each PowerPoint slide becomes one STQ slide, in order, with its line breaks. (Slide numbers, dates and footers are left out, and only .pptx works, not the older .ppt.) The text appears in the box as a CSV list first, so you can check it before you click <span class="ui">Import</span>.</li>
 <li><b>Format: PowerPoint</b> — each PowerPoint slide becomes one slide. Choosing it opens the file chooser for a .pptx file (as does <span class="ui">Choose a file…</span>).</li>
-<li><b>Format: CSV</b> — every comma-separated value becomes one slide, numbered in order. Put a value in <code>"double quotes"</code> if it contains a comma. <code>|</code> makes a line break inside a slide.</li>
+<li><b>Format: CSV / TSV</b> — each spreadsheet cell becomes one slide, numbered in order. CSV uses commas between cells; TSV uses tabs. Put a CSV value in <code>"double quotes"</code> if it contains a comma. Commas inside a TSV cell stay in its title. <code>|</code> makes a line break inside a slide.</li>
 <li><b>Format: Text</b> — every line becomes one slide.</li>
 <li><code>(blank)</code> on its own stands for an empty slide, a blackout. A blank PowerPoint slide shows up this way, and STQ's own CSV and text exports write blank slides the same way, so they come back intact.</li>
 <li><b>Existing slides:</b> replace them, or add the new ones to the end.</li>
@@ -292,8 +305,8 @@
 <ol class="steps">
 <li>Type one title per cell, all in column A. Commas and quotation marks inside a title are fine.</li>
 <li>For a line break inside a title, press <kbd>⌃⌥Return</kbd> in Excel on a Mac, or <kbd>Alt</kbd>+<kbd>Enter</kbd> on Windows (Numbers and Google Sheets have a similar shortcut). The break carries over to the slide.</li>
-<li>Save or download the sheet as <b>CSV</b> (in Excel: <span class="ui">File → Save As → CSV UTF-8</span>, which keeps accents intact).</li>
-<li>In STQ, click <span class="ui">Import…</span>, choose the CSV file and click <span class="ui">Import</span>. Each cell becomes one slide, in order.</li>
+<li>Save or download the sheet as <b>CSV</b> (in Excel: <span class="ui">File → Save As → CSV UTF-8</span>, which keeps accents intact) or a UTF-8 <b>TSV</b> file.</li>
+<li>In STQ, click <span class="ui">Import…</span>, choose the file and click <span class="ui">Import</span>. Each cell becomes one slide, in order.</li>
 </ol>
 <p class="note">A sheet with numbers in column A and the titles in column B works too — STQ notices the numbering and uses the text column.</p></div>
 <h3>Fit to the screen</h3>
@@ -308,10 +321,12 @@
 <figure class="shot"><img src="shots/flow.webp" alt="Flow mode"></figure>
 <ul>
 <li>Paste plain text — one title per line, or the libretto as it is; no commas or quotation marks needed.</li>
-<li><b>Pasting:</b> sentences stay together, every slide fits the screen, and a sentence that runs over continues on the next slide with “…”.</li>
+<li><b>Pasting into a slide</b> keeps the pasted line breaks and handles extra text the same way as typing: overflow moves forward into the next connected slide, or into a new slide before the next manual break. Slides before the one you are editing stay unchanged.</li>
 <li><b>Typing</b> works like a word processor: what you type stays exactly as you type it, spaces and line breaks included. Only when a slide is full do the words that don't fit move on to the next slide, like a new page, and the cursor goes with them.</li>
+<li><b>Join slides</b> by pressing <kbd>Backspace</kbd> (the <kbd>Delete</kbd> key on a Mac) at the very start of a slide with no text selected. It joins to the slide before it across either a manual break or an automatic split, and extra text flows forward again. <kbd>Shift</kbd>+<kbd>Backspace</kbd> keeps the ordinary key behavior.</li>
+<li>Turning Flow on, changing its layout settings, or using <span class="ui">Import → Fit to the screen</span> still lays out whole text blocks by sentences. Pasting into a slide does not reorganize earlier slides.</li>
 </ul>
-<div class="keybox"><div class="kbt">⌨ In Flow mode</div><div class="kbr"><span class="k"><kbd>Return</kbd></span><span>start a new slide at the cursor</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>+<kbd>Return</kbd></span><span>line break inside a slide</span></div><div class="kbr"><span class="k"><kbd>Delete</kbd> at the very start of a slide</span><span>join it to the slide before</span></div></div>
+<div class="keybox"><div class="kbt">⌨ In Flow mode</div><div class="kbr"><span class="k"><kbd>Return</kbd></span><span>start a new slide at the cursor (replaces selected text)</span></div><div class="kbr"><span class="k"><kbd>Shift</kbd>+<kbd>Return</kbd></span><span>line break inside a slide</span></div><div class="kbr"><span class="k"><kbd>Backspace</kbd> at the very start of a slide</span><span>join it to the slide before (Mac: <kbd>Delete</kbd>)</span></div></div>
 <div class="lockbox"><b>🔒 Flow mode locks once cues are on the score.</b> As soon as the first cue is placed, Flow mode switches off and its <span class="ui">¶ Flow</span> button is grayed out, so titles that already belong to cues can never move. To use Flow mode again, remove all cues (<span class="ui">File ▾ → Remove all cue markers…</span>) — or keep editing the slides one by one, which always works.</div>
 <div class="tipsbox"><div class="tbt">💡 Tips</div><ul><li>The smoothest order: write or paste the whole libretto in Flow mode, read through the slides, and only then place the cues.</li><li>Want a title to begin on a fresh slide no matter what? Put the cursor there and press <kbd>Return</kbd>.</li><li>For a line break inside a slide — a verse line, say — use <kbd>Shift</kbd>+<kbd>Return</kbd>.</li><li>A red slide is too long for the screen: shorten it, or press <kbd>Return</kbd> where it should split.</li><li>Need to change words after the cues are placed? Just click a slide and type — editing one slide at a time always works.</li></ul></div>
 </section>
@@ -404,8 +419,8 @@ The preview shows the same transition as the projector. Going to a blank slide f
 
 <section data-id="follow" data-part="Guide">
 <h2>Let STQ follow the music with you</h2>
-<p class="lead">A friendly co-pilot for the booth: it listens along and tells you how many seconds until the next cue — you stay in charge.</p>
-<p>Follow listens through a microphone during the performance and counts down to the next cue — “Next cue 7 in 4.2 s”. It never changes a title by itself: cuing stays yours. It learns the music from a <b>reference run</b>, a recording of this production in which every cue has its moment. Each PDF of the score has its own reference run, so Act 1 and Act 2 can be recorded separately.</p>
+<p class="lead">Experimental timing guidance: it listens along and estimates the time until the next cue. Check the score and cue manually.</p>
+<p>Follow listens through a microphone during the performance and estimates the next cue — “Estimated cue 7 in ~4.2 s” — while you change each title yourself. Estimates can drift even without a warning and with a closely matching recording; use the score to decide when to cue. It learns the music from a <b>reference run</b>, a recording in which every cue has its moment. Each PDF of the score has its own reference run, so Act 1 and Act 2 can be prepared separately. The separate <span class="ui">Auto</span> button can advance prepared cues automatically, as described below. The app does not yet read music notation or sung lyrics.</p>
 <figure class="shot"><img src="shots/follow-dialog.webp" alt="The Follow window"></figure>
 <h3>Making a reference run</h3>
 <p>Either on a PDF's card in the <span class="ui">PDFs</span> panel or in <span class="ui">🎧 Follow</span>:</p>
@@ -415,22 +430,33 @@ The preview shows the same transition as the projector. Going to a blank slide f
 </ul>
 <figure class="shot"><img src="shots/runbars.webp" alt="The recording bar and the cue-along player"></figure>
 <p>Both switch to Show mode and start just before that PDF's first cue. Only that PDF's cues get times, and only when you move forward: <kbd>←</kbd> to go back doesn't change any times. To fix a cue, go back to the one before it (in a linked recording, rewind the player too) and press <kbd>→</kbd> again at the right moment — the last press counts. A recording made in the app is kept inside the project file (about 15 MB per hour); a linked recording stays where it is and only the cue times and the analysis of the music are saved.</p>
+<p><b>Done / Stop &amp; keep</b> commits the recording analysis and the new cue times together. <b>Discard</b> leaves the previous reference and cue times intact. Saving during a run ends and keeps that run first. Finish the run before editing cues, slides or PDFs. Undo and Redo restore the reference together with its cue times.</p>
 <h3>Following during the show</h3>
 <ol class="steps">
 <li>Choose the microphone in <span class="ui">🎧 Follow</span>; the meter shows that it hears. Place it where it hears the stage and the orchestra, not the audience.</li>
 <li>Click <span class="ui">Start following</span>, then run the show as always.</li>
 <li>The countdown appears under the preview:</li>
 </ol>
-<figure class="shot"><img src="shots/followbar.webp" alt="The countdown under the preview"></figure>
+<figure class="shot"><img src="shots/followbar.webp" alt="A numeric countdown with the Tentative warning"><figcaption>The estimate stays visible with <b>⚠ Tentative</b> while the reference match is uncertain.</figcaption></figure>
 <dl>
-<dt>Next cue 7 in 4.2 s</dt><dd>Following; the bar fills towards the cue, turning orange in the last seconds. The tempo compared with the reference run is shown on the right.</dd>
-<dt>Cue 7 now</dt><dd>The music has reached the cue (with “… s late” if you haven't pressed it yet).</dd>
-<dt>Waiting for the music…</dt><dd>A pause, applause or dialogue — it holds its place.</dd>
-<dt>Re-finding the place…</dt><dd>It lost track for a moment (a restart, a cut, a passage played again); it finds its place by itself within a few seconds.</dd>
+<dt>Estimated cue 7 in ~4.2 s</dt><dd>The bar shows an approximate time from the reference match. For a clear match it turns orange near the estimated cue; tempo is shown on the right. This is not a guarantee of alignment.</dd>
+<dt>Estimated cue 7 reached</dt><dd>A clear match estimates that the cue has been reached. Confirm with the score and cue manually.</dd>
+<dt>⚠ Tentative</dt><dd>The match is uncertain. The number stays visible with a steady warning instead of disappearing. Continue cuing from the score; your next timed cue re-syncs the reference. Recovery can take time or fail.</dd>
+<dt>Paused</dt><dd>After a little over a second of quiet or unclear audio, the displayed countdown freezes until clearer music returns. The number remains visible. Tentative and Paused estimates do not show the stronger near-cue or reached signals.</dd>
 <dt>Next cue starts “Act 2.pdf”</dt><dd>The next cue is in another PDF; Follow switches to that PDF's recording when you cue it.</dd>
 </dl>
-<p>Every cue you press re-syncs it. Follow is new in version 2.0: try it at a rehearsal before relying on it in a performance.</p>
-<div class="tipsbox"><div class="tbt">💡 Tips</div><ul><li>Record the reference at a dress rehearsal, with the cast and orchestra you will have on the night — the closer the reference, the more smoothly Follow keeps up.</li><li>A small microphone pointed at the stage works well; a feed from the sound desk is even better.</li><li>Try it at a rehearsal with the countdown in view before relying on it in a performance.</li><li>If it says “Re-finding the place…”, just keep cuing — your next cue press puts it right back on track.</li><li>Each PDF has its own recording, so you can re-record one act without touching the others.</li></ul></div>
+<p>Every timed cue you press re-syncs it. Use a reference with matching music, key, cuts and repeats. Treat Follow as experimental assistance. Practice with the countdown in view and use manual cueing for the performance.</p>
+<h3>Automatic cueing with Auto</h3>
+<p>Click or right-click a section heading and choose <span class="ui">Auto recording…</span> or <span class="ui">Auto live (beta)</span> at the top of its menu. These launch that section even when another cue is selected. They are unavailable until it has a reference run and every cue has a valid time in cue order.</p>
+<p>The toolbar's <span class="ui">▶ Auto ▾</span> runs the section of the current numbered cue. Scrolling the score alone does not change that target; select a cue or use the section's own menu.</p>
+<ul>
+<li><span class="ui">Auto recording…</span> plays the reference and changes later titles at their saved times. Recordings made in STQ are inside the project. For linked audio, choose the original file when asked; STQ verifies its contents. Keep that file available after reopening. Use <span class="ui">Pause</span> / <span class="ui">Resume</span> to pause and continue.</li>
+<li><span class="ui">Auto live (beta)</span> follows the visible numeric estimate, including <span class="ui">⚠ Tentative</span> with its warning. Fresh estimates must agree on the due title for about 0.2 seconds before advancing. Silence or a <span class="ui">Paused</span> estimate holds the title; usable estimates let it continue without restarting. A forward estimate catches up directly to the current title; Auto never moves backwards. It uses the saved analysis, so linked audio need not be open. Use <span class="ui">Pause Auto</span> / <span class="ui">Resume Auto</span> to pause and continue.</li>
+</ul>
+<p><b>Your launch click shows the first title.</b> When the recording loads or live mode starts, the section's first title appears immediately, regardless of its saved time. Later titles follow the recording clock or live estimate. Saved cue times are unchanged.</p>
+<p>Both modes start the section from the beginning. Press <kbd>Space</kbd>, use the arrows or click a cue or slide to take over: recording playback stops, while live mode continues as ordinary Follow. Press <kbd>Esc</kbd> or <span class="ui">Stop Auto</span> to stop.</p>
+<p>Auto stops at the section's end. Launch each next prepared section with a fresh click. Sections without a reference run stay manual, with Auto unavailable.</p>
+<p class="note"><b>Live Auto is experimental.</b> Matching can drift even without a warning and may put up the wrong title. Watch the score and press <kbd>Space</kbd> to take over whenever needed.</p>
 </section>
 
 <section data-id="files" data-part="Guide">
@@ -438,7 +464,7 @@ The preview shows the same transition as the projector. Going to a blank slide f
 <p class="lead">One file holds the whole production, so there is nothing to lose track of.</p>
 <p><span class="ui">💾 Save</span> (<kbd>⌘S</kbd>) and <span class="ui">File ▾ → Save As…</span> (<kbd>⇧⌘S</kbd>) write the project as one <code>.supertitles</code> file. Double-click it to open it in the desktop app, or open it with <span class="ui">File ▾ → Open…</span> (<kbd>⌘O</kbd>) or by dropping it on the window. Opening a project locks its cues and slides, so nothing changes by accident.</p>
 <ul>
-<li>The desktop app always starts on the welcome screen with nothing open; a project opens only when you open it (double-click its file, <span class="ui">File → Open…</span>, or drop it on the window). The browser version picks up where you left off instead. Either way, only a saved file can be moved to another computer or backed up.</li>
+<li>After a normal close, the desktop app starts on the welcome screen with nothing open. Open a project by double-clicking its file, using <span class="ui">File → Open…</span>, or dropping it on the window. If a previous session ended unexpectedly with unsaved work, the app asks <i>Recover unsaved work from the previous session?</i> Choose <span class="ui">Recover</span> to restore its cached score, titles, cues, settings and completed reference runs, then save the recovered project; <span class="ui">Start Fresh</span> discards that draft. The browser version picks up where you left off. A saved file is still the copy to move to another computer or back up.</li>
 <li><b>Undo</b> <kbd>⌘Z</kbd> and <b>Redo</b> <kbd>⇧⌘Z</kbd> (<kbd>Ctrl</kbd>+<kbd>Y</kbd> on Windows) cover cues, slides, and moved or removed PDFs.</li>
 <li>The desktop app asks before closing with unsaved changes; “• not saved” next to the project name shows there are some.</li>
 <li><span class="ui">File ▾ → Close project</span> (<kbd>⌘W</kbd>) closes the project and returns to the welcome screen, offering to save unsaved changes first. On a Mac, STQ then works like Word: closing the window (or <kbd>⌘W</kbd> again with nothing open) leaves STQ running in the Dock and menu bar, ready for the next file. Click its Dock icon for the welcome screen, double-click a project to open it, and quit with <kbd>⌘Q</kbd>. On Windows, closing the window quits STQ, as Windows apps do. <span class="ui">File ▾ → New project…</span> (<kbd>⌘N</kbd>) does the same and starts empty. <span class="ui">Remove all cue markers…</span> and <span class="ui">Remove all slides…</span> clear one side only.</li>
@@ -506,8 +532,8 @@ The preview shows the same transition as the projector. Going to a blank slide f
 <p>All the titles as plain text, one title per line: a line break inside a title is written as <code>|</code> and an empty title as <code>(blank)</code>. Handy for a quick read-through or an email. Bring it back with <span class="ui">Import…</span> (Format: Text).</p>
 <p class="note">Recordings linked with <span class="ui">🔗 Link…</span> stay where they are on your computer; only the cue times and Follow's analysis of the music are saved with the project.</p>
 <h3>What if a linked recording moves?</h3>
-<p>Nothing is lost — Supertitle Cuer never relies on where a linked recording is stored. When you link a recording and cue along, two things are saved inside the project: the moment of each cue in that recording, and Follow's analysis of the music (a compact “fingerprint” taken while it played). Follow only ever uses those two, never the audio file itself; the project doesn't even keep the file's location, just its name. So you can move, rename or delete the recording, or open the project on another computer, and Follow works exactly the same.</p>
-<p>You only need the file again to cue along with it a second time — say, to fix a few cue times. Open it with <span class="ui">🔗 Link another recording…</span> from wherever it is now, jump to the passage, press the cue at the right moment and click <span class="ui">✓ Done</span>. Everything you don't replay keeps its timing and its analysis.</p>
+<p>The saved cue times and Follow's analysis of the music stay inside the project. Ordinary Follow and Auto's live microphone mode use that analysis, so moving the linked recording or opening the project on another computer does not remove their reference. The project keeps the recording's name and verified identity, rather than its location or audio.</p>
+<p>You need the original file again for Auto recording playback or to cue along a second time. Choose it when asked; STQ checks the file contents. To fix a cue in a verified recording, jump to the passage, re-time it and press <span class="ui">✓ Done</span>; unreplayed analysis and other cue times are kept. A different recording starts a new timeline when kept, even if its length or filename matches. Older projects without a verified recording identity require one fresh complete pass. Keep the player running through the whole piece for that pass.</p>
 <div class="tipsbox"><div class="tbt">💡 Sharing tips</div><ul><li>A project with a long score and recordings can be large — share it through a cloud link (iCloud Drive, Dropbox, Google Drive) rather than as an email attachment.</li><li>Keep one master project file and date your copies (“Trovatore 2026-10-15.supertitles”), so everyone knows which version is the latest.</li><li>Before sending a printable score, glance at the cue colors and the Cue circle size in Settings — they print exactly as they look.</li><li>A backup on a USB stick in the booth costs nothing and has saved many a performance.</li></ul></div>
 </section>
 
@@ -535,6 +561,7 @@ The preview shows the same transition as the projector. Going to a blank slide f
 <tr><td><kbd>←</kbd> <kbd>Page Up</kbd></td><td>Previous title</td></tr>
 <tr><td><kbd>B</kbd> <kbd>.</kbd></td><td>Blackout on / off</td></tr>
 <tr><td><kbd>Home</kbd></td><td>Back to before cue 1</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Stop Auto; a manual cue also takes over immediately</td></tr>
 <tr><td><kbd>F</kbd> (in the projector window)</td><td>Full screen on / off</td></tr>
 <tr><th colspan="2">Edit mode</th></tr>
 <tr><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></td><td>Nudge the selected cue 5 px (after clicking the score)</td></tr>
@@ -542,6 +569,7 @@ The preview shows the same transition as the projector. Going to a blank slide f
 <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Previous / next slide (after clicking the slide list)</td></tr>
 <tr><td><kbd>Delete</kbd></td><td>Delete the selected cue (or the selected range of slides)</td></tr>
 <tr><td><kbd>Shift</kbd>-click a slide</td><td>Select a range of slides</td></tr>
+<tr><td><kbd>⌘C</kbd> / <kbd>⌘V</kbd></td><td>Copy selected slides / paste them after the selected slide (outside text editing)</td></tr>
 <tr><td><kbd>Esc</kbd></td><td>Stop typing / clear the selection</td></tr>
 <tr><th colspan="2">Anywhere</th></tr>
 <tr><td><kbd>⌘S</kbd> / <kbd>⇧⌘S</kbd></td><td>Save / Save As</td></tr>
@@ -573,7 +601,9 @@ The preview shows the same transition as the projector. Going to a blank slide f
 <dt>A slide is red</dt><dd>Its text is longer than the screen allows; the gray words won't be shown. Shorten it, split it, or use a smaller text size or wider screen shape.</dd>
 <dt>A cue circle is dashed, or a slide says “no cue”</dt><dd>There are more cues than slides, or more slides than cues. Add the missing titles or cues.</dd>
 <dt>Flow mode is grayed out</dt><dd>It switches off once cues are on the score, so cued titles never move.</dd>
-<dt>Follow says “Waiting for the music…” all the time</dt><dd>The microphone hears nothing: check the meter in <span class="ui">🎧 Follow</span> and, on a Mac, <span class="ui">System Settings → Privacy &amp; Security → Microphone</span>.</dd>
+<dt>Follow stays Waiting or Paused</dt><dd>The microphone may be silent, or the audio may lack clear pitch information. Check the meter in <span class="ui">🎧 Follow</span>, move the microphone where it hears the performers and, on a Mac, check <span class="ui">System Settings → Privacy &amp; Security → Microphone</span>. Continue cuing from the score.</dd>
+<dt>Auto is grayed out</dt><dd>Select a cue in the section you want to run. That section needs a reference run and a valid time for every cue, in order. Finish and keep a complete reference run in <span class="ui">🎧 Follow</span> first.</dd>
+<dt>Auto recording playback asks for a file</dt><dd>Linked audio is not embedded in the project. Choose the same original recording; its contents must match the saved reference. A matching filename alone is not enough.</dd>
 <dt>macOS says the app is damaged or can't be opened</dt><dd>Run the <code>xattr</code> command from <a href="#install">the install chapter</a>, or install with Homebrew.</dd>
 </dl>
 </section>

@@ -1,11 +1,19 @@
 name: Build & release
 
-# To release: bump "version" in package.json, then Actions → Build & release →
-# Run workflow with "Publish a release" ticked (or push a tag like v1.0.1).
-# Run it without the tick for a test build that publishes nothing.
+# Tags and explicit workflow runs publish new versions. The audited 2.9.5
+# source upload also publishes once when pushed to main. Existing releases
+# always retain their assets and notes. Uploads remain draft until verified.
 on:
   push:
+    branches: [main]
     tags: ['v*']
+    paths:
+      - package.json
+      - package-lock.json
+      - .github/workflows/release.yml
+      - scripts/verify-release-inputs.cjs
+      - build/release-2.9.5-manifest.json
+      - RELEASE-NOTES-2.9.5.md
   workflow_dispatch:
     inputs:
       publish:
@@ -17,28 +25,68 @@ permissions:
   contents: write
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      publish: ${{ steps.v.outputs.publish }}
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - id: v
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REF: ${{ github.ref }}
+          REQUEST_PUBLISH: ${{ inputs.publish }}
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          publish=false
+          if [[ "$EVENT_REF" == refs/tags/v* ]]; then
+            [[ "$EVENT_REF" == "refs/tags/v$version" ]] || { echo '::error::Tag must match package version'; exit 1; }
+            publish=true
+          elif [[ "$EVENT_NAME" == workflow_dispatch && "$REQUEST_PUBLISH" == true ]]; then
+            publish=true
+          elif [[ "$EVENT_NAME" == push && "$EVENT_REF" == refs/heads/main && "$version" == 2.9.5 ]]; then
+            publish=true
+          fi
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: prepare
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: macos-latest
+            platform: mac
             script: dist:mac
             files: release/*.dmg
           - os: windows-latest
+            platform: win
             script: dist:win
             files: release/*.exe
     runs-on: ${{ matrix.os }}
     steps:
+      - run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Verify audited source inputs
+        if: needs.prepare.outputs.version == '2.9.5'
+        run: node scripts/verify-release-inputs.cjs source
+      - run: npm test
+      - run: npm run test:electron
       - run: npm run ${{ matrix.script }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify audited packaged runtime
+        if: needs.prepare.outputs.version == '2.9.5'
+        run: node scripts/verify-release-inputs.cjs package ${{ matrix.platform }}
       - name: Verify Mac app
         if: runner.os == 'macOS'
         shell: bash
@@ -49,11 +97,17 @@ jobs:
             plutil -extract CFBundleDocumentTypes.0.CFBundleTypeExtensions.0 raw "$APP/Contents/Info.plist" | grep -qx supertitles
             echo "::notice::$(basename "$(dirname "$APP")"): signature OK (ad-hoc), .supertitles registered, $(lipo -archs "$APP/Contents/MacOS/Supertitle Cuer")"
           done
-          APP="release/mac-arm64/Supertitle Cuer.app"
+          if [[ "$(node -p process.arch)" == arm64 ]]; then
+            APP="release/mac-arm64/Supertitle Cuer.app"
+          else
+            APP="release/mac/Supertitle Cuer.app"
+          fi
           "$APP/Contents/MacOS/Supertitle Cuer" &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
           sleep 20
-          pgrep -f "Supertitle Cuer.app/Contents/MacOS" >/dev/null && echo "::notice::Mac app launched and kept running"
-          pkill -f "Supertitle Cuer.app/Contents/MacOS" || true
+          kill -0 "$app_pid" 2>/dev/null || { echo '::error::Mac app exited early'; exit 1; }
+          echo '::notice::Mac app launched and kept running'
       - name: Verify Windows installer
         if: runner.os == 'Windows'
         shell: pwsh
@@ -82,15 +136,24 @@ jobs:
           if-no-files-found: error
 
   html:
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
+      - run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Verify audited source inputs
+        if: needs.prepare.outputs.version == '2.9.5'
+        run: node scripts/verify-release-inputs.cjs source
+      - run: npm test
       - run: npm run build:html
+      - name: Verify audited standalone HTML
+        if: needs.prepare.outputs.version == '2.9.5'
+        run: node scripts/verify-release-inputs.cjs html
       - run: cp docs/Supertitle_Cuer_Manual.pdf dist/
       - uses: actions/upload-artifact@v4
         with:
@@ -101,42 +164,83 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v') || inputs.publish
-    needs: [build, html]
+    if: needs.prepare.outputs.publish == 'true'
+    needs: [prepare, build, html]
+    concurrency:
+      group: release-${{ needs.prepare.outputs.version }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
+      - run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - id: v
         run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Preserve an existing release
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          set -euo pipefail
+          tag="$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote("v" + os.environ["VERSION"], safe=""))')"
+          response="$(mktemp)"
+          trap 'rm -f "$response"' EXIT
+          http_status="$(curl --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'Accept: application/vnd.github+json' \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            --output "$response" --write-out '%{http_code}' \
+            "$API_URL/repos/$GITHUB_REPOSITORY/releases/tags/$tag")"
+          case "$http_status" in
+            200)
+              echo 'exists=true' >> "$GITHUB_OUTPUT"
+              echo "::notice::Release v$VERSION already exists; keeping its assets and notes unchanged."
+              ;;
+            404)
+              echo 'exists=false' >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "::error::Could not check release v$VERSION (HTTP $http_status); refusing to publish."
+              exit 1
+              ;;
+          esac
       - uses: actions/download-artifact@v4
+        if: steps.existing.outputs.exists == 'false'
         with:
           path: out
           pattern: app-*
           merge-multiple: true
       - name: Checksums
-        run: cd out && sha256sum * | tee SHA256SUMS.txt
-      - uses: softprops/action-gh-release@v2
+        if: steps.existing.outputs.exists == 'false'
+        run: |
+          set -euo pipefail
+          (cd out && sha256sum * > SHA256SUMS.txt)
+          node scripts/verify-release-inputs.cjs assets out
+      - id: draft
+        uses: softprops/action-gh-release@v2
+        if: steps.existing.outputs.exists == 'false'
         with:
           tag_name: v${{ steps.v.outputs.version }}
           name: Supertitle Cuer ${{ steps.v.outputs.version }}
           target_commitish: ${{ github.sha }}
           prerelease: ${{ contains(steps.v.outputs.version, '-') }}
-          make_latest: ${{ contains(steps.v.outputs.version, '-') && 'false' || 'true' }}
+          make_latest: false
+          draft: true
+          overwrite_files: false
+          fail_on_unmatched_files: true
+          body_path: RELEASE-NOTES-${{ steps.v.outputs.version }}.md
           files: out/*
-          body: |
-            ### Install
-
-            **Mac (Homebrew)**
-            ```
-            brew install --cask poetic-pixie/tap/supertitle-cuer
-            ```
-            Or download the `.dmg` for your Mac (`arm64` = Apple Silicon M1/M2/M3/M4, `x64` = Intel), drag the app to Applications, then run once in Terminal:
-            ```
-            xattr -dr com.apple.quarantine "/Applications/Supertitle Cuer.app"
-            ```
-
-            **Windows**
-            Download `Supertitle_Cuer-Setup-….exe` and run it. If Windows shows “Windows protected your PC”, click **More info → Run anyway**.
-
-            **No install (any computer with Chrome)**
-            Download `Supertitle_Cuer.html` and double-click it.
+      - name: Verify uploaded draft, then publish
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ steps.draft.outputs.id }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" > uploaded-release.json
+          node scripts/verify-release-inputs.cjs remote out uploaded-release.json "$RELEASE_ID"
+          latest=true
+          [[ "$VERSION" != *-* ]] || latest=false
+          gh release edit "v$VERSION" --repo "$GITHUB_REPOSITORY" --draft=false --latest="$latest"
